@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Enviar PDF por Formulario</title>
+</head>
+<body>
+  <h1>Formulario de envío de PDF</h1>
+  <form id="formulario" enctype="multipart/form-data" method="POST" action="https://comis.simocore.com/enviar-pdf">
+    <label for="email">Correo destino:</label><br>
+    <input type="email" name="email" id="email" required><br><br>
+
+    <label for="archivo">Selecciona un PDF:</label><br>
+    <input type="file" name="archivo" id="archivo" accept="application/pdf" required><br><br>
+
+    <button type="submit">Enviar PDF</button>
+  </form>
+</body>
+</html>
