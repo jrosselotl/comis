@@ -15,7 +15,7 @@ import os
 
 # Calcula la ruta absoluta de /static dentro de /app
 current_dir = os.path.dirname(os.path.abspath(__file__))
-static_dir = os.path.join(current_dir, "static")
+static_dir = os.path.join(os.path.dirname(current_dir), "static")
 
 app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
 #from app.routes.enviar_pdf import router as pdf_router
