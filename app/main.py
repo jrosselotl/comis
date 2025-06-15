@@ -10,6 +10,14 @@ from app.routes import (
     megado,
     test_pdf,  # tu nueva ruta de prueba
 )
+from fastapi.staticfiles import StaticFiles
+import os
+
+# Calcula la ruta absoluta de /static dentro de /app
+current_dir = os.path.dirname(os.path.abspath(__file__))
+static_dir = os.path.join(current_dir, "static")
+
+app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
 #from app.routes.enviar_pdf import router as pdf_router
 #app.include_router(pdf_router)
 # ✅ Instancia FastAPI
@@ -35,3 +43,4 @@ app.include_router(tests.router)
 app.include_router(continuidad.router)
 app.include_router(megado.router)
 app.include_router(test_pdf.router)
+
