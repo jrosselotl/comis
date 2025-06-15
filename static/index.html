@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Formulario de Test</title>
+</head>
+<body>
+  <h1>Formulario de Test</h1>
+  <form id="formulario">
+    <label for="nombre">Nombre:</label>
+    <input type="text" name="nombre" required>
+    <br>
+    <label for="correo">Correo:</label>
+    <input type="email" name="correo" required>
+    <br>
+    <button type="submit">Enviar</button>
+  </form>
+
+  <script>
+    document.getElementById('formulario').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const data = {
+        nombre: e.target.nombre.value,
+        correo: e.target.correo.value
+      };
+
+      const res = await fetch("/api/usuarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      alert("Respuesta del servidor: " + JSON.stringify(result));
+    });
+  </script>
+</body>
+</html>
