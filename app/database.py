@@ -8,7 +8,7 @@ import os
 load_dotenv()
 
 # Tomar el valor de la variable DATABASE_URL
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = "postgresql://comisdb_user:hMBVHZu6kYFAirm17hJh8E3RebuMaQW2@dpg-d17hqm6mcj7s73d877qg-a.oregon-postgres.render.com/comisdb"
 
 # Crear la conexión
 engine = create_engine(DATABASE_URL)
