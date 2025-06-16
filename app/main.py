@@ -50,3 +50,5 @@ async def render_index(request: Request):
 
 # ✅ Montar carpeta estática (CSS, JS, imágenes)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+from app.routes import formulario
+app.include_router(formulario.router)
