@@ -1,57 +1,56 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Formulario de Pruebas Eléctricas</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Formulario de Pruebas</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
+  <div class="container">
     <h1>Formulario de Pruebas Eléctricas</h1>
+
     <form id="formulario-pruebas">
-        <!-- Paso 1: Datos del Equipo -->
-        <fieldset>
-            <legend>1. Datos del Equipo</legend>
-            <label for="colo">Ubicación (COLOx):</label>
-            <input type="text" id="colo" name="colo" required>
+      <!-- Equipo -->
+      <div class="form-section">
+        <label>Proyecto: <input type="text" name="proyecto" required /></label><br />
+        <label>COLOx: <input type="text" name="colox" required /></label><br />
+        <label>CEx: <input type="text" name="cex" required /></label><br />
+        <label>Tipo de equipo:
+          <select name="tipo_equipo" required>
+            <option value="PDU">PDU</option>
+            <option value="MSB">MSB</option>
+            <option value="BSW">BSW</option>
+          </select>
+        </label>
+      </div>
 
-            <label for="ce">Sub-Ubicación (CEx):</label>
-            <input type="text" id="ce" name="ce" required>
+      <!-- Tipo de prueba -->
+      <div class="form-section">
+        <label>Tipo de prueba:
+          <select id="tipo-prueba" name="tipo_prueba" required>
+            <option value="">--Seleccionar--</option>
+            <option value="continuidad">Continuidad</option>
+            <option value="megado">Megado</option>
+          </select>
+        </label>
+      </div>
 
-            <label for="tipo">Tipo de equipo:</label>
-            <select id="tipo" name="tipo" required>
-                <option value="">Seleccione</option>
-                <option value="PDU">PDU</option>
-                <option value="MSB">MSB</option>
-                <option value="BSW">BSW</option>
-            </select>
-        </fieldset>
+      <!-- Cable Sets -->
+      <div class="form-section">
+        <label>N° Cable Sets:
+          <input type="number" name="cable_sets" id="cable_sets" min="1" required />
+        </label>
+      </div>
 
-        <!-- Paso 2: Tipo de prueba -->
-        <fieldset>
-            <legend>2. Tipo de Prueba</legend>
-            <label for="tipo_prueba">Tipo:</label>
-            <select id="tipo_prueba" name="tipo_prueba" required>
-                <option value="">Seleccione</option>
-                <option value="continuidad">Continuidad</option>
-                <option value="megado">Megado</option>
-            </select>
-        </fieldset>
+      <!-- Resultados dinámicos -->
+      <div id="campos-prueba"></div>
 
-        <!-- Paso 3: Cable Set -->
-        <fieldset>
-            <legend>3. Número de Cable Sets</legend>
-            <label for="cable_set">Cantidad:</label>
-            <input type="number" id="cable_set" name="cable_set" min="1" value="1" required>
-        </fieldset>
-
-        <!-- Paso 4: Tabla de resultados (dinámica con JS) -->
-        <div id="resultados-container">
-            <!-- Aquí se insertarán las tablas generadas con JS -->
-        </div>
-
-        <button type="submit">Guardar</button>
+      <!-- Botón de envío -->
+      <button type="submit">Guardar Prueba</button>
     </form>
+  </div>
 
-    <script src="/static/js/formulario.js"></script>
+  <script src="/static/js/formulario.js"></script>
 </body>
 </html>
