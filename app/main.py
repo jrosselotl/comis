@@ -6,19 +6,18 @@ from fastapi.requests import Request
 from fastapi.responses import HTMLResponse
 import os
 
-# ✅ Instancia de FastAPI primero
 app = FastAPI()
 
 # ✅ Middleware CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Recomendable restringir luego a tu dominio
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ✅ Importa y registra rutas
+# ✅ Importar y registrar rutas
 from app.routes import (
     auth,
     usuarios,
@@ -27,7 +26,8 @@ from app.routes import (
     tests,
     continuidad,
     megado,
-    test_pdf
+    test_pdf,
+    formulario  # si ya tienes el formulario.py
 )
 
 app.include_router(auth.router)
@@ -38,8 +38,15 @@ app.include_router(tests.router)
 app.include_router(continuidad.router)
 app.include_router(megado.router)
 app.include_router(test_pdf.router)
+app.include_router(formulario.router)
 
-# ✅ Montar archivos estáticos (como index.html)
-current_dir = os.path.dirname(os.path.abspath(__file__))
-static_dir = os.path.join(os.path.dirname(current_dir), "static")
-app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
+# ✅ Directorio de plantillas
+templates = Jinja2Templates(directory="templates")
+
+# ✅ Ruta principal para renderizar index.html desde templates
+@app.get("/", response_class=HTMLResponse)
+async def render_index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+# ✅ Montar carpeta estática (CSS, JS, imágenes)
+app.mount("/static", StaticFiles(directory="static"), name="static")
