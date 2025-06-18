@@ -10,4 +10,4 @@ fpdf
 python-multipart
 email-validator
 flask
-psycopg2
+psycopg2-binary
