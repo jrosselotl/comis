@@ -2,159 +2,165 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Formulario de Pruebas</title>
     <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
-    <h1>Formulario de Pruebas Eléctricas</h1>
+<h1>Formulario de Pruebas Eléctricas</h1>
 
-    <form id="formulario-pruebas" enctype="multipart/form-data">
-        <fieldset>
-            <legend>1. Datos del Equipo</legend>
-            <label>Proyecto: <legend>MAD03</legend></label>
-            <label>Ubicación (COLO): <input type="text" id="colo" required /></label>
-            <label>Celda (CE): <input type="text" id="ce" required /></label>
-            <label>Tipo de equipo:
-                <select id="tipo-equipo" required>
-                    <option value="PDU">PDU</option>
-                    <option value="MSB">MSB</option>
-                    <option value="BSW">BSW</option>
-                </select>
-            </label>
-            <label>ID del equipo: <input type="text" id="codigo-equipo" required /></label>
-        </fieldset>
+<form id="formulario-pruebas" enctype="multipart/form-data">
+    <fieldset>
+        <legend>1. Datos del Equipo</legend>
+        <label>Proyecto: <input type="number" id="proyecto-id" required /></label>
+        <label>Ubicación (COLO): <input type="text" id="colo" required /></label>
+        <label>Celda (CE): <input type="text" id="ce" required /></label>
+        <label>Tipo de equipo:
+            <select id="tipo-equipo" required>
+                <option value="PDU">PDU</option>
+                <option value="MSB">MSB</option>
+                <option value="BSW">BSW</option>
+            </select>
+        </label>
+        <label>ID del equipo: <input type="text" id="codigo-equipo" required /></label>
+    </fieldset>
 
-        <fieldset>
-            <legend>2. Prueba</legend>
-            <label>Tipo de prueba:
-                <select id="tipo-prueba" required>
-                    <option value="continuidad">Continuidad</option>
-                    <option value="megado">Megado</option>
-                </select>
-            </label>
-            <label>Cable Sets: <input type="number" id="cable-set" min="1" value="1" required /></label>
-        </fieldset>
+    <fieldset>
+        <legend>2. Prueba</legend>
+        <label>Tipo de prueba:
+            <select id="tipo-prueba" required>
+                <option value="continuidad">Continuidad</option>
+                <option value="megado">Megado</option>
+            </select>
+        </label>
+        <label>Cable Sets: <input type="number" id="cable-set" min="1" value="1" required /></label>
+    </fieldset>
 
-        <div id="contenedor-resultados"></div>
-        <button type="submit">Guardar</button>
-    </form>
+    <div id="contenedor-resultados"></div>
+    <button type="submit">Guardar</button>
+</form>
 
-    <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const tipoPruebaSelect = document.getElementById("tipo-prueba");
-        const cableSetInput = document.getElementById("cable-set");
-        const contenedorResultados = document.getElementById("contenedor-resultados");
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const tipoPruebaSelect = document.getElementById("tipo-prueba");
+    const cableSetInput = document.getElementById("cable-set");
+    const contenedorResultados = document.getElementById("contenedor-resultados");
 
-        tipoPruebaSelect.addEventListener("change", generarCampos);
-        cableSetInput.addEventListener("input", generarCampos);
+    tipoPruebaSelect.addEventListener("change", generarCampos);
+    cableSetInput.addEventListener("input", generarCampos);
 
-        function generarCampos() {
-            const tipo = tipoPruebaSelect.value;
-            const cantidad = parseInt(cableSetInput.value) || 0;
-            contenedorResultados.innerHTML = "";
+    function generarCampos() {
+        const tipo = tipoPruebaSelect.value;
+        const cantidad = parseInt(cableSetInput.value) || 0;
+        contenedorResultados.innerHTML = "";
 
-            const pruebasContinuidad = ["L1", "L2", "L3", "N", "E"];
-            const pruebasMegado = ["L1-L2", "L1-L3", "L2-L3", "L1-N", "L2-N", "L3-N", "L1-E", "L2-E", "L3-E", "N-E"];
-            const pruebas = tipo === "continuidad" ? pruebasContinuidad : pruebasMegado;
+        const pruebasContinuidad = ["L1", "L2", "L3", "N", "E"];
+        const pruebasMegado = ["L1-L2", "L1-L3", "L2-L3", "L1-N", "L2-N", "L3-N", "L1-E", "L2-E", "L3-E", "N-E"];
+        const pruebas = tipo === "continuidad" ? pruebasContinuidad : pruebasMegado;
 
-            for (let i = 1; i <= cantidad; i++) {
-                const tabla = document.createElement("table");
-                tabla.classList.add("tabla-prueba");
+        for (let i = 1; i <= cantidad; i++) {
+            const tabla = document.createElement("table");
+            tabla.classList.add("tabla-prueba");
 
-                const caption = document.createElement("caption");
-                caption.textContent = `${tipo} - Cable Set ${i}`;
-                tabla.appendChild(caption);
+            const caption = document.createElement("caption");
+            caption.textContent = `${tipo} - Cable Set ${i}`;
+            tabla.appendChild(caption);
 
-                const encabezado = document.createElement("tr");
-                encabezado.innerHTML = `
-                    <th>Punto de prueba</th>
-                    <th>Valor de referencia</th>
-                    <th>Resultado</th>
-                    <th>¿Aprobado?</th>
-                    <th>Imagen</th>
+            const encabezado = document.createElement("tr");
+            encabezado.innerHTML = `
+                <th>Punto</th>
+                <th>Referencia</th>
+                <th>Resultado</th>
+                <th>Tiempo</th>
+                <th>¿Aprobado?</th>
+                <th>Observaciones</th>
+                <th>Imagen</th>`;
+            tabla.appendChild(encabezado);
+
+            pruebas.forEach((punto) => {
+                const fila = document.createElement("tr");
+                fila.innerHTML = `
+                    <td>${punto}</td>
+                    <td><input name="referencia_${i}_${punto}" type="text" /></td>
+                    <td><input name="resultado_${i}_${punto}" type="text" /></td>
+                    <td><input name="tiempo_${i}_${punto}" type="text" /></td>
+                    <td><input name="aprobado_${i}_${punto}" type="checkbox" /></td>
+                    <td><input name="observaciones_${i}_${punto}" type="text" /></td>
+                    <td>
+                        <label class="camera-label">
+                            📷
+                            <input type="file" accept="image/*" capture="environment"
+                                   name="imagen_${i}_${punto}" style="display: none;">
+                        </label>
+                    </td>
                 `;
-                tabla.appendChild(encabezado);
+                tabla.appendChild(fila);
+            });
 
-                pruebas.forEach((punto) => {
-                    const fila = document.createElement("tr");
-                    fila.innerHTML = `
-                        <td>${punto}</td>
-                        <td><input name="referencia_${i}_${punto}" type="text" /></td>
-                        <td><input name="resultado_${i}_${punto}" type="text" /></td>
-                        <td><input name="aprobado_${i}_${punto}" type="checkbox" /></td>
-                        <td>
-                            <label class="camera-label">
-                                📷
-                                <input type="file" accept="image/*" capture="environment"
-                                       name="imagen_${i}_${punto}" style="display: none;">
-                            </label>
-                        </td>
-                    `;
-                    tabla.appendChild(fila);
+            contenedorResultados.appendChild(tabla);
+        }
+    }
+
+    document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const tipoPrueba = tipoPruebaSelect.value;
+        const cableSets = parseInt(cableSetInput.value);
+        const codigoEquipo = document.getElementById("codigo-equipo").value;
+        const tipoEquipo = document.getElementById("tipo-equipo").value;
+        const colo = document.getElementById("colo").value;
+        const ce = document.getElementById("ce").value;
+        const proyectoId = document.getElementById("proyecto-id").value;
+
+        const pruebasContinuidad = ["L1", "L2", "L3", "N", "E"];
+        const pruebasMegado = ["L1-L2", "L1-L3", "L2-L3", "L1-N", "L2-N", "L3-N", "L1-E", "L2-E", "L3-E", "N-E"];
+        const pruebas = tipoPrueba === "continuidad" ? pruebasContinuidad : pruebasMegado;
+
+        const datos = [];
+        const imagenes = [];
+
+        for (let i = 1; i <= cableSets; i++) {
+            for (const punto of pruebas) {
+                const referencia = document.querySelector(`[name="referencia_${i}_${punto}"]`).value;
+                const resultado = document.querySelector(`[name="resultado_${i}_${punto}"]`).value;
+                const tiempo = document.querySelector(`[name="tiempo_${i}_${punto}"]`).value;
+                const aprobado = document.querySelector(`[name="aprobado_${i}_${punto}"]`).checked;
+                const observaciones = document.querySelector(`[name="observaciones_${i}_${punto}"]`).value;
+                const imagenInput = document.querySelector(`[name="imagen_${i}_${punto}"]`);
+                const imagen = imagenInput?.files[0];
+
+                datos.push({
+                    cable_set: i,
+                    punto_prueba: punto,
+                    referencia_valor: referencia,
+                    resultado_valor: resultado,
+                    tiempo_aplicado: tiempo,
+                    aprobado: aprobado,
+                    observaciones: observaciones
                 });
 
-                contenedorResultados.appendChild(tabla);
+                imagenes.push(imagen || new File([], ""));
             }
         }
 
-        document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
-            e.preventDefault();
+        const formData = new FormData();
+        formData.append("proyecto_id", proyectoId);
+        formData.append("codigo_equipo", `${colo}-${ce}-${codigoEquipo}`);
+        formData.append("tipo", tipoEquipo);
+        formData.append("tipo_prueba", tipoPrueba);
+        formData.append("cable_sets", cableSets);
+        formData.append("datos", JSON.stringify(datos));
+        imagenes.forEach(img => formData.append("imagenes", img));
 
-            const tipoPrueba = tipoPruebaSelect.value;
-            const cableSets = parseInt(cableSetInput.value);
-            const codigoEquipo = document.getElementById("codigo-equipo").value;
-            const tipoEquipo = document.getElementById("tipo-equipo").value;
-            const colo = document.getElementById("colo").value;
-            const ce = document.getElementById("ce").value;
-
-            const pruebasContinuidad = ["L1", "L2", "L3", "N", "E"];
-            const pruebasMegado = ["L1-L2", "L1-L3", "L2-L3", "L1-N", "L2-N", "L3-N", "L1-E", "L2-E", "L3-E", "N-E"];
-            const pruebas = tipoPrueba === "continuidad" ? pruebasContinuidad : pruebasMegado;
-
-            const datos = [];
-            const imagenes = [];
-
-            for (let i = 1; i <= cableSets; i++) {
-                for (const punto of pruebas) {
-                    const referencia = document.querySelector(`[name="referencia_${i}_${punto}"]`).value;
-                    const resultado = document.querySelector(`[name="resultado_${i}_${punto}"]`).value;
-                    const aprobado = document.querySelector(`[name="aprobado_${i}_${punto}"]`).checked;
-                    const imagenInput = document.querySelector(`[name="imagen_${i}_${punto}"]`);
-                    const imagen = imagenInput?.files[0];
-                    if (imagen) {
-                        imagenes.push(imagen);
-                    } else {
-                        imagenes.push(new File([], ""));
-                    }
-                    datos.push({
-                        cable_set: i,
-                        punto_prueba: punto,
-                        referencia_valor: referencia,
-                        resultado_valor: resultado,
-                        aprobado: aprobado
-                    });
-                }
-            }
-
-            const formData = new FormData();
-            formData.append("proyecto_id", 1);  // Asigna el ID real
-            formData.append("codigo_equipo", `${colo}-${ce}-${codigoEquipo}`);
-            formData.append("tipo", tipoEquipo);
-            formData.append("tipo_prueba", tipoPrueba);
-            formData.append("cable_sets", cableSets);
-            formData.append("datos", JSON.stringify(datos));
-            imagenes.forEach(img => formData.append("imagenes", img));
-
-            const response = await fetch("/formulario/guardar", {
-                method: "POST",
-                body: formData
-            });
-
-            const res = await response.json();
-            alert(res.mensaje || "Error al guardar");
+        const response = await fetch("/formulario/guardar", {
+            method: "POST",
+            body: formData
         });
+
+        const res = await response.json();
+        alert(res.mensaje || "Error al guardar");
     });
-    </script>
+});
+</script>
 </body>
 </html>
