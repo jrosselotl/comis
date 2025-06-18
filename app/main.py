@@ -41,7 +41,7 @@ app.include_router(test_pdf.router)
 app.include_router(formulario.router)
 
 # ✅ Directorio de plantillas
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="app/templates")
 
 # ✅ Ruta principal para renderizar index.html desde templates
 @app.get("/", response_class=HTMLResponse)
@@ -49,6 +49,6 @@ async def render_index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 # ✅ Montar carpeta estática (CSS, JS, imágenes)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 from app.routes import formulario
 app.include_router(formulario.router)
