@@ -7,6 +7,7 @@ from app.models.test_continuidad import TestContinuidad
 from app.models.test_continuidad import ResultadoContinuidad
 from app.models.test_megado import TestMegado
 from app.models.test_megado import ResultadoMegado
+from app.models.usuario import Usuario  # para asignar usuario_id
 import shutil, os, json
 from datetime import datetime
 from uuid import uuid4
