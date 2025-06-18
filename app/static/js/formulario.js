@@ -1,59 +1,62 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const tipoPruebaSelect = document.getElementById("tipo-prueba");
-    const cableSetInput = document.getElementById("cable-set");
-    const contenedorResultados = document.getElementById("contenedor-resultados");
+<script>
+document.getElementById("formulario-prueba").addEventListener("submit", async function (e) {
+    e.preventDefault();
 
-    tipoPruebaSelect.addEventListener("change", generarCampos);
-    cableSetInput.addEventListener("input", generarCampos);
+    const tipoPrueba = document.getElementById("tipo-prueba").value;
+    const cableSets = parseInt(document.getElementById("cable-set").value);
+    const proyectoId = document.getElementById("proyecto-id").value;
+    const codigoEquipo = document.getElementById("codigo-equipo").value;
+    const tipoEquipo = document.getElementById("tipo-equipo").value;
 
-    function generarCampos() {
-        const tipo = tipoPruebaSelect.value;
-        const cantidad = parseInt(cableSetInput.value) || 0;
-        contenedorResultados.innerHTML = "";
+    const pruebasContinuidad = ["L1", "L2", "L3", "N", "E"];
+    const pruebasMegado = ["L1-L2", "L1-L3", "L2-L3", "L1-N", "L2-N", "L3-N", "L1-E", "L2-E", "L3-E", "N-E"];
+    const pruebas = tipoPrueba === "continuidad" ? pruebasContinuidad : pruebasMegado;
 
-        const pruebasContinuidad = ["L1", "L2", "L3", "N", "E"];
-        const pruebasMegado = ["L1-L2", "L1-L3", "L2-L3", "L1-N", "L2-N", "L3-N", "L1-E", "L2-E", "L3-E", "N-E"];
+    const datos = [];
+    const imagenes = [];
 
-        for (let i = 1; i <= cantidad; i++) {
-            const tabla = document.createElement("table");
-            tabla.classList.add("tabla-prueba");
+    for (let i = 1; i <= cableSets; i++) {
+        for (const punto of pruebas) {
+            const referencia = document.querySelector(`[name="referencia_${i}_${punto}"]`).value;
+            const resultado = document.querySelector(`[name="resultado_${i}_${punto}"]`).value;
+            const aprobado = document.querySelector(`[name="aprobado_${i}_${punto}"]`).checked;
+            const imagenInput = document.querySelector(`[name="imagen_${i}_${punto}"]`);
 
-            const caption = document.createElement("caption");
-            caption.textContent = `${tipo} - Cable Set ${i}`;
-            tabla.appendChild(caption);
+            const imagen = imagenInput?.files[0];
+            if (imagen) {
+                imagenes.push(imagen);
+            } else {
+                imagenes.push(new File([], ""));  // Imagen vacía
+            }
 
-            const encabezado = document.createElement("tr");
-            encabezado.innerHTML = `
-                <th>Punto de prueba</th>
-                <th>Valor de referencia</th>
-                <th>Resultado</th>
-                <th>¿Aprobado?</th>
-                <th>Imagen</th>
-            `;
-            tabla.appendChild(encabezado);
-
-            const pruebas = tipo === "continuidad" ? pruebasContinuidad : pruebasMegado;
-
-            pruebas.forEach((punto, idx) => {
-                const fila = document.createElement("tr");
-
-                fila.innerHTML = `
-                    <td>${punto}</td>
-                    <td><input name="referencia_${i}_${punto}" type="text" /></td>
-                    <td><input name="resultado_${i}_${punto}" type="text" /></td>
-                    <td><input name="aprobado_${i}_${punto}" type="checkbox" /></td>
-                    <td>
-                        <label class="camera-label">
-                            📷
-                            <input type="file" accept="image/*" capture="environment"
-                                   name="imagen_${i}_${punto}" style="display: none;">
-                        </label>
-                    </td>
-                `;
-                tabla.appendChild(fila);
+            datos.push({
+                cable_set: i,
+                punto_prueba: punto,
+                referencia_valor: referencia,
+                resultado_valor: resultado,
+                aprobado: aprobado
             });
-
-            contenedorResultados.appendChild(tabla);
         }
     }
+
+    const formData = new FormData();
+    formData.append("proyecto_id", proyectoId);
+    formData.append("codigo_equipo", codigoEquipo);
+    formData.append("tipo", tipoEquipo);  // tipo de equipo
+    formData.append("tipo_prueba", tipoPrueba);
+    formData.append("cable_sets", cableSets);
+    formData.append("datos", JSON.stringify(datos));
+
+    imagenes.forEach(img => {
+        formData.append("imagenes", img);
+    });
+
+    const response = await fetch("/formulario/guardar", {
+        method: "POST",
+        body: formData
+    });
+
+    const res = await response.json();
+    alert(res.mensaje || "Error al guardar");
 });
+</script>
