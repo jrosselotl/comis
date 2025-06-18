@@ -6,7 +6,7 @@ from app.database import get_db
 from app.models.test_continuidad import TestContinuidad
 from app.models.test_continuidad import ResultadoContinuidad
 from app.models.test_megado import TestMegado
-from app.models.resultado_megado import ResultadoMegado
+from app.models.test_megado import ResultadoMegado
 import shutil, os, json
 from datetime import datetime
 from uuid import uuid4
