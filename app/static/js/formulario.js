@@ -1,5 +1,5 @@
 <script>
-document.getElementById("formulario-prueba").addEventListener("submit", async function (e) {
+document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
     e.preventDefault();
 
     const tipoPrueba = document.getElementById("tipo-prueba").value;
@@ -7,6 +7,8 @@ document.getElementById("formulario-prueba").addEventListener("submit", async fu
     const proyectoId = document.getElementById("proyecto-id").value;
     const codigoEquipo = document.getElementById("codigo-equipo").value;
     const tipoEquipo = document.getElementById("tipo-equipo").value;
+    const colo = document.getElementById("colo").value;
+    const ce = document.getElementById("ce").value;
 
     const pruebasContinuidad = ["L1", "L2", "L3", "N", "E"];
     const pruebasMegado = ["L1-L2", "L1-L3", "L2-L3", "L1-N", "L2-N", "L3-N", "L1-E", "L2-E", "L3-E", "N-E"];
@@ -19,6 +21,8 @@ document.getElementById("formulario-prueba").addEventListener("submit", async fu
         for (const punto of pruebas) {
             const referencia = document.querySelector(`[name="referencia_${i}_${punto}"]`).value;
             const resultado = document.querySelector(`[name="resultado_${i}_${punto}"]`).value;
+            const tiempo = document.querySelector(`[name="tiempo_${i}_${punto}"]`)?.value || "";
+            const observaciones = document.querySelector(`[name="observaciones_${i}_${punto}"]`)?.value || "";
             const aprobado = document.querySelector(`[name="aprobado_${i}_${punto}"]`).checked;
             const imagenInput = document.querySelector(`[name="imagen_${i}_${punto}"]`);
 
@@ -26,7 +30,7 @@ document.getElementById("formulario-prueba").addEventListener("submit", async fu
             if (imagen) {
                 imagenes.push(imagen);
             } else {
-                imagenes.push(new File([], ""));  // Imagen vacía
+                imagenes.push(new File([], ""));
             }
 
             datos.push({
@@ -34,22 +38,21 @@ document.getElementById("formulario-prueba").addEventListener("submit", async fu
                 punto_prueba: punto,
                 referencia_valor: referencia,
                 resultado_valor: resultado,
-                aprobado: aprobado
+                tiempo_aplicado: tiempo,
+                aprobado: aprobado,
+                observaciones: observaciones
             });
         }
     }
 
     const formData = new FormData();
     formData.append("proyecto_id", proyectoId);
-    formData.append("codigo_equipo", codigoEquipo);
-    formData.append("tipo", tipoEquipo);  // tipo de equipo
+    formData.append("codigo_equipo", `${colo}-${ce}-${codigoEquipo}`);
+    formData.append("tipo", tipoEquipo);
     formData.append("tipo_prueba", tipoPrueba);
     formData.append("cable_sets", cableSets);
     formData.append("datos", JSON.stringify(datos));
-
-    imagenes.forEach(img => {
-        formData.append("imagenes", img);
-    });
+    imagenes.forEach(img => formData.append("imagenes", img));
 
     const response = await fetch("/formulario/guardar", {
         method: "POST",
