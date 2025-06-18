@@ -46,7 +46,7 @@ document.getElementById("formulario-pruebas").addEventListener("submit", async f
     }
 
     const formData = new FormData();
-    formData.append("proyecto_id", proyectoId);
+    
     formData.append("codigo_equipo", `${colo}-${ce}-${codigoEquipo}`);
     formData.append("tipo", tipoEquipo);
     formData.append("tipo_prueba", tipoPrueba);
