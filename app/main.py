@@ -5,9 +5,10 @@ from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
+from app.routes import utils
 
 import os
-
+app.include_router(utils.router)
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key="una_clave_segura_123")
 # ✅ Middleware CORS
