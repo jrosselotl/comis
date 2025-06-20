@@ -1,30 +1,38 @@
 from fastapi import APIRouter, Request, Form, Depends
-from fastapi.responses import RedirectResponse, HTMLResponse
-from sqlalchemy.orm import Session
+from fastapi.responses import RedirectResponse
 from app.database import get_db
+from sqlalchemy.orm import Session
 from app.models.usuario import Usuario
-from starlette.middleware.sessions import SessionMiddleware
-from starlette.status import HTTP_303_SEE_OTHER
+from starlette.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-import hashlib
+from starlette.status import HTTP_302_FOUND
+from passlib.hash import bcrypt
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="app/templates")
 
 @router.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request):
+def login_form(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
-@router.post("/login")
-async def login(request: Request, correo: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
-    usuario = db.query(Usuario).filter(Usuario.correo == correo).first()
-    if not usuario or usuario.password_hash != hashlib.sha256(password.encode()).hexdigest():
-        return templates.TemplateResponse("login.html", {"request": request, "error": "Credenciales incorrectas"})
-    
+@router.post("/auth/login")
+def login(
+    request: Request,
+    correo: str = Form(...),
+    password: str = Form(...),
+    recordar: bool = Form(False),
+    db: Session = Depends(get_db)
+):
+    usuario = db.query(Usuario).filter_by(correo=correo).first()
+    if not usuario or not bcrypt.verify(password, usuario.password_hash):
+        return templates.TemplateResponse("login.html", {"request": request, "error": "Credenciales inválidas"})
+
     request.session["usuario_id"] = usuario.id
-    return RedirectResponse(url="/", status_code=HTTP_303_SEE_OTHER)
+    if recordar:
+        request.session["recordar"] = True
+    return RedirectResponse(url="/", status_code=HTTP_302_FOUND)
 
 @router.get("/logout")
-async def logout(request: Request):
+def logout(request: Request):
     request.session.clear()
-    return RedirectResponse(url="/login", status_code=HTTP_303_SEE_OTHER)
+    return RedirectResponse(url="/login", status_code=HTTP_302_FOUND)
