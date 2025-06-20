@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import Optional
 from enum import Enum
 from datetime import datetime
@@ -21,9 +21,7 @@ class UsuarioOut(BaseModel):
     rol: RolUsuario
     fecha_registro: Optional[datetime]
 
-class Config:
-    from_attributes = True
-
+    model_config = ConfigDict(from_attributes=True)  # Pydantic v2 ✅
 
 # Para login
 class UsuarioLogin(BaseModel):
