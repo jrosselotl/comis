@@ -7,9 +7,14 @@ from starlette.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.status import HTTP_302_FOUND
 from passlib.hash import bcrypt
+from passlib.context import CryptContext
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def verificar_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
 
 @router.get("/login", response_class=HTMLResponse)
 def login_form(request: Request):
