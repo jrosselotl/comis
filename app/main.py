@@ -44,10 +44,12 @@ app.include_router(formulario.router)
 # ✅ Directorio de plantillas
 templates = Jinja2Templates(directory="app/templates")
 
-# ✅ Ruta principal para renderizar index.html desde templates
 @app.get("/", response_class=HTMLResponse)
 async def render_index(request: Request):
+    if not request.session.get("usuario_id"):
+        return RedirectResponse(url="/login", status_code=302)
     return templates.TemplateResponse("index.html", {"request": request})
+
 
 # ✅ Montar carpeta estática (CSS, JS, imágenes)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
