@@ -5,6 +5,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
 from fastapi.responses import HTMLResponse
 from starlette.middleware.sessions import SessionMiddleware
+from fastapi.responses import RedirectResponse
 import os
 
 app = FastAPI()
