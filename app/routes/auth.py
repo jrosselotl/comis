@@ -29,7 +29,7 @@ def login(
     db: Session = Depends(get_db)
 ):
     usuario = db.query(Usuario).filter_by(correo=correo).first()
-    if not usuario or not bcrypt.verify(password, usuario.password_hash):
+    if not usuario or not pwd_context.verify(password, usuario.password_hash):
         return templates.TemplateResponse("login.html", {"request": request, "error": "Credenciales inválidas"})
 
     request.session["usuario_id"] = usuario.id
