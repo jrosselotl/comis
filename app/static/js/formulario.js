@@ -4,7 +4,6 @@ document.getElementById("formulario-pruebas").addEventListener("submit", async f
 
     const tipoPrueba = document.getElementById("tipo-prueba").value;
     const cableSets = parseInt(document.getElementById("cable-set").value);
-    const proyectoId = document.getElementById("proyecto-id").value;
     const codigoEquipo = document.getElementById("codigo-equipo").value;
     const tipoEquipo = document.getElementById("tipo-equipo").value;
     const colo = document.getElementById("colo").value;
