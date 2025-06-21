@@ -30,3 +30,17 @@ def crear_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db)):
 @router.get("/", response_model=list[UsuarioOut])
 def listar_usuarios(db: Session = Depends(get_db)):
     return db.query(Usuario).all()
+
+@router.post("/reset-password")
+def reset_password(
+    correo: str = Form(...),
+    nueva_password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    usuario = db.query(Usuario).filter_by(correo=correo).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    usuario.password_hash = pwd_context.hash(nueva_password)
+    db.commit()
+    return {"mensaje": "Contraseña actualizada correctamente"}
