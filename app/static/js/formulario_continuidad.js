@@ -1,4 +1,4 @@
-(() => {
+function initFormularioContinuidad() {
     const cableSetInput = document.getElementById("cable-set");
     const referenciaComunInput = document.getElementById("referencia-comun");
     const contenedorResultados = document.getElementById("contenedor-resultados");
@@ -56,7 +56,11 @@
 
     cableSetInput.addEventListener("input", generarCampos);
     referenciaComunInput.addEventListener("input", generarCampos);
-    generarCampos();  // inicial
+    generarCampos();
+}
+
+// Exportar para ser llamada al cargar el script
+window.initFormularioContinuidad = initFormularioContinuidad;
 
     document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
         e.preventDefault();
