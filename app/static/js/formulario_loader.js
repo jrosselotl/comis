@@ -17,29 +17,34 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Cargar JS dinámico según tipo de prueba
     const tipoPruebaSelect = document.getElementById("tipo-prueba");
+    const contenedorResultados = document.getElementById("contenedor-resultados");
     let currentScript;
 
-    
-const scriptMap = {
-    continuidad: "/static/js/formulario_continuidad.js",
-    megado: "/static/js/formulario_megado.js",
-    
-};
-async function loadScript() {
-    if (currentScript) currentScript.remove();
+    const scriptMap = {
+        continuidad: "/static/js/formulario_continuidad.js",
+        megado: "/static/js/formulario_megado.js"
+        // Puedes seguir agregando más tipos de prueba aquí
+    };
 
-    const tipo = tipoPruebaSelect.value;
-console.log("Tipo seleccionado:", tipo);  // 👈 PRUEBA
-    if (!scriptMap[tipo]) return;  // Si no hay script para el tipo, no hace nada
+    async function loadScript() {
+        if (currentScript) {
+            currentScript.remove();
+            contenedorResultados.innerHTML = ""; // Limpiar resultados al cambiar de prueba
+        }
 
-    currentScript = document.createElement("script");
-    currentScript.src = scriptMap[tipo];
-    document.body.appendChild(currentScript);
-}
+        const tipo = tipoPruebaSelect.value;
+        console.log("Tipo seleccionado:", tipo);
 
+        if (!scriptMap[tipo]) return;
+
+        currentScript = document.createElement("script");
+        currentScript.src = scriptMap[tipo];
+        document.body.appendChild(currentScript);
+    }
 
     tipoPruebaSelect.addEventListener("change", loadScript);
+
     if (tipoPruebaSelect.value) {
-    await loadScript();
-}
+        await loadScript();
+    }
 });
