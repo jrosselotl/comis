@@ -1,14 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
     const cableSetInput = document.getElementById("cable-set");
+    const referenciaComunInput = document.getElementById("referencia-comun");
     const contenedorResultados = document.getElementById("contenedor-resultados");
-
     const pruebas = ["L1", "L2", "L3", "N", "E"];
-    generarCampos();
-
-    cableSetInput.addEventListener("input", generarCampos);
 
     function generarCampos() {
         const cantidad = parseInt(cableSetInput.value) || 0;
+        const referenciaComun = referenciaComunInput.value;
         contenedorResultados.innerHTML = "";
 
         for (let i = 1; i <= cantidad; i++) {
@@ -24,7 +22,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 <th>Punto</th>
                 <th>Referencia</th>
                 <th>Resultado</th>
-                <th>Tiempo</th>
                 <th>¿Aprobado?</th>
                 <th>Observaciones</th>
                 <th>Imagen</th>`;
@@ -34,13 +31,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 const fila = document.createElement("tr");
                 fila.innerHTML = `
                     <td>${punto}</td>
-                    <td><input name="referencia_${i}_${punto}" type="text" /></td>
+                    <td><input name="referencia_${i}_${punto}" type="text" value="${referenciaComun}" readonly /></td>
                     <td><input name="resultado_${i}_${punto}" type="text" /></td>
-                    <td><input name="tiempo_${i}_${punto}" type="text" /></td>
                     <td><input name="aprobado_${i}_${punto}" type="checkbox" /></td>
                     <td><input name="observaciones_${i}_${punto}" type="text" /></td>
-                    <td></td>
-                `;
+                    <td></td>`;
 
                 const label = document.createElement("label");
                 label.classList.add("camera-label");
@@ -59,25 +54,27 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    cableSetInput.addEventListener("input", generarCampos);
+    referenciaComunInput.addEventListener("input", generarCampos);
+    generarCampos();  // inicial
+
     document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
         e.preventDefault();
 
-        const tipoPrueba = "continuidad";
         const cableSets = parseInt(cableSetInput.value);
         const codigoEquipo = document.getElementById("codigo-equipo").value;
         const tipoEquipo = document.getElementById("tipo-equipo").value;
         const colo = document.getElementById("colo").value;
         const ce = document.getElementById("ce").value;
         const proyectoId = document.getElementById("proyecto-id").value;
+        const referenciaComun = referenciaComunInput.value;
 
         const datos = [];
         const imagenes = [];
 
         for (let i = 1; i <= cableSets; i++) {
             for (const punto of pruebas) {
-                const referencia = document.querySelector(`[name="referencia_${i}_${punto}"]`).value;
                 const resultado = document.querySelector(`[name="resultado_${i}_${punto}"]`).value;
-                const tiempo = document.querySelector(`[name="tiempo_${i}_${punto}"]`).value;
                 const aprobado = document.querySelector(`[name="aprobado_${i}_${punto}"]`).checked;
                 const observaciones = document.querySelector(`[name="observaciones_${i}_${punto}"]`).value;
                 const imagenInput = document.querySelector(`[name="imagen_${i}_${punto}"]`);
@@ -86,9 +83,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 datos.push({
                     cable_set: i,
                     punto_prueba: punto,
-                    referencia_valor: referencia,
+                    referencia_valor: referenciaComun,
                     resultado_valor: resultado,
-                    tiempo_aplicado: tiempo,
                     aprobado: aprobado,
                     observaciones: observaciones
                 });
@@ -101,7 +97,7 @@ document.addEventListener("DOMContentLoaded", function () {
         formData.append("proyecto_id", proyectoId);
         formData.append("codigo_equipo", `${colo}-${ce}-${codigoEquipo}`);
         formData.append("tipo", tipoEquipo);
-        formData.append("tipo_prueba", tipoPrueba);
+        formData.append("tipo_prueba", "continuidad");
         formData.append("cable_sets", cableSets);
         formData.append("datos", JSON.stringify(datos));
         imagenes.forEach(img => formData.append("imagenes", img));
