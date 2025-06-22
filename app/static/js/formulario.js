@@ -1,7 +1,8 @@
 <script>
 document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
     e.preventDefault();
-
+    
+    const proyectoId = document.getElementById("proyecto-id").value;
     const tipoPrueba = document.getElementById("tipo-prueba").value;
     const cableSets = parseInt(document.getElementById("cable-set").value);
     const codigoEquipo = document.getElementById("codigo-equipo").value;
@@ -45,7 +46,7 @@ document.getElementById("formulario-pruebas").addEventListener("submit", async f
     }
 
     const formData = new FormData();
-    
+    formData.append("proyecto_id", proyectoId);
     formData.append("codigo_equipo", `${colo}-${ce}-${codigoEquipo}`);
     formData.append("tipo", tipoEquipo);
     formData.append("tipo_prueba", tipoPrueba);
@@ -54,9 +55,18 @@ document.getElementById("formulario-pruebas").addEventListener("submit", async f
     imagenes.forEach(img => formData.append("imagenes", img));
 
     const response = await fetch("/formulario/guardar", {
-        method: "POST",
-        body: formData
-    });
+    method: "POST",
+    body: formData
+});
+
+if (!response.ok) {
+    const text = await response.text();
+    alert("Error del servidor:\n" + text);
+    return;
+}
+
+const res = await response.json();
+alert(res.mensaje || "Guardado con éxito");
 
     const res = await response.json();
     alert(res.mensaje || "Error al guardar");
