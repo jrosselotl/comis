@@ -51,7 +51,26 @@
     <div id="contenedor-resultados"></div>
     <button type="submit">Guardar</button>
 </form>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const selectProyecto = document.getElementById("proyecto-id");
 
+  try {
+    const res = await fetch("/proyectos/");
+    const proyectos = await res.json();
+
+    selectProyecto.innerHTML = "";
+    proyectos.forEach((p) => {
+      const option = document.createElement("option");
+      option.value = p.id;
+      option.textContent = p.nombre;
+      selectProyecto.appendChild(option);
+    });
+  } catch (err) {
+    selectProyecto.innerHTML = '<option>Error cargando proyectos</option>';
+  }
+});
+</script>
 <script src="/static/js/formulario_loader.js"></script>
 </body>
 </html>
