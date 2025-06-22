@@ -1,8 +1,9 @@
 function initFormularioMegado() {
     const cableSetInput = document.getElementById("cable-set");
-    const contenedorResultados = document.getElementById("contenedor-resultados");
     const referenciaComunInput = document.getElementById("referencia-comun");
     const tiempoInputGlobal = document.getElementById("tiempo-aplicado-global");
+    const contenedorResultados = document.getElementById("contenedor-resultados");
+
     const pruebas = ["L1-L2", "L1-L3", "L2-L3", "L1-N", "L2-N", "L3-N", "L1-E", "L2-E", "L3-E", "N-E"];
 
     function generarCampos() {
@@ -66,18 +67,18 @@ function initFormularioMegado() {
         } else {
             tiempoCampo.style.display = "none";
         }
-        generarCampos();
+        generarCampos(); // regenerar para aplicar cambios
     });
 
     cableSetInput.addEventListener("input", generarCampos);
-    tiempoInputGlobal.addEventListener("input", generarCampos);
     referenciaComunInput.addEventListener("input", generarCampos);
+    tiempoInputGlobal.addEventListener("input", generarCampos);
     generarCampos();
 
+    // SUBMIT
     document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
         e.preventDefault();
 
-        const tipoPrueba = "megado";
         const cableSets = parseInt(cableSetInput.value);
         const codigoEquipo = document.getElementById("codigo-equipo").value;
         const tipoEquipo = document.getElementById("tipo-equipo").value;
@@ -116,7 +117,7 @@ function initFormularioMegado() {
         formData.append("proyecto_id", proyectoId);
         formData.append("codigo_equipo", `${colo}-${ce}-${codigoEquipo}`);
         formData.append("tipo", tipoEquipo);
-        formData.append("tipo_prueba", tipoPrueba);
+        formData.append("tipo_prueba", "megado");
         formData.append("cable_sets", cableSets);
         formData.append("datos", JSON.stringify(datos));
         imagenes.forEach(img => formData.append("imagenes", img));
@@ -126,9 +127,10 @@ function initFormularioMegado() {
             body: formData
         });
 
-        const res = await response.json();
-        alert(res.mensaje || "Error al guardar");
+        const res = await response.json().catch(() => alert("Error interno del servidor"));
+        alert(res?.mensaje || "Error al guardar");
     });
 }
 
+// Exportar para poder llamarlo desde loader
 window.initFormularioMegado = initFormularioMegado;
