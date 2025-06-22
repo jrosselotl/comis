@@ -8,6 +8,8 @@ from app.models.proyecto import Proyecto
 import shutil, os, json
 from datetime import datetime
 from uuid import uuid4
+from app.utils.pdf_generator import generar_pdf_test
+from app.utils.correo import enviar_correo_con_pdf
 
 router = APIRouter(prefix="/formulario", tags=["Formulario"])
 
@@ -61,7 +63,7 @@ async def guardar_formulario(
             imagen = imagenes[i]
             if imagen.filename:
                 extension = os.path.splitext(imagen.filename)[1]
-                imagen_nombre = f"{uuid4().hex}{extension}"
+                imagen_nombre = f"{codigo_equipo}-{tipo_prueba}-CS{i}-{resultado['punto_prueba']}{extension}"
                 imagen_path = os.path.join(UPLOAD_DIR, imagen_nombre)
                 with open(imagen_path, "wb") as buffer:
                     shutil.copyfileobj(imagen.file, buffer)
@@ -84,5 +86,34 @@ async def guardar_formulario(
 
         db.add(resultado_obj)
 
+
+
     db.commit()
     return {"mensaje": "Formulario y resultados guardados correctamente"}
+# Datos para el PDF
+test_data = {
+    "equipo_id": codigo_equipo,
+    "fecha": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+    "observaciones": "",
+}
+
+resultados_pdf = [
+    {
+        "punto_prueba": r["punto_prueba"],
+        "referencia_valor": r["referencia_valor"],
+        "resultado_valor": r["resultado_valor"],
+        "aprobado": r["aprobado"]
+    }
+    for r in datos_parsed
+]
+
+output_pdf_path = f"output/{tipo_prueba}_{codigo_equipo}.pdf"
+generar_pdf_test(test_data, resultados_pdf, output_path=output_pdf_path)
+
+# Enviar por correo
+enviar_correo_con_pdf(
+    destinatarios=["jrosselot@alancx.com"],
+    asunto=codigo_equipo,
+    cuerpo=f"Informe de prueba del equipo {codigo_equipo}",
+    archivo_pdf=output_pdf_path
+)
