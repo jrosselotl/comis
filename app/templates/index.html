@@ -86,13 +86,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <td><input name="tiempo_${i}_${punto}" type="text" /></td>
                     <td><input name="aprobado_${i}_${punto}" type="checkbox" /></td>
                     <td><input name="observaciones_${i}_${punto}" type="text" /></td>
-                    <td>
-                        <label class="camera-label">
-                            📷
-                            <input type="file" accept="image/*" capture="environment"
-                                   name="imagen_${i}_${punto}" style="display: none;">
-                        </label>
-                    </td>
+                    
                 `;
                 tabla.appendChild(fila);
             });
