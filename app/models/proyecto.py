@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime
 from datetime import datetime
 from app.database import Base
+from sqlalchemy.orm import relationship
 
 class Proyecto(Base):
     __tablename__ = "proyectos"
