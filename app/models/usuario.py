@@ -14,5 +14,5 @@ class Usuario(Base):
     nombre = Column(String, nullable=False)
     correo = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
-    rol = Column(String, default="usuario")
+    rol = Column(String, default="tecnico")
     fecha_registro = Column(DateTime, default=datetime.utcnow)
