@@ -23,8 +23,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 const scriptMap = {
     continuidad: "/static/js/formulario_continuidad.js",
     megado: "/static/js/formulario_megado.js",
-    ductor: "/static/js/formulario_ductor.js",
-    // ... puedes agregar más aquí
+    
 };
 async function loadScript() {
     if (currentScript) currentScript.remove();
