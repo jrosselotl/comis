@@ -26,21 +26,25 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Puedes seguir agregando más tipos de prueba aquí
     };
 
-    async function loadScript() {
-        if (currentScript) {
-            currentScript.remove();
-            contenedorResultados.innerHTML = ""; // Limpiar resultados al cambiar de prueba
+async function loadScript() {
+    if (currentScript) currentScript.remove();
+
+    const tipo = tipoPruebaSelect.value;
+    if (!scriptMap[tipo]) return;
+
+    currentScript = document.createElement("script");
+    currentScript.src = scriptMap[tipo];
+    currentScript.onload = () => {
+        if (tipo === "continuidad" && typeof initFormularioContinuidad === "function") {
+            initFormularioContinuidad();
         }
+        if (tipo === "megado" && typeof initFormularioMegado === "function") {
+            initFormularioMegado();
+        }
+    };
+    document.body.appendChild(currentScript);
+}
 
-        const tipo = tipoPruebaSelect.value;
-        console.log("Tipo seleccionado:", tipo);
-
-        if (!scriptMap[tipo]) return;
-
-        currentScript = document.createElement("script");
-        currentScript.src = scriptMap[tipo];
-        document.body.appendChild(currentScript);
-    }
 
     tipoPruebaSelect.addEventListener("change", loadScript);
 
