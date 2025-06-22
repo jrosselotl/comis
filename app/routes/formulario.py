@@ -23,7 +23,7 @@ async def guardar_formulario(
     tipo: str = Form(...),  # tipo de equipo: PDU, BSW, etc.
     tipo_prueba: str = Form(...),  # continuidad o megado
     cable_sets: int = Form(...),
-    datos: str = Form(...),  # JSON: [{punto_prueba, referencia_valor, resultado_valor, tiempo_aplicado, observaciones, aprobado}]
+    datos: str = Form(...),  # JSON: [{...}]
     imagenes: list[UploadFile] = File(default=[]),
     db: Session = Depends(get_db)
 ):
@@ -56,14 +56,14 @@ async def guardar_formulario(
     db.commit()
     db.refresh(test)
 
-    # 3. Resultados
+    # 3. Guardar resultados con imágenes
     for i, resultado in enumerate(datos_parsed):
         imagen_nombre = None
         if i < len(imagenes):
             imagen = imagenes[i]
             if imagen.filename:
                 extension = os.path.splitext(imagen.filename)[1]
-                imagen_nombre = f"{codigo_equipo}-{tipo_prueba}-CS{i}-{resultado['punto_prueba']}{extension}"
+                imagen_nombre = f"{codigo_equipo}-{tipo_prueba}-CS{i+1}-{resultado['punto_prueba']}{extension}"
                 imagen_path = os.path.join(UPLOAD_DIR, imagen_nombre)
                 with open(imagen_path, "wb") as buffer:
                     shutil.copyfileobj(imagen.file, buffer)
@@ -86,34 +86,35 @@ async def guardar_formulario(
 
         db.add(resultado_obj)
 
-
-
     db.commit()
-    return {"mensaje": "Formulario y resultados guardados correctamente"}
-# Datos para el PDF
-test_data = {
-    "equipo_id": codigo_equipo,
-    "fecha": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-    "observaciones": "",
-}
 
-resultados_pdf = [
-    {
-        "punto_prueba": r["punto_prueba"],
-        "referencia_valor": r["referencia_valor"],
-        "resultado_valor": r["resultado_valor"],
-        "aprobado": r["aprobado"]
+    # 4. Generar PDF
+    test_data = {
+        "equipo_id": codigo_equipo,
+        "fecha": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+        "observaciones": "",
     }
-    for r in datos_parsed
-]
 
-output_pdf_path = f"output/{tipo_prueba}_{codigo_equipo}.pdf"
-generar_pdf_test(test_data, resultados_pdf, output_path=output_pdf_path)
+    resultados_pdf = [
+        {
+            "punto_prueba": r["punto_prueba"],
+            "referencia_valor": r["referencia_valor"],
+            "resultado_valor": r["resultado_valor"],
+            "aprobado": r["aprobado"]
+        }
+        for r in datos_parsed
+    ]
 
-# Enviar por correo
-enviar_correo_con_pdf(
-    destinatarios=["jrosselot@alancx.com"],
-    asunto=codigo_equipo,
-    cuerpo=f"Informe de prueba del equipo {codigo_equipo}",
-    archivo_pdf=output_pdf_path
-)
+    output_pdf_path = f"output/{tipo_prueba}_{codigo_equipo}.pdf"
+    os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
+    generar_pdf_test(test_data, resultados_pdf, output_path=output_pdf_path)
+
+    # 5. Enviar por correo
+    enviar_correo_con_pdf(
+        destinatarios=["jrosselot@alancx.com"],
+        asunto=codigo_equipo,
+        cuerpo="",
+        archivo_pdf=output_pdf_path
+    )
+
+    return {"mensaje": "Formulario y resultados guardados correctamente"}
