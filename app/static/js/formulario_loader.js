@@ -29,7 +29,7 @@ async function loadScript() {
     if (currentScript) currentScript.remove();
 
     const tipo = tipoPruebaSelect.value;
-
+console.log("Tipo seleccionado:", tipo);  // 👈 PRUEBA
     if (!scriptMap[tipo]) return;  // Si no hay script para el tipo, no hace nada
 
     currentScript = document.createElement("script");
