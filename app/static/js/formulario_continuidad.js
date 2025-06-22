@@ -56,59 +56,58 @@
 
     cableSetInput.addEventListener("input", generarCampos);
     referenciaComunInput.addEventListener("input", generarCampos);
-    generarCampos(); // inicial
-})();
+    generarCampos();  // inicial
 
+    document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
+        e.preventDefault();
 
-document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
-    e.preventDefault();
+        const cableSets = parseInt(cableSetInput.value);
+        const codigoEquipo = document.getElementById("codigo-equipo").value;
+        const tipoEquipo = document.getElementById("tipo-equipo").value;
+        const colo = document.getElementById("colo").value;
+        const ce = document.getElementById("ce").value;
+        const proyectoId = document.getElementById("proyecto-id").value;
+        const referenciaComun = referenciaComunInput.value;
 
-    const cableSets = parseInt(cableSetInput.value);
-    const codigoEquipo = document.getElementById("codigo-equipo").value;
-    const tipoEquipo = document.getElementById("tipo-equipo").value;
-    const colo = document.getElementById("colo").value;
-    const ce = document.getElementById("ce").value;
-    const proyectoId = document.getElementById("proyecto-id").value;
-    const referenciaComun = referenciaComunInput.value;
+        const datos = [];
+        const imagenes = [];
 
-    const datos = [];
-    const imagenes = [];
+        for (let i = 1; i <= cableSets; i++) {
+            for (const punto of pruebas) {
+                const resultado = document.querySelector(`[name="resultado_${i}_${punto}"]`).value;
+                const aprobado = document.querySelector(`[name="aprobado_${i}_${punto}"]`).checked;
+                const observaciones = document.querySelector(`[name="observaciones_${i}_${punto}"]`).value;
+                const imagenInput = document.querySelector(`[name="imagen_${i}_${punto}"]`);
+                const imagen = imagenInput?.files[0];
 
-    for (let i = 1; i <= cableSets; i++) {
-        for (const punto of pruebas) {
-            const resultado = document.querySelector(`[name="resultado_${i}_${punto}"]`).value;
-            const aprobado = document.querySelector(`[name="aprobado_${i}_${punto}"]`).checked;
-            const observaciones = document.querySelector(`[name="observaciones_${i}_${punto}"]`).value;
-            const imagenInput = document.querySelector(`[name="imagen_${i}_${punto}"]`);
-            const imagen = imagenInput?.files[0];
+                datos.push({
+                    cable_set: i,
+                    punto_prueba: punto,
+                    referencia_valor: referenciaComun,
+                    resultado_valor: resultado,
+                    aprobado: aprobado,
+                    observaciones: observaciones
+                });
 
-            datos.push({
-                cable_set: i,
-                punto_prueba: punto,
-                referencia_valor: referenciaComun,
-                resultado_valor: resultado,
-                aprobado: aprobado,
-                observaciones: observaciones
-            });
-
-            imagenes.push(imagen || new File([], ""));
+                imagenes.push(imagen || new File([], ""));
+            }
         }
-    }
 
-    const formData = new FormData();
-    formData.append("proyecto_id", proyectoId);
-    formData.append("codigo_equipo", `${colo}-${ce}-${codigoEquipo}`);
-    formData.append("tipo", tipoEquipo);
-    formData.append("tipo_prueba", "continuidad");
-    formData.append("cable_sets", cableSets);
-    formData.append("datos", JSON.stringify(datos));
-    imagenes.forEach(img => formData.append("imagenes", img));
+        const formData = new FormData();
+        formData.append("proyecto_id", proyectoId);
+        formData.append("codigo_equipo", `${colo}-${ce}-${codigoEquipo}`);
+        formData.append("tipo", tipoEquipo);
+        formData.append("tipo_prueba", "continuidad");
+        formData.append("cable_sets", cableSets);
+        formData.append("datos", JSON.stringify(datos));
+        imagenes.forEach(img => formData.append("imagenes", img));
 
-    const response = await fetch("/formulario/guardar", {
-        method: "POST",
-        body: formData
+        const response = await fetch("/formulario/guardar", {
+            method: "POST",
+            body: formData
+        });
+
+        const res = await response.json().catch(() => alert("Error interno del servidor"));
+        alert(res?.mensaje || "Error al guardar");
     });
-
-    const res = await response.json();
-    alert(res.mensaje || "Error al guardar");
-});
+})();
