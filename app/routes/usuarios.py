@@ -4,6 +4,7 @@ from app.schemas.usuario import UsuarioCreate, UsuarioOut
 from app.models.usuario import Usuario
 from app.database import get_db
 from passlib.context import CryptContext
+from fastapi import Form
 
 router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
