@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Cargar lista de proyectos
     const select = document.getElementById("proyecto-id");
     try {
-        const res = await fetch("/proyectos/listar");
+        const res = await fetch("/proyectos/");  // ← CAMBIO AQUÍ
         const data = await res.json();
         select.innerHTML = "";
         data.forEach(p => {
