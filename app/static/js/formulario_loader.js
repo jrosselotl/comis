@@ -19,16 +19,20 @@ document.addEventListener("DOMContentLoaded", async function () {
     const tipoPruebaSelect = document.getElementById("tipo-prueba");
     let currentScript;
 
-    async function loadScript() {
-        if (currentScript) currentScript.remove();
+   async function loadScript() {
+    if (currentScript) currentScript.remove();
 
-        const tipo = tipoPruebaSelect.value;
-        currentScript = document.createElement("script");
-        currentScript.src = tipo === "megado" 
-            ? "/static/js/formulario_megado.js" 
-            : "/static/js/formulario_continuidad.js";
-        document.body.appendChild(currentScript);
-    }
+    const tipo = tipoPruebaSelect.value;
+
+    // No hacer nada si no se seleccionó tipo de prueba
+    if (!tipo) return;
+
+    currentScript = document.createElement("script");
+    currentScript.src = tipo === "megado" 
+        ? "/static/js/formulario_megado.js" 
+        : "/static/js/formulario_continuidad.js";
+    document.body.appendChild(currentScript);
+}
 
     tipoPruebaSelect.addEventListener("change", loadScript);
     await loadScript(); // cargar por defecto
