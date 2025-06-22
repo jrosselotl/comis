@@ -86,8 +86,27 @@ document.addEventListener("DOMContentLoaded", function () {
                     <td><input name="tiempo_${i}_${punto}" type="text" /></td>
                     <td><input name="aprobado_${i}_${punto}" type="checkbox" /></td>
                     <td><input name="observaciones_${i}_${punto}" type="text" /></td>
-                    
+                    <td></td>
                 `;
+                const label = document.createElement("label");
+label.classList.add("camera-label");
+label.innerHTML = `
+    📷 <span class="adjunto-texto"></span>
+    <input type="file" accept="image/*" capture="environment" name="imagen_${i}_${punto}" style="display: none;">
+`;
+
+fila.querySelector("td:last-child").appendChild(label);
+
+// Mostrar texto de archivo adjunto
+label.querySelector("input").addEventListener("change", (e) => {
+    const span = label.querySelector(".adjunto-texto");
+    if (e.target.files.length > 0) {
+        span.textContent = "📎 Archivo adjunto";
+    } else {
+        span.textContent = "";
+    }
+});
+
                 tabla.appendChild(fila);
             });
 
