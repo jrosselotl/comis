@@ -4,61 +4,72 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const pruebas = ["L1-L2", "L1-L3", "L2-L3", "L1-N", "L2-N", "L3-N", "L1-E", "L2-E", "L3-E", "N-E"];
     generarCampos();
-
+const tiempoInputGlobal = document.getElementById("tiempo-aplicado-global");
     cableSetInput.addEventListener("input", generarCampos);
 
     function generarCampos() {
-        const cantidad = parseInt(cableSetInput.value) || 0;
-        contenedorResultados.innerHTML = "";
+    const cantidad = parseInt(cableSetInput.value) || 0;
+    const referenciaComun = referenciaComunInput.value;
+    const tiempoGlobal = tiempoInputGlobal.value;
+    contenedorResultados.innerHTML = "";
 
-        for (let i = 1; i <= cantidad; i++) {
-            const tabla = document.createElement("table");
-            tabla.classList.add("tabla-prueba");
+    for (let i = 1; i <= cantidad; i++) {
+        const tabla = document.createElement("table");
+        tabla.classList.add("tabla-prueba");
 
-            const caption = document.createElement("caption");
-            caption.textContent = `Megado - Cable Set ${i}`;
-            tabla.appendChild(caption);
+        const caption = document.createElement("caption");
+        caption.textContent = `Megado - Cable Set ${i}`;
+        tabla.appendChild(caption);
 
-            const encabezado = document.createElement("tr");
-            encabezado.innerHTML = `
-                <th>Punto</th>
-                <th>Referencia</th>
-                <th>Resultado</th>
-                <th>Tiempo</th>
-                <th>¿Aprobado?</th>
-                <th>Observaciones</th>
-                <th>Imagen</th>`;
-            tabla.appendChild(encabezado);
+        const encabezado = document.createElement("tr");
+        encabezado.innerHTML = `
+            <th>Punto</th>
+            <th>Referencia</th>
+            <th>Resultado</th>
+            <th>Tiempo</th>
+            <th>¿Aprobado?</th>
+            <th>Observaciones</th>
+            <th>Imagen</th>`;
+        tabla.appendChild(encabezado);
 
-            pruebas.forEach((punto) => {
-                const fila = document.createElement("tr");
-                fila.innerHTML = `
-                    <td>${punto}</td>
-                    <td><input name="referencia_${i}_${punto}" type="text" /></td>
-                    <td><input name="resultado_${i}_${punto}" type="text" /></td>
-                    <td><input name="tiempo_${i}_${punto}" type="text" /></td>
-                    <td><input name="aprobado_${i}_${punto}" type="checkbox" /></td>
-                    <td><input name="observaciones_${i}_${punto}" type="text" /></td>
-                    <td></td>
-                `;
+        pruebas.forEach((punto) => {
+            const fila = document.createElement("tr");
+            fila.innerHTML = `
+                <td>${punto}</td>
+                <td><input name="referencia_${i}_${punto}" type="text" value="${referenciaComun}" readonly /></td>
+                <td><input name="resultado_${i}_${punto}" type="text" /></td>
+                <td><input name="tiempo_${i}_${punto}" type="text" value="${tiempoGlobal}" readonly /></td>
+                <td><input name="aprobado_${i}_${punto}" type="checkbox" /></td>
+                <td><input name="observaciones_${i}_${punto}" type="text" /></td>
+                <td></td>`;
 
-                const label = document.createElement("label");
-                label.classList.add("camera-label");
-                label.innerHTML = `📷 <span class="adjunto-texto"></span>
-                    <input type="file" accept="image/*" capture="environment" name="imagen_${i}_${punto}" style="display: none;">`;
-                fila.querySelector("td:last-child").appendChild(label);
+            const label = document.createElement("label");
+            label.classList.add("camera-label");
+            label.innerHTML = `📷 <span class="adjunto-texto"></span>
+                <input type="file" accept="image/*" capture="environment" name="imagen_${i}_${punto}" style="display: none;">`;
+            fila.querySelector("td:last-child").appendChild(label);
 
-                label.querySelector("input").addEventListener("change", (e) => {
-                    label.querySelector(".adjunto-texto").textContent = e.target.files.length > 0 ? "📎 Archivo adjunto" : "";
-                });
-
-                tabla.appendChild(fila);
+            label.querySelector("input").addEventListener("change", (e) => {
+                label.querySelector(".adjunto-texto").textContent = e.target.files.length > 0 ? "📎 Archivo adjunto" : "";
             });
 
-            contenedorResultados.appendChild(tabla);
-        }
-    }
+            tabla.appendChild(fila);
+        });
 
+        contenedorResultados.appendChild(tabla);
+    }
+}
+document.getElementById("tipo-prueba").addEventListener("change", function () {
+    const tipo = this.value;
+    const tiempoCampo = document.getElementById("campo-tiempo-aplicado");
+    if (tipo === "megado") {
+        tiempoCampo.style.display = "block";
+    } else {
+        tiempoCampo.style.display = "none";
+    }
+    generarCampos(); // regenerar para aplicar cambios
+});
+    tiempoInputGlobal.addEventListener("input", generarCampos);
     document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
         e.preventDefault();
 
