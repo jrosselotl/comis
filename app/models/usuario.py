@@ -10,9 +10,9 @@ class RolUsuario(str, enum.Enum):
 class Usuario(Base):
     __tablename__ = "usuarios"
 
-id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, nullable=False)
     correo = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
-    rol = Column(String)
+    rol = Column(String, default="usuario")
     fecha_registro = Column(DateTime, default=datetime.utcnow)
