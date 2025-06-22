@@ -35,5 +35,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 }
 
     tipoPruebaSelect.addEventListener("change", loadScript);
-    await loadScript(); // cargar por defecto
+    if (tipoPruebaSelect.value) {
+    await loadScript();
+}
 });
