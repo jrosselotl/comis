@@ -114,4 +114,4 @@ window.initFormularioContinuidad = initFormularioContinuidad;
         const res = await response.json().catch(() => alert("Error interno del servidor"));
         alert(res?.mensaje || "Error al guardar");
     });
-})();
+});
