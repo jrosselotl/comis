@@ -7,12 +7,24 @@ import os
 # Cargar variables del archivo .env
 load_dotenv()
 
-# Tomar el valor de la variable DATABASE_URL
+# URL de la base de datos
 DATABASE_URL = "postgresql://comisdb_user:hMBVHZu6kYFAirm17hJh8E3RebuMaQW2@dpg-d17hqm6mcj7s73d877qg-a.oregon-postgres.render.com/comisdb"
 
-# Crear la conexión
-engine = create_engine(DATABASE_URL, echo=True)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Crear la conexión con esquema por defecto "public"
+engine = create_engine(
+    DATABASE_URL,
+    echo=True,
+    execution_options={"schema_translate_map": {None: "public"}}  # 👈 CLAVE
+)
+
+# Crear SessionLocal con el mismo esquema por defecto
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine,
+    execution_options={"schema_translate_map": {None: "public"}}  # 👈 CLAVE
+)
+
 Base = declarative_base()
 
 # Dependency para usar en rutas
