@@ -33,7 +33,8 @@ async def guardar_formulario(
         raise HTTPException(status_code=400, detail="Formato de datos inválido")
 
     # 1. Buscar o crear equipo
-    equipo = db.query(Equipo).filter_by(codigo=codigo_equipo).first()
+    equipo = db.query(Equipo).filter_by(nombre=codigo_equipo).first()
+
     if not equipo:
         equipo = Equipo(
             codigo=codigo_equipo,
