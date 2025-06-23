@@ -57,11 +57,8 @@ function initFormularioContinuidad() {
     cableSetInput.addEventListener("input", generarCampos);
     referenciaComunInput.addEventListener("input", generarCampos);
     generarCampos();
-}
 
-// Exportar para ser llamada al cargar el script
-window.initFormularioContinuidad = initFormularioContinuidad;
-
+    // Manejar submit aquí
     document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
         e.preventDefault();
 
@@ -114,4 +111,7 @@ window.initFormularioContinuidad = initFormularioContinuidad;
         const res = await response.json().catch(() => alert("Error interno del servidor"));
         alert(res?.mensaje || "Error al guardar");
     });
-});
+}
+
+// Exportar para ser llamada al cargar el script
+window.initFormularioContinuidad = initFormularioContinuidad;
