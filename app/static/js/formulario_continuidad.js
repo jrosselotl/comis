@@ -65,59 +65,67 @@ if (cantidad > 0) {
     generarCampos();
 
     // Manejar submit aquí
-    document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
-        e.preventDefault();
+   document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
+    const tipo = document.getElementById("tipo-prueba")?.value;
+    if (tipo !== "continuidad") return; // <-- IGNORA si no es continuidad
 
-        const cableSets = parseInt(cableSetInput.value);
-        const codigoEquipo = document.getElementById("codigo-equipo").value;
-        const tipoEquipo = document.getElementById("tipo-equipo").value;
-        const colo = document.getElementById("colo").value;
-        const ce = document.getElementById("ce").value;
-        const proyectoId = document.getElementById("proyecto-id").value;
-        const referenciaComun = referenciaComunInput.value;
+    e.preventDefault();
 
-        const datos = [];
-        const imagenes = [];
+    const cableSetInput = document.getElementById("cable-set");
+    const referenciaComunInput = document.getElementById("referencia-comun");
+    if (!cableSetInput || !referenciaComunInput) return;
 
-        for (let i = 1; i <= cableSets; i++) {
-            for (const punto of pruebas) {
-                const resultado = document.querySelector(`[name="resultado_${i}_${punto}"]`).value;
-                const aprobado = document.querySelector(`[name="aprobado_${i}_${punto}"]`).checked;
-                const observaciones = document.querySelector(`[name="observaciones_${i}_${punto}"]`).value;
-                const imagenInput = document.querySelector(`[name="imagen_${i}_${punto}"]`);
-                const imagen = imagenInput?.files[0];
+    const cableSets = parseInt(cableSetInput.value);
+    const codigoEquipo = document.getElementById("codigo-equipo")?.value;
+    const tipoEquipo = document.getElementById("tipo-equipo")?.value;
+    const colo = document.getElementById("colo")?.value;
+    const ce = document.getElementById("ce")?.value;
+    const proyectoId = document.getElementById("proyecto-id")?.value;
+    const referenciaComun = referenciaComunInput.value;
 
-                datos.push({
-                    cable_set: i,
-                    punto_prueba: punto,
-                    referencia_valor: referenciaComun,
-                    resultado_valor: resultado,
-                    aprobado: aprobado,
-                    observaciones: observaciones
-                });
+    const pruebas = ["L1", "L2", "L3", "N", "E"];
+    const datos = [];
+    const imagenes = [];
 
-                imagenes.push(imagen || new File([], ""));
-            }
+    for (let i = 1; i <= cableSets; i++) {
+        for (const punto of pruebas) {
+            const resultado = document.querySelector(`[name="resultado_${i}_${punto}"]`)?.value || "";
+            const aprobado = document.querySelector(`[name="aprobado_${i}_${punto}"]`)?.checked || false;
+            const observaciones = document.querySelector(`[name="observaciones_${i}_${punto}"]`)?.value || "";
+            const imagenInput = document.querySelector(`[name="imagen_${i}_${punto}"]`);
+            const imagen = imagenInput?.files[0];
+
+            datos.push({
+                cable_set: i,
+                punto_prueba: punto,
+                referencia_valor: referenciaComun,
+                resultado_valor: resultado,
+                aprobado: aprobado,
+                observaciones: observaciones
+            });
+
+            imagenes.push(imagen || new File([], ""));
         }
+    }
 
-        const formData = new FormData();
-        formData.append("proyecto_id", proyectoId);
-        formData.append("codigo_equipo", `${colo}-${ce}-${codigoEquipo}`);
-        formData.append("tipo", tipoEquipo);
-        formData.append("tipo_prueba", "continuidad");
-        formData.append("cable_sets", cableSets);
-        formData.append("datos", JSON.stringify(datos));
-        imagenes.forEach(img => formData.append("imagenes", img));
+    const formData = new FormData();
+    formData.append("proyecto_id", proyectoId);
+    formData.append("codigo_equipo", `${colo}-${ce}-${codigoEquipo}`);
+    formData.append("tipo", tipoEquipo);
+    formData.append("tipo_prueba", "continuidad");
+    formData.append("cable_sets", cableSets);
+    formData.append("datos", JSON.stringify(datos));
+    imagenes.forEach(img => formData.append("imagenes", img));
 
-        const response = await fetch("/formulario/guardar", {
-            method: "POST",
-            body: formData
-        });
-
-        const res = await response.json().catch(() => alert("Error interno del servidor"));
-        alert(res?.mensaje || "Error al guardar");
+    const response = await fetch("/formulario/guardar", {
+        method: "POST",
+        body: formData
     });
-}
+
+    const res = await response.json().catch(() => alert("Error interno del servidor"));
+    alert(res?.mensaje || "Error al guardar");
+});
+
 
 // Exportar para ser llamada al cargar el script
 window.initFormularioContinuidad = initFormularioContinuidad;
