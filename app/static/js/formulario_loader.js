@@ -35,13 +35,14 @@ async function loadScript() {
     currentScript = document.createElement("script");
     currentScript.src = scriptMap[tipo];
     currentScript.onload = () => {
-        if (tipo === "continuidad" && typeof initFormularioContinuidad === "function") {
-            initFormularioContinuidad();
-        }
-        if (tipo === "megado" && typeof initFormularioMegado === "function") {
-            initFormularioMegado();
-        }
-    };
+    const initFunctionName = `initFormulario${tipo.charAt(0).toUpperCase()}${tipo.slice(1)}`;
+    const initFunction = window[initFunctionName];
+    if (typeof initFunction === "function") {
+        initFunction();
+    } else {
+        console.error(`Función ${initFunctionName} no encontrada.`);
+    }
+};
     document.body.appendChild(currentScript);
 }
 
