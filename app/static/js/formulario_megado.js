@@ -8,17 +8,16 @@ function initFormularioMegado() {
 
     function generarCampos() {
         const cantidad = parseInt(cableSetInput.value) || 0;
-        const referenciaComun = referenciaComunInput.value;
-        const tiempoGlobal = tiempoInputGlobal.value;
-        contenedorResultados.innerHTML = "";
-        
 if (cantidad > 0) {
         document.getElementById("bloque-resultados").style.display = "block";
     } else {
         document.getElementById("bloque-resultados").style.display = "none";
     }
-
         
+        const referenciaComun = referenciaComunInput.value;
+        const tiempoGlobal = tiempoInputGlobal.value;
+        contenedorResultados.innerHTML = "";
+                
         for (let i = 1; i <= cantidad; i++) {
             const tabla = document.createElement("table");
             tabla.classList.add("tabla-prueba");
