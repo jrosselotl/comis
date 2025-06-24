@@ -1,83 +1,157 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Formulario de Pruebas</title>
-    <link rel="stylesheet" href="/static/css/style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Formulario de Pruebas</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
+
 <div style="display: flex; justify-content: space-between; align-items: center;">
-    <h1 style="margin: 0;">Formulario de Pruebas Eléctricas</h1>
-    <a href="/logout" style="padding: 8px 12px; background-color: #d9534f; color: white; text-decoration: none; border-radius: 5px;">
-        Cerrar Sesión
-    </a>
+  <h1 style="margin: 0;">Formulario de Pruebas Eléctricas</h1>
+  <a href="/logout" style="padding: 8px 12px; background-color: #d9534f; color: white; text-decoration: none; border-radius: 5px;">
+    Cerrar Sesión
+  </a>
 </div>
 
 <form id="formulario-pruebas" enctype="multipart/form-data">
-    <fieldset>
-        <label>Proyecto:
-  <select id="proyecto-id" name="proyecto_id" required>
-    <option value="">Cargando...</option>
-  </select>
-</label>
-        <legend>1. Datos del Equipo</legend>
-        <label>Ubicación (COLO): <input type="text" id="colo" required /></label>
-        <label>Celda (CE): <input type="text" id="ce" required /></label>
-        <label>Tipo de equipo:
-            <select id="tipo-equipo" required>
-                <option value="PDU">PDU</option>
-                <option value="MSB">MSB</option>
-                <option value="BSW">BSW</option>
-            </select>
-        </label>
-        <label>ID del equipo: <input type="text" id="codigo-equipo" required /></label>
-    </fieldset>
+  <fieldset>
+    <legend>1. Datos del Equipo</legend>
 
-    <fieldset>
-        <legend>2. Prueba</legend>
-        <label>Tipo de prueba:
-            <select id="tipo-prueba" required>
-                <option value="">Selecciona la prueba</option>
-                <option value="continuidad" selected>Continuidad</option>
-                <option value="megado">Megado</option>
-            </select>
-        </label>
-        <label>Valor de Referencia:
-    <input type="text" id="referencia-comun" placeholder="Ej: 0.3 Ω" required />
-</label>
-<div id="campo-tiempo-aplicado" style="display: none;">
-    <label>Tiempo aplicado (s):
-        <input type="text" id="tiempo-aplicado-global" placeholder="Ej: 60" />
+    <label>Proyecto:
+      <select id="proyecto_id" name="proyecto_id" required>
+        <option value="">Cargando...</option>
+      </select>
     </label>
-</div>
-        <label>Cable Sets: <input type="number" id="cable-set" min="1" value="1" required /></label>
-    </fieldset>
 
- <div id="bloque-resultados" style="display:none; margin-top: 30px;">
+    <label>Ubicación 1:
+      <select id="ubicacion_1" name="ubicacion_1" required>
+        <option value="">Seleccione</option>
+        <option value="COLO">COLO</option>
+        <option value="WTP">WTP</option>
+        <option value="ADMIN">ADMIN</option>
+      </select>
+    </label>
+
+    <label id="label-ubicacion_2" style="display:none;">Ubicación 2 (CE):
+      <input type="text" id="ubicacion_2" name="ubicacion_2" />
+    </label>
+
+    <label>Tipo de equipo:
+      <select id="tipo_equipo" name="tipo_equipo" required>
+        <option value="">Seleccione</option>
+        <option value="MSB">MSB</option>
+        <option value="PDU">PDU</option>
+        <option value="LBP">LBP</option>
+        <option value="ADP">ADP</option>
+        <option value="PNL">PNL</option>
+        <option value="NLP">NLP</option>
+        <option value="ATS">ATS</option>
+      </select>
+    </label>
+
+    <label id="label-sub_equipo" style="display:none;">Sub-equipo:
+      <select id="sub_equipo" name="sub_equipo">
+        <option value="">--</option>
+        <option value="BSW">BSW</option>
+        <option value="FCB">FCB</option>
+      </select>
+    </label>
+
+    <label>Terminal:
+      <input type="text" id="terminal" name="terminal" />
+    </label>
+
+    <label>Tipo de alimentación:
+      <select id="tipo_alimentacion" name="tipo_alimentacion" required>
+        <option value="trifasica">Trifásica (L1, L2, L3, N, PE)</option>
+        <option value="monofasica">Monofásica (L, N, PE)</option>
+      </select>
+    </label>
+
+    <label>ID del equipo:
+      <input type="text" id="codigo_equipo" name="codigo_equipo" required />
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>2. Prueba</legend>
+
+    <label>Tipo de prueba:
+      <select id="tipo-prueba" name="tipo_prueba" required>
+        <option value="">Selecciona la prueba</option>
+        <option value="continuidad">Continuidad</option>
+        <option value="megado">Megado</option>
+      </select>
+    </label>
+
+    <label>Valor de Referencia:
+      <input type="text" id="referencia-comun" placeholder="Ej: 0.3 Ω" required />
+    </label>
+
+    <div id="campo-tiempo-aplicado" style="display: none;">
+      <label>Tiempo aplicado (s):
+        <input type="text" id="tiempo-aplicado-global" placeholder="Ej: 60" />
+      </label>
+    </div>
+
+    <label>Cable Sets:
+      <input type="number" id="cable-set" min="1" value="1" required />
+    </label>
+  </fieldset>
+
+  <div id="bloque-resultados" style="display:none; margin-top: 30px;">
     <h4>3. Resultados Test</h4>
     <div id="contenedor-resultados"></div>
-</div>
-    <button type="submit">Guardar</button>
+  </div>
+
+  <button type="submit">Guardar</button>
 </form>
+
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
-  const selectProyecto = document.getElementById("proyecto-id");
+  const proyectoSelect = document.getElementById("proyecto_id");
+  const ubicacion1 = document.getElementById("ubicacion_1");
+  const ubicacion2 = document.getElementById("ubicacion_2");
+  const labelUbicacion2 = document.getElementById("label-ubicacion_2");
 
+  const tipoEquipo = document.getElementById("tipo_equipo");
+  const labelSubEquipo = document.getElementById("label-sub_equipo");
+
+  // Carga proyectos
   try {
     const res = await fetch("/proyectos/");
     const proyectos = await res.json();
-
-    selectProyecto.innerHTML = "";
+    proyectoSelect.innerHTML = "";
     proyectos.forEach((p) => {
       const option = document.createElement("option");
       option.value = p.id;
       option.textContent = p.nombre;
-      selectProyecto.appendChild(option);
+      proyectoSelect.appendChild(option);
     });
   } catch (err) {
-    selectProyecto.innerHTML = '<option>Error cargando proyectos</option>';
+    proyectoSelect.innerHTML = '<option>Error cargando proyectos</option>';
   }
+
+  // Mostrar ubicación_2 solo si ubicacion_1 = COLO
+  ubicacion1.addEventListener("change", () => {
+    if (ubicacion1.value === "COLO") {
+      labelUbicacion2.style.display = "block";
+    } else {
+      labelUbicacion2.style.display = "none";
+      ubicacion2.value = "";
+    }
+  });
+
+  // Mostrar sub_equipo solo si tipo_equipo es MSB o PDU
+  tipoEquipo.addEventListener("change", () => {
+    if (["MSB", "PDU"].includes(tipoEquipo.value)) {
+      labelSubEquipo.style.display = "block";
+    } else {
+      labelSubEquipo.style.display = "none";
+    }
+  });
 });
 </script>
 <script src="/static/js/formulario_loader.js"></script>
