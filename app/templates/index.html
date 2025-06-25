@@ -18,76 +18,71 @@
 
 <form id="formulario-pruebas" enctype="multipart/form-data">
   <fieldset>
-    <legend>1. Datos del Equipo</legend>
+  <legend>1. Datos del Equipo</legend>
+
+  <label>Proyecto:
+    <select id="proyecto_id" name="proyecto_id" required>
+      <option value="">Cargando...</option>
+    </select>
+  </label>
+
+  <label>Ubicación principal:
     <div class="field-group">
-      <label>Proyecto:
-        <select id="proyecto_id" name="proyecto_id" required>
-          <option value="">Cargando...</option>
-        </select>
-      </label>
-
-      <label>Ubicación Principal:
-        <select id="ubicacion_1" name="ubicacion_1" required>
-          <option value="">Seleccione</option>
-          <option value="COLO">COLO</option>
-          <option value="WTP">WTP</option>
-          <option value="ADMIN">ADMIN</option>
-        </select>
-      </label>
-
-      <label>Nº:
-        <input type="number" id="numero_ubicacion_1" name="numero_ubicacion_1" required />
-      </label>
-
-      <label id="label-ubicacion_2" style="display:none;">Celda:
-        <input type="text" id="ubicacion_2" name="ubicacion_2" />
-      </label>
-
-      <label id="label-numero_ubicacion_2" style="display:none;">Nº:
-        <input type="number" id="numero_ubicacion_2" name="numero_ubicacion_2" />
-      </label>
-
-      <label>Tipo de equipo:
-        <select id="tipo_equipo" name="tipo_equipo" required>
-          <option value="">Seleccione</option>
-          <option value="MSB">MSB</option>
-          <option value="PDU">PDU</option>
-          <option value="LBP">LBP</option>
-          <option value="ADP">ADP</option>
-          <option value="PNL">PNL</option>
-          <option value="NLP">NLP</option>
-          <option value="ATS">ATS</option>
-        </select>
-      </label>
-
-      <label>Nº:
-        <input type="number" id="numero_tipo_equipo" name="numero_tipo_equipo" />
-      </label>
-
-      <label id="label-sub_equipo" style="display:none;">Sub-equipo:
-        <select id="sub_equipo" name="sub_equipo">
-          <option value="">--</option>
-          <option value="BSW">BSW</option>
-          <option value="FCB">FCB</option>
-        </select>
-      </label>
-
-      <label id="label-numero_sub_equipo" style="display:none;">Nº:
-        <input type="number" id="numero_sub_equipo" name="numero_sub_equipo" />
-      </label>
-
-      <label>Nº Terminal:
-        <input type="text" id="terminal" name="terminal" />
-      </label>
-
-      <label>Tipo de alimentación:
-        <select id="tipo_alimentacion" name="tipo_alimentacion" required>
-          <option value="trifasica">Trifásica (L1, L2, L3, N, PE)</option>
-          <option value="monofasica">Monofásica (L, N, PE)</option>
-        </select>
-      </label>
+      <select id="ubicacion_1" name="ubicacion_1" required>
+        <option value="">Seleccione</option>
+        <option value="COLO">COLO</option>
+        <option value="WTP">WTP</option>
+        <option value="ADMIN">ADMIN</option>
+      </select>
+      <input type="number" id="numero_ubicacion_1" name="numero_ubicacion_1" placeholder="Nº" required />
     </div>
-  </fieldset>
+  </label>
+
+  <label id="label-ubicacion_2" style="display:none;">Ubicación secundaria:
+    <div class="field-group">
+      <input type="text" id="ubicacion_2" name="ubicacion_2" placeholder="Celda" />
+      <input type="number" id="numero_ubicacion_2" name="numero_ubicacion_2" placeholder="Nº" />
+    </div>
+  </label>
+
+  <label>Tipo de equipo:
+    <div class="field-group">
+      <select id="tipo_equipo" name="tipo" required>
+        <option value="">Seleccione</option>
+        <option value="MSB">MSB</option>
+        <option value="PDU">PDU</option>
+        <option value="LBP">LBP</option>
+        <option value="ADP">ADP</option>
+        <option value="PNL">PNL</option>
+        <option value="NLP">NLP</option>
+        <option value="ATS">ATS</option>
+      </select>
+      <input type="number" id="numero_tipo_equipo" name="numero_tipo_equipo" placeholder="Nº" />
+    </div>
+  </label>
+
+  <label id="label-sub_equipo" style="display:none;">Sub-equipo:
+    <div class="field-group">
+      <select id="sub_equipo" name="sub_equipo">
+        <option value="">--</option>
+        <option value="BSW">BSW</option>
+        <option value="FCB">FCB</option>
+      </select>
+      <input type="number" id="numero_sub_equipo" name="numero_sub_equipo" placeholder="Nº" />
+    </div>
+  </label>
+
+  <label>Terminal:
+    <input type="text" id="terminal" name="terminal" placeholder="Nº Terminal" />
+  </label>
+
+  <label>Tipo de alimentación:
+    <select id="tipo_alimentacion" name="tipo_alimentacion" required>
+      <option value="trifasica">Trifásica (L1, L2, L3, N, PE)</option>
+      <option value="monofasica">Monofásica (L, N, PE)</option>
+    </select>
+  </label>
+</fieldset>
 
   <fieldset>
     <legend>2. Prueba</legend>
