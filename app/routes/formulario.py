@@ -19,9 +19,15 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 @router.post("/guardar")
 async def guardar_formulario(
     proyecto_id: int = Form(...),
-    codigo_equipo: str = Form(...),
-    tipo: str = Form(...),  # tipo de equipo: PDU, BSW, etc.
-    tipo_prueba: str = Form(...),  # continuidad o megado
+    ubicacion_1: str = Form(...),
+    numero_ubicacion_1: str = Form(...),
+    ubicacion_2: str = Form(None),
+    numero_ubicacion_2: str = Form(None),
+    tipo: str = Form(...),
+    numero_tipo_equipo: str = Form(...),
+    sub_equipo: str = Form(None),
+    numero_sub_equipo: str = Form(None),
+    tipo_prueba: str = Form(...),
     cable_sets: int = Form(...),
     datos: str = Form(...),  # JSON: [{...}]
     imagenes: list[UploadFile] = File(default=[]),
@@ -31,6 +37,19 @@ async def guardar_formulario(
         datos_parsed = json.loads(datos)
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Formato de datos inválido")
+
+    # 0. Generar nombre completo del equipo
+    partes = [str(proyecto_id), f"{ubicacion_1}{numero_ubicacion_1}"]
+
+    if ubicacion_1 == "COLO" and ubicacion_2 and numero_ubicacion_2:
+        partes.append(f"{ubicacion_2}{numero_ubicacion_2}")
+
+    partes.append(f"{tipo}{numero_tipo_equipo}")
+
+    if sub_equipo and numero_sub_equipo:
+        partes.append(f"{sub_equipo}{numero_sub_equipo}")
+
+    codigo_equipo = "-".join(partes)
 
     # 1. Buscar o crear equipo
     equipo = db.query(Equipo).filter_by(nombre=codigo_equipo).first()
