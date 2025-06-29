@@ -1,55 +1,64 @@
 document.addEventListener("DOMContentLoaded", async function () {
-    // Cargar lista de proyectos
-    const select = document.getElementById("proyecto-id");
+    const selectProyecto = document.getElementById("proyecto_id");
+    const tipoPruebaSelect = document.getElementById("tipo-prueba");
+    const tipoAlimentacionSelect = document.getElementById("tipo_alimentacion");
+    const contenedorResultados = document.getElementById("contenedor-resultados");
+
+    // 1. Cargar lista de proyectos
     try {
-        const res = await fetch("/proyectos/");  
+        const res = await fetch("/proyectos/");
         const data = await res.json();
-        select.innerHTML = "";
+        selectProyecto.innerHTML = "";
         data.forEach(p => {
             const opt = document.createElement("option");
             opt.value = p.id;
             opt.textContent = p.nombre;
-            select.appendChild(opt);
+            selectProyecto.appendChild(opt);
         });
     } catch {
-        select.innerHTML = `<option value="">Error cargando proyectos</option>`;
+        selectProyecto.innerHTML = `<option value="">Error cargando proyectos</option>`;
     }
 
-    // Cargar JS dinámico según tipo de prueba
-    const tipoPruebaSelect = document.getElementById("tipo-prueba");
-    const contenedorResultados = document.getElementById("contenedor-resultados");
-    let currentScript;
-
+    // 2. Mapa de scripts por tipo de prueba
     const scriptMap = {
         continuidad: "/static/js/formulario_continuidad.js",
         megado: "/static/js/formulario_megado.js"
-        // Puedes seguir agregando más tipos de prueba aquí
     };
 
-async function loadScript() {
-    if (currentScript) currentScript.remove();
+    let currentScript = null;
 
-    const tipo = tipoPruebaSelect.value;
-    if (!scriptMap[tipo]) return;
+    async function loadTipoPruebaScript() {
+        const tipo = tipoPruebaSelect.value;
 
-    currentScript = document.createElement("script");
-    currentScript.src = scriptMap[tipo];
-    currentScript.onload = () => {
-    const initFunctionName = `initFormulario${tipo.charAt(0).toUpperCase()}${tipo.slice(1)}`;
-    const initFunction = window[initFunctionName];
-    if (typeof initFunction === "function") {
-        initFunction();
-    } else {
-        console.error(`Función ${initFunctionName} no encontrada.`);
+        if (!tipo || !scriptMap[tipo]) {
+            contenedorResultados.innerHTML = "";
+            return;
+        }
+
+        if (currentScript) {
+            currentScript.remove();
+        }
+
+        currentScript = document.createElement("script");
+        currentScript.src = scriptMap[tipo];
+        currentScript.onload = () => {
+            const tipoAlimentacion = tipoAlimentacionSelect.value;
+            const initFunctionName = `initFormulario${tipo.charAt(0).toUpperCase()}${tipo.slice(1)}`;
+            const initFunction = window[initFunctionName];
+            if (typeof initFunction === "function") {
+                initFunction(tipoAlimentacion);
+            } else {
+                console.error(`No se encontró la función ${initFunctionName}`);
+            }
+        };
+        document.body.appendChild(currentScript);
     }
-};
-    document.body.appendChild(currentScript);
-}
 
-
-    tipoPruebaSelect.addEventListener("change", loadScript);
+    // 3. Disparadores
+    tipoPruebaSelect.addEventListener("change", loadTipoPruebaScript);
+    tipoAlimentacionSelect.addEventListener("change", loadTipoPruebaScript);
 
     if (tipoPruebaSelect.value) {
-        await loadScript();
+        await loadTipoPruebaScript();
     }
 });
