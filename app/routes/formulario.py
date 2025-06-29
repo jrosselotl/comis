@@ -108,33 +108,52 @@ async def guardar_formulario(
 
     db.commit()
 
-    # 4. Generar PDF
-    test_data = {
-        "equipo_id": codigo_equipo,
-        "fecha": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-        "observaciones": "",
+   # Construir el nombre del equipo
+nombre_equipo = f"{proyecto.nombre}-{ubicacion_1}{numero_ubicacion_1}"
+if ubicacion_2:
+    nombre_equipo += f"-{ubicacion_2}{numero_ubicacion_2}"
+nombre_equipo += f"-{tipo}{numero_tipo_equipo}"
+if sub_equipo:
+    nombre_equipo += f"-{sub_equipo}{numero_sub_equipo}"
+
+# Detalles descriptivos del equipo
+detalles_equipo = {
+    "Proyecto": proyecto.nombre,
+    "Ubicación Principal": f"{ubicacion_1} Nº{numero_ubicacion_1}",
+    "Ubicación Secundaria": f"{ubicacion_2} Nº{numero_ubicacion_2}" if ubicacion_2 else "-",
+    "Tipo de Equipo": f"{tipo} Nº{numero_tipo_equipo}",
+    "Subequipo": f"{sub_equipo} Nº{numero_sub_equipo}" if sub_equipo else "-"
+}
+
+test_data = {
+    "equipo_id": nombre_equipo,
+    "fecha": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+    "observaciones": "",
+    "detalles_equipo": detalles_equipo
+}
+
+resultados_pdf = [
+    {
+        "punto_prueba": r["punto_prueba"],
+        "referencia_valor": r["referencia_valor"],
+        "resultado_valor": r["resultado_valor"],
+        "aprobado": r["aprobado"],
+        "observaciones": r.get("observaciones", "")
     }
+    for r in datos_parsed
+]
 
-    resultados_pdf = [
-        {
-            "punto_prueba": r["punto_prueba"],
-            "referencia_valor": r["referencia_valor"],
-            "resultado_valor": r["resultado_valor"],
-            "aprobado": r["aprobado"]
-        }
-        for r in datos_parsed
-    ]
+output_pdf_path = f"output/{tipo_prueba}_{nombre_equipo}.pdf"
+os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
+generar_pdf_test(test_data, resultados_pdf, output_path=output_pdf_path)
 
-    output_pdf_path = f"output/{tipo_prueba}_{codigo_equipo}.pdf"
-    os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
-    generar_pdf_test(test_data, resultados_pdf, output_path=output_pdf_path)
+# Enviar correo
+enviar_correo_con_pdf(
+    destinatarios=["jrosselot@alancx.com"],
+    asunto=nombre_equipo,
+    cuerpo="",
+    archivo_pdf=output_pdf_path
+)
 
-    # 5. Enviar por correo
-    enviar_correo_con_pdf(
-        destinatarios=["jrosselot@alancx.com"],
-        asunto=codigo_equipo,
-        cuerpo="",
-        archivo_pdf=output_pdf_path
-    )
 
     return {"mensaje": "Formulario y resultados guardados correctamente"}
