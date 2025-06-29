@@ -44,7 +44,7 @@ function initFormularioMegado(tipoAlimentacion) {
                     <th>Imagen</th>
                 </tr>`;
 
-            combinaciones.forEach((punto, idx) => {
+            combinaciones.forEach((punto) => {
                 const fila = document.createElement("tr");
                 fila.innerHTML = `
                     <td>${punto}</td>
@@ -80,10 +80,8 @@ function initFormularioMegado(tipoAlimentacion) {
     tiempoInputGlobal.addEventListener("input", generarCampos);
     generarCampos();
 
-    // Mostrar campo tiempo si se elige Megado
     document.getElementById("campo-tiempo-aplicado").style.display = "block";
 
-    // SUBMIT
     document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
         const tipo_prueba_valor = document.getElementById("tipo-prueba")?.value;
         if (tipo_prueba_valor !== "megado") return;
@@ -97,8 +95,10 @@ function initFormularioMegado(tipoAlimentacion) {
         const datos = [];
         const imagenes = [];
 
-        // Obtener campos del nombre del equipo
-        const proyecto_id = document.getElementById("proyecto_id").value;
+        const proyectoSelect = document.getElementById("proyecto_id");
+        const proyecto_id = proyectoSelect.value;
+        const proyecto_nombre = proyectoSelect.options[proyectoSelect.selectedIndex].text;
+
         const ubicacion_1 = document.getElementById("ubicacion_1").value;
         const numero_ubicacion_1 = document.getElementById("numero_ubicacion_1").value;
         const ubicacion_2 = document.getElementById("ubicacion_2")?.value || "";
@@ -108,7 +108,7 @@ function initFormularioMegado(tipoAlimentacion) {
         const sub_equipo = document.getElementById("sub_equipo")?.value || "";
         const numero_sub_equipo = document.getElementById("numero_sub_equipo")?.value || "";
 
-        let partes = [`${proyecto_id}`, `${ubicacion_1}${numero_ubicacion_1}`];
+        let partes = [proyecto_nombre, `${ubicacion_1}${numero_ubicacion_1}`];
         if (ubicacion_1 === "COLO" && ubicacion_2 && numero_ubicacion_2) {
             partes.push(`${ubicacion_2}${numero_ubicacion_2}`);
         }
