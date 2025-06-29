@@ -30,15 +30,13 @@ class Equipo(Base):
 
     ubicacion_1 = Column(String(50), nullable=True)
     ubicacion_2 = Column(String(50), nullable=True)
-     tipo_equipo = Column("tipo_equipo", SQLEnum(TipoEquipo, name="tipo_equipo"), nullable=False)
-    sub_equipo = Column("sub_equipo", SQLEnum(SubEquipo, name="sub_equipo"), nullable=True)
-
-
+    tipo_equipo = Column("tipo_equipo", SQLEnum(TipoEquipo, name="tipo_equipo"), nullable=False)
+    sub_equipo = Column(SQLEnum(SubEquipo, name="sub_equipo"), nullable=True)
     terminal = Column(String(50), nullable=True)
     tipo_alimentacion = Column(String(50), nullable=True)
     cable_set = Column(Integer, nullable=True)
+    codigo = Column(String(100), unique=True, nullable=False)
     fecha_creacion = Column(DateTime, default=datetime.utcnow)
-    codigo = Column(String, unique=True, index=True)
 
-    # Relación con proyecto
     proyecto = relationship("Proyecto", back_populates="equipos")
+
