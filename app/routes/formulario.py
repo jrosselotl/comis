@@ -7,7 +7,6 @@ from app.models.equipo import Equipo
 from app.models.proyecto import Proyecto
 import shutil, os, json
 from datetime import datetime
-from uuid import uuid4
 from app.utils.pdf_generator import generar_pdf_test
 from app.utils.correo import enviar_correo_con_pdf
 
@@ -29,7 +28,7 @@ async def guardar_formulario(
     numero_sub_equipo: str = Form(None),
     tipo_prueba: str = Form(...),
     cable_sets: int = Form(...),
-    datos: str = Form(...),  # JSON: [{...}]
+    datos: str = Form(...),
     imagenes: list[UploadFile] = File(default=[]),
     db: Session = Depends(get_db)
 ):
@@ -38,57 +37,50 @@ async def guardar_formulario(
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Formato de datos inválido")
 
-    # 0. Generar nombre completo del equipo
+    # Generar nombre completo del equipo
     partes = [str(proyecto_id), f"{ubicacion_1}{numero_ubicacion_1}"]
-
     if ubicacion_1 == "COLO" and ubicacion_2 and numero_ubicacion_2:
         partes.append(f"{ubicacion_2}{numero_ubicacion_2}")
-
     partes.append(f"{tipo}{numero_tipo_equipo}")
-
     if sub_equipo and numero_sub_equipo:
         partes.append(f"{sub_equipo}{numero_sub_equipo}")
-
     codigo_equipo = "-".join(partes)
 
-    # 1. Buscar o crear equipo
+    # Buscar o crear equipo
     equipo = db.query(Equipo).filter_by(codigo=codigo_equipo).first()
-
     if not equipo:
-        equipo = Equipo(
-            codigo=codigo_equipo,
-            tipo=tipo,
-            proyecto_id=proyecto_id
-        )
+        equipo = Equipo(codigo=codigo_equipo, tipo=tipo, proyecto_id=proyecto_id)
         db.add(equipo)
         db.commit()
         db.refresh(equipo)
 
-    # 2. Crear test
+    # Crear test
     if tipo_prueba == "continuidad":
         test = TestContinuidad(equipo_id=equipo.id, fecha=datetime.utcnow())
     elif tipo_prueba == "megado":
         test = TestMegado(equipo_id=equipo.id, fecha=datetime.utcnow())
     else:
         raise HTTPException(status_code=400, detail="Tipo de prueba no válido")
-
     db.add(test)
     db.commit()
     db.refresh(test)
 
-    # 3. Guardar resultados con imágenes
+    # Guardar resultados e imágenes
+    imagenes_info = []
     for i, resultado in enumerate(datos_parsed):
         imagen_nombre = None
         if i < len(imagenes):
             imagen = imagenes[i]
             if imagen.filename:
                 extension = os.path.splitext(imagen.filename)[1]
-                imagen_nombre = f"{codigo_equipo}-{tipo_prueba}-CS{i+1}-{resultado['punto_prueba']}{extension}"
+                imagen_nombre = f"{codigo_equipo}-{tipo_prueba}-CS{resultado['cable_set']}-{resultado['punto_prueba']}{extension}"
                 imagen_path = os.path.join(UPLOAD_DIR, imagen_nombre)
                 with open(imagen_path, "wb") as buffer:
                     shutil.copyfileobj(imagen.file, buffer)
+        else:
+            imagen_path = None
 
-        campos_comunes = {
+        campos = {
             "test_id": test.id,
             "punto_prueba": resultado.get("punto_prueba"),
             "referencia_valor": resultado.get("referencia_valor"),
@@ -100,60 +92,62 @@ async def guardar_formulario(
         }
 
         if tipo_prueba == "continuidad":
-            resultado_obj = ResultadoContinuidad(**campos_comunes)
+            db.add(ResultadoContinuidad(**campos))
         else:
-            resultado_obj = ResultadoMegado(**campos_comunes)
+            db.add(ResultadoMegado(**campos))
 
-        db.add(resultado_obj)
+        if imagen_path:
+            imagenes_info.append({
+                "nombre": imagen_nombre,
+                "punto_prueba": resultado.get("punto_prueba"),
+                "resultado": resultado.get("resultado_valor"),
+                "ruta": imagen_path,
+                "cable_set": resultado.get("cable_set")
+            })
 
     db.commit()
 
-   # Construir el nombre del equipo
-nombre_equipo = f"{proyecto.nombre}-{ubicacion_1}{numero_ubicacion_1}"
-if ubicacion_2:
-    nombre_equipo += f"-{ubicacion_2}{numero_ubicacion_2}"
-nombre_equipo += f"-{tipo}{numero_tipo_equipo}"
-if sub_equipo:
-    nombre_equipo += f"-{sub_equipo}{numero_sub_equipo}"
+    proyecto = db.query(Proyecto).filter_by(id=proyecto_id).first()
 
-# Detalles descriptivos del equipo
-detalles_equipo = {
-    "Proyecto": proyecto.nombre,
-    "Ubicación Principal": f"{ubicacion_1} Nº{numero_ubicacion_1}",
-    "Ubicación Secundaria": f"{ubicacion_2} Nº{numero_ubicacion_2}" if ubicacion_2 else "-",
-    "Tipo de Equipo": f"{tipo} Nº{numero_tipo_equipo}",
-    "Subequipo": f"{sub_equipo} Nº{numero_sub_equipo}" if sub_equipo else "-"
-}
-
-test_data = {
-    "equipo_id": nombre_equipo,
-    "fecha": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-    "observaciones": "",
-    "detalles_equipo": detalles_equipo
-}
-
-resultados_pdf = [
-    {
-        "punto_prueba": r["punto_prueba"],
-        "referencia_valor": r["referencia_valor"],
-        "resultado_valor": r["resultado_valor"],
-        "aprobado": r["aprobado"],
-        "observaciones": r.get("observaciones", "")
+    nombre_equipo = codigo_equipo
+    detalles_equipo = {
+        "Proyecto": proyecto.nombre,
+        "Ubicación Principal": f"{ubicacion_1} Nº{numero_ubicacion_1}",
+        "Ubicación Secundaria": f"{ubicacion_2} Nº{numero_ubicacion_2}" if ubicacion_2 else "-",
+        "Tipo de Equipo": f"{tipo} Nº{numero_tipo_equipo}",
+        "Subequipo": f"{sub_equipo} Nº{numero_sub_equipo}" if sub_equipo else "-"
     }
-    for r in datos_parsed
-]
 
-output_pdf_path = f"output/{tipo_prueba}_{nombre_equipo}.pdf"
-os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
-generar_pdf_test(test_data, resultados_pdf, output_path=output_pdf_path)
+    test_data = {
+        "equipo_id": nombre_equipo,
+        "fecha": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+        "observaciones": "",
+        "detalles_equipo": detalles_equipo,
+        "imagenes": imagenes_info
+    }
 
-# Enviar correo
-enviar_correo_con_pdf(
-    destinatarios=["jrosselot@alancx.com"],
-    asunto=nombre_equipo,
-    cuerpo="",
-    archivo_pdf=output_pdf_path
-)
+    resultados_pdf = [
+        {
+            "punto_prueba": r["punto_prueba"],
+            "referencia_valor": r["referencia_valor"],
+            "resultado_valor": r["resultado_valor"],
+            "tiempo_aplicado": r.get("tiempo_aplicado"),
+            "aprobado": r["aprobado"],
+            "observaciones": r.get("observaciones", ""),
+            "cable_set": r.get("cable_set")
+        }
+        for r in datos_parsed
+    ]
 
+    output_pdf_path = f"output/{tipo_prueba}_{nombre_equipo}.pdf"
+    os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
+    generar_pdf_test(test_data, resultados_pdf, output_path=output_pdf_path)
+
+    enviar_correo_con_pdf(
+        destinatarios=["jrosselot@alancx.com"],
+        asunto=nombre_equipo,
+        cuerpo="",
+        archivo_pdf=output_pdf_path
+    )
 
     return {"mensaje": "Formulario y resultados guardados correctamente"}
