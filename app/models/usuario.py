@@ -16,3 +16,6 @@ class Usuario(Base):
     password_hash = Column(String, nullable=False)
     rol = Column(String, default="tecnico")
     fecha_registro = Column(DateTime, default=datetime.utcnow)
+    tests_continuidad = relationship("TestContinuidad", back_populates="usuario")
+tests_megado = relationship("TestMegado", back_populates="usuario")
+
