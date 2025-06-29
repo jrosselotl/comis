@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Formulario de Pruebas</title>
   <link rel="stylesheet" href="/static/css/style.css" />
-  
 </head>
 <body>
 
@@ -40,7 +39,9 @@
 
   <label id="label-ubicacion_2" style="display:none;">Ubicación secundaria:
     <div class="field-group">
-      <input type="text" id="ubicacion_2" name="ubicacion_2" placeholder="Celda" />
+      <select id="ubicacion_2" name="ubicacion_2">
+        <option value="CE">CE</option>
+      </select>
       <input type="number" id="numero_ubicacion_2" name="numero_ubicacion_2" placeholder="Nº" />
     </div>
   </label>
@@ -84,41 +85,41 @@
   </label>
 </fieldset>
 
-  <fieldset>
-    <legend>2. Prueba</legend>
-    <div class="field-group">
-      <div id="nombre-equipo" style="font-weight: bold; font-size: 1.1rem; margin-bottom: 1rem;"></div>
+<fieldset>
+  <legend>2. Prueba</legend>
+  <div class="field-group">
+    <div id="nombre-equipo" style="font-weight: bold; font-size: 1.1rem; margin-bottom: 1rem;"></div>
 
-      <label>Tipo de prueba:
-        <select id="tipo-prueba" name="tipo_prueba" required>
-          <option value="">Selecciona la prueba</option>
-          <option value="continuidad">Continuidad</option>
-          <option value="megado">Megado</option>
-        </select>
-      </label>
+    <label>Tipo de prueba:
+      <select id="tipo-prueba" name="tipo_prueba" required>
+        <option value="">Selecciona la prueba</option>
+        <option value="continuidad">Continuidad</option>
+        <option value="megado">Megado</option>
+      </select>
+    </label>
 
-      <label>Valor de Referencia:
-        <input type="text" id="referencia-comun" placeholder="Ej: 0.3 Ω" required />
-      </label>
+    <label>Valor de Referencia:
+      <input type="text" id="referencia-comun" placeholder="Ej: 0.3 Ω" required />
+    </label>
 
-      <div id="campo-tiempo-aplicado" style="display: none;">
-        <label>Tiempo aplicado (s):
-          <input type="text" id="tiempo-aplicado-global" placeholder="Ej: 60" />
-        </label>
-      </div>
-
-      <label>Cable Sets:
-        <input type="number" id="cable_sets" min="1" value="1" required />
+    <div id="campo-tiempo-aplicado" style="display: none;">
+      <label>Tiempo aplicado (s):
+        <input type="text" id="tiempo-aplicado-global" placeholder="Ej: 60" />
       </label>
     </div>
-  </fieldset>
 
-  <div id="bloque-resultados" style="display:none; margin-top: 30px;">
-    <h4>3. Resultados Test</h4>
-    <div id="contenedor-resultados"></div>
+    <label>Cable Sets:
+      <input type="number" id="cable_sets" min="1" value="1" required />
+    </label>
   </div>
+</fieldset>
 
-  <button type="submit">Guardar</button>
+<div id="bloque-resultados" style="display:none; margin-top: 30px;">
+  <h4>3. Resultados Test</h4>
+  <div id="contenedor-resultados"></div>
+</div>
+
+<button type="submit">Guardar</button>
 </form>
 
 <script>
@@ -127,11 +128,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const ubicacion1 = document.getElementById("ubicacion_1");
   const ubicacion2 = document.getElementById("ubicacion_2");
   const labelUbicacion2 = document.getElementById("label-ubicacion_2");
-  const labelNumeroUbicacion2 = document.getElementById("label-numero_ubicacion_2");
 
   const tipoEquipo = document.getElementById("tipo_equipo");
   const labelSubEquipo = document.getElementById("label-sub_equipo");
-  const labelNumeroSubEquipo = document.getElementById("label-numero_sub_equipo");
 
   try {
     const res = await fetch("/proyectos/");
@@ -150,10 +149,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   ubicacion1.addEventListener("change", () => {
     if (ubicacion1.value === "COLO") {
       labelUbicacion2.style.display = "block";
-      labelNumeroUbicacion2.style.display = "block";
     } else {
       labelUbicacion2.style.display = "none";
-      labelNumeroUbicacion2.style.display = "none";
       ubicacion2.value = "";
     }
   });
@@ -161,10 +158,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   tipoEquipo.addEventListener("change", () => {
     if (["MSB", "PDU"].includes(tipoEquipo.value)) {
       labelSubEquipo.style.display = "block";
-      labelNumeroSubEquipo.style.display = "block";
     } else {
       labelSubEquipo.style.display = "none";
-      labelNumeroSubEquipo.style.display = "none";
     }
   });
 });
