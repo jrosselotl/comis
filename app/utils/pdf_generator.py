@@ -3,61 +3,74 @@ from fpdf import FPDF
 from datetime import datetime
 import os
 
+class PDF(FPDF):
+    def header(self):
+        self.set_font("Arial", 'B', 14)
+        self.cell(0, 10, "Informe de Pruebas Eléctricas", ln=True, align="C")
+        self.ln(5)
+
+    def footer(self):
+        self.set_y(-15)
+        self.set_font("Arial", 'I', 8)
+        self.cell(0, 10, f'Página {self.page_no()}', align='C')
+
 def generar_pdf_test(test_data, resultados, output_path="output/test.pdf"):
-    """
-    Función unificada para generar PDFs de pruebas (compatible con continuidad y megado)
-    
-    :param test_data: Dict con {equipo_id, usuario_id, observaciones, fecha}
-    :param resultados: Lista de dicts con {punto_prueba, referencia_valor, resultado_valor, aprobado}
-    :param output_path: Ruta de salida del PDF
-    :return: Ruta del archivo generado
-    """
-    pdf = FPDF()
+    pdf = PDF()
     pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    
-    # Encabezado
-    pdf.set_font("Arial", 'B', 16)
-    pdf.cell(0, 10, "Reporte de Pruebas Eléctricas", ln=1, align='C')
-    pdf.ln(10)
-    
-    # Datos del test
-    pdf.set_font("Arial", size=12)
-    pdf.cell(0, 10, f"Equipo ID: {test_data['equipo_id']}", ln=1)
-    pdf.cell(0, 10, f"Fecha: {test_data.get('fecha', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))}", ln=1)
-    
-    if test_data.get('observaciones'):
-        pdf.multi_cell(0, 10, f"Observaciones: {test_data['observaciones']}")
-    
-    # Tabla de resultados
-    pdf.ln(10)
-    pdf.set_font("Arial", 'B', 14)
-    pdf.cell(0, 10, "Resultados:", ln=1)
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.set_font("Arial", size=11)
+
+    # Datos generales
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(0, 10, "Datos del Equipo", ln=1)
+    pdf.set_font("Arial", size=11)
+
+    pdf.cell(0, 8, f"Equipo: {test_data['equipo_id']}", ln=1)
+    pdf.cell(0, 8, f"Fecha de prueba: {test_data.get('fecha', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))}", ln=1)
+    pdf.ln(3)
+
+    # Detalles del equipo
+    detalles = test_data.get("detalles_equipo", {})
+    for etiqueta, valor in detalles.items():
+        pdf.cell(0, 8, f"{etiqueta}: {valor}", ln=1)
+
+    if test_data.get("observaciones"):
+        pdf.ln(2)
+        pdf.set_font("Arial", 'B', 12)
+        pdf.cell(0, 10, "Observaciones Generales", ln=1)
+        pdf.set_font("Arial", size=11)
+        pdf.multi_cell(0, 8, test_data["observaciones"])
+
+    pdf.ln(8)
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(0, 10, "Resultados del Test", ln=1)
     pdf.set_font("Arial", size=10)
-    
-    # Cabecera de tabla
-    col_widths = [60, 40, 40, 30]
-    pdf.cell(col_widths[0], 10, "Punto Prueba", border=1)
-    pdf.cell(col_widths[1], 10, "Valor Ref.", border=1)
-    pdf.cell(col_widths[2], 10, "Valor Medido", border=1)
-    pdf.cell(col_widths[3], 10, "Estado", border=1)
+
+    # Encabezado tabla
+    col_widths = [35, 35, 35, 25, 60]
+    pdf.set_fill_color(220, 220, 220)
+    headers = ["Punto", "Referencia", "Resultado", "Estado", "Observaciones"]
+    for i, h in enumerate(headers):
+        pdf.cell(col_widths[i], 10, h, border=1, fill=True)
     pdf.ln()
-    
-    # Filas de datos
+
     for res in resultados:
         estado = "APROBADO" if res["aprobado"] else "RECHAZADO"
-        pdf.cell(col_widths[0], 10, res["punto_prueba"], border=1)
-        pdf.cell(col_widths[1], 10, str(res["referencia_valor"]), border=1)
-        pdf.cell(col_widths[2], 10, str(res["resultado_valor"]), border=1)
-        pdf.cell(col_widths[3], 10, estado, border=1)
+        valores = [
+            res["punto_prueba"],
+            str(res["referencia_valor"]),
+            str(res["resultado_valor"]),
+            estado,
+            res.get("observaciones", "")
+        ]
+        for i, val in enumerate(valores):
+            pdf.cell(col_widths[i], 10, val, border=1)
         pdf.ln()
-    
-    # Guardar PDF
+
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     pdf.output(output_path)
-    
     return output_path
 
 def generar_informe_test(test_type, test_data, resultados, output_dir="app/media"):
-    """Función alternativa más moderna (compatible con ambas versiones)"""
-    return generar_pdf_test(test_data, resultados, os.path.join(output_dir, f"{test_type.lower()}/reporte_{test_data['equipo_id']}.pdf"))
+    nombre_equipo = test_data["equipo_id"]
+    return generar_pdf_test(test_data, resultados, os.path.join(output_dir, f"{test_type.lower()}/reporte_{nombre_equipo}.pdf"))
