@@ -106,10 +106,11 @@ async def guardar_formulario(
             "tipo_alimentacion": tipo_alimentacion
         }
 
-        if tipo_prueba == "continuidad":
-            db.add(ResultadoContinuidad(**campos_comunes))
-        elif tipo_prueba == "megado":
+        if tipo_prueba == "megado":
+            campos_comunes["tiempo_aplicado"] = resultado.get("tiempo_aplicado")
             db.add(ResultadoMegado(**campos_comunes))
+        elif tipo_prueba == "continuidad":
+            db.add(ResultadoContinuidad(**campos_comunes))
 
         if imagen_path:
             imagenes_info.append({
