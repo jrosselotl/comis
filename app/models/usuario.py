@@ -1,11 +1,14 @@
-from sqlalchemy import Column, Integer, String, Enum, DateTime
+from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy.orm import relationship  
 from app.database import Base
-import enum
 from datetime import datetime
+import enum
+
 
 class RolUsuario(str, enum.Enum):
     admin = "admin"
     tecnico = "tecnico"
+
 
 class Usuario(Base):
     __tablename__ = "usuarios"
@@ -19,5 +22,3 @@ class Usuario(Base):
 
     tests_continuidad = relationship("TestContinuidad", back_populates="usuario")
     tests_megado = relationship("TestMegado", back_populates="usuario")
-
-
