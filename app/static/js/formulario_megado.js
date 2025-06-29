@@ -107,6 +107,7 @@ function initFormularioMegado(tipoAlimentacion) {
         const numero_tipo_equipo = document.getElementById("numero_tipo_equipo").value;
         const sub_equipo = document.getElementById("sub_equipo")?.value || "";
         const numero_sub_equipo = document.getElementById("numero_sub_equipo")?.value || "";
+        const tipo_alimentacion = document.getElementById("tipo_alimentacion")?.value;
 
         let partes = [proyecto_nombre, `${ubicacion_1}${numero_ubicacion_1}`];
         if (ubicacion_1 === "COLO" && ubicacion_2 && numero_ubicacion_2) {
@@ -152,6 +153,7 @@ function initFormularioMegado(tipoAlimentacion) {
         formData.append("numero_sub_equipo", numero_sub_equipo);
         formData.append("tipo_prueba", "megado");
         formData.append("cable_sets", cableSets);
+        formData.append("tipo_alimentacion", tipo_alimentacion);
         formData.append("datos", JSON.stringify(datos));
         imagenes.forEach(img => formData.append("imagenes", img));
 
