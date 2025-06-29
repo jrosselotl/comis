@@ -37,12 +37,10 @@ async def guardar_formulario(
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Formato de datos inválido")
 
-    # Obtener nombre del proyecto
     proyecto = db.query(Proyecto).filter_by(id=proyecto_id).first()
     if not proyecto:
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
 
-    # Generar nombre completo del equipo
     partes = [proyecto.nombre, f"{ubicacion_1}{numero_ubicacion_1}"]
     ubicacion_1_completa = f"{ubicacion_1}{numero_ubicacion_1}"
 
@@ -56,7 +54,6 @@ async def guardar_formulario(
         partes.append(f"{sub_equipo}{numero_sub_equipo}")
     codigo_equipo = "-".join(partes)
 
-    # Buscar o crear equipo
     equipo = db.query(Equipo).filter_by(codigo=codigo_equipo).first()
     if not equipo:
         equipo = Equipo(
@@ -70,7 +67,6 @@ async def guardar_formulario(
         db.commit()
         db.refresh(equipo)
 
-    # Crear test
     if tipo_prueba == "continuidad":
         test = TestContinuidad(equipo_id=equipo.id, fecha=datetime.utcnow())
     elif tipo_prueba == "megado":
@@ -82,7 +78,6 @@ async def guardar_formulario(
     db.commit()
     db.refresh(test)
 
-    # Guardar resultados e imágenes
     imagenes_info = []
     for i, resultado in enumerate(datos_parsed):
         imagen_nombre = None
@@ -97,20 +92,29 @@ async def guardar_formulario(
         else:
             imagen_path = None
 
-        campos = {
-            "test_id": test.id,
-            "punto_prueba": resultado.get("punto_prueba"),
-            "referencia_valor": resultado.get("referencia_valor"),
-            "resultado_valor": resultado.get("resultado_valor"),
-            "tiempo_aplicado": resultado.get("tiempo_aplicado"),
-            "observaciones": resultado.get("observaciones"),
-            "aprobado": resultado.get("aprobado"),
-            "imagen_url": imagen_nombre
-        }
-
         if tipo_prueba == "continuidad":
+            campos = {
+                "test_id": test.id,
+                "cable_set": resultado.get("cable_set"),
+                "punto_prueba": resultado.get("punto_prueba"),
+                "referencia_valor": resultado.get("referencia_valor"),
+                "resultado_valor": resultado.get("resultado_valor"),
+                "aprobado": resultado.get("aprobado"),
+                "observaciones": resultado.get("observaciones"),
+                "imagen_url": imagen_nombre
+            }
             db.add(ResultadoContinuidad(**campos))
-        else:
+        elif tipo_prueba == "megado":
+            campos = {
+                "test_id": test.id,
+                "cable_set": resultado.get("cable_set"),
+                "punto_prueba": resultado.get("punto_prueba"),
+                "referencia_valor": resultado.get("referencia_valor"),
+                "resultado_valor": resultado.get("resultado_valor"),
+                "aprobado": resultado.get("aprobado"),
+                "observaciones": resultado.get("observaciones"),
+                "imagen_url": imagen_nombre
+            }
             db.add(ResultadoMegado(**campos))
 
         if imagen_path:
@@ -146,7 +150,6 @@ async def guardar_formulario(
             "punto_prueba": r["punto_prueba"],
             "referencia_valor": r["referencia_valor"],
             "resultado_valor": r["resultado_valor"],
-            "tiempo_aplicado": r.get("tiempo_aplicado"),
             "aprobado": r["aprobado"],
             "observaciones": r.get("observaciones", ""),
             "cable_set": r.get("cable_set")
