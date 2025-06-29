@@ -67,6 +67,7 @@ async def guardar_formulario(
         db.commit()
         db.refresh(equipo)
 
+    test = None
     if tipo_prueba == "continuidad":
         test = TestContinuidad(equipo_id=equipo.id, fecha=datetime.utcnow())
     elif tipo_prueba == "megado":
@@ -81,6 +82,7 @@ async def guardar_formulario(
     imagenes_info = []
     for i, resultado in enumerate(datos_parsed):
         imagen_nombre = None
+        imagen_path = None
         if i < len(imagenes):
             imagen = imagenes[i]
             if imagen.filename:
@@ -89,33 +91,22 @@ async def guardar_formulario(
                 imagen_path = os.path.join(UPLOAD_DIR, imagen_nombre)
                 with open(imagen_path, "wb") as buffer:
                     shutil.copyfileobj(imagen.file, buffer)
-        else:
-            imagen_path = None
+
+        campos_comunes = {
+            "test_id": test.id,
+            "cable_set": resultado.get("cable_set"),
+            "punto_prueba": resultado.get("punto_prueba"),
+            "referencia_valor": resultado.get("referencia_valor"),
+            "resultado_valor": resultado.get("resultado_valor"),
+            "aprobado": resultado.get("aprobado"),
+            "observaciones": resultado.get("observaciones"),
+            "imagen_url": imagen_nombre
+        }
 
         if tipo_prueba == "continuidad":
-            campos = {
-                "test_id": test.id,
-                "cable_set": resultado.get("cable_set"),
-                "punto_prueba": resultado.get("punto_prueba"),
-                "referencia_valor": resultado.get("referencia_valor"),
-                "resultado_valor": resultado.get("resultado_valor"),
-                "aprobado": resultado.get("aprobado"),
-                "observaciones": resultado.get("observaciones"),
-                "imagen_url": imagen_nombre
-            }
-            db.add(ResultadoContinuidad(**campos))
+            db.add(ResultadoContinuidad(**campos_comunes))
         elif tipo_prueba == "megado":
-            campos = {
-                "test_id": test.id,
-                "cable_set": resultado.get("cable_set"),
-                "punto_prueba": resultado.get("punto_prueba"),
-                "referencia_valor": resultado.get("referencia_valor"),
-                "resultado_valor": resultado.get("resultado_valor"),
-                "aprobado": resultado.get("aprobado"),
-                "observaciones": resultado.get("observaciones"),
-                "imagen_url": imagen_nombre
-            }
-            db.add(ResultadoMegado(**campos))
+            db.add(ResultadoMegado(**campos_comunes))
 
         if imagen_path:
             imagenes_info.append({
