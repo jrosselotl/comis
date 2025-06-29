@@ -30,8 +30,9 @@ class Equipo(Base):
 
     ubicacion_1 = Column(String(50), nullable=True)
     ubicacion_2 = Column(String(50), nullable=True)
-    tipo = Column(SQLEnum(TipoEquipo, name="tipo_equipo"), nullable=False)
-    sub_equipo = Column(SQLEnum(SubEquipo, name="sub_equipo"), nullable=True)
+     tipo_equipo = Column("tipo_equipo", SQLEnum(TipoEquipo, name="tipo_equipo"), nullable=False)
+    sub_equipo = Column("sub_equipo", SQLEnum(SubEquipo, name="sub_equipo"), nullable=True)
+
 
     terminal = Column(String(50), nullable=True)
     tipo_alimentacion = Column(String(50), nullable=True)
