@@ -102,8 +102,7 @@ async def guardar_formulario(
             "resultado_valor": resultado.get("resultado_valor"),
             "aprobado": resultado.get("aprobado"),
             "observaciones": resultado.get("observaciones"),
-            "imagen_url": imagen_nombre,
-            "tipo_alimentacion": tipo_alimentacion
+            "imagen_url": imagen_nombre
         }
 
         if tipo_prueba == "continuidad":
