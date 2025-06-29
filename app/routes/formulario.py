@@ -27,6 +27,7 @@ async def guardar_formulario(
     sub_equipo: str = Form(None),
     numero_sub_equipo: str = Form(None),
     tipo_prueba: str = Form(...),
+    tipo_alimentacion: str = Form(...),
     cable_sets: int = Form(...),
     datos: str = Form(...),
     imagenes: list[UploadFile] = File(default=[]),
@@ -61,13 +62,14 @@ async def guardar_formulario(
             tipo_equipo=tipo_equipo,
             proyecto_id=proyecto_id,
             ubicacion_1=ubicacion_1_completa,
-            ubicacion_2=ubicacion_2_completa
+            ubicacion_2=ubicacion_2_completa,
+            tipo_alimentacion=tipo_alimentacion,
+            cable_set=cable_sets
         )
         db.add(equipo)
         db.commit()
         db.refresh(equipo)
 
-    test = None
     if tipo_prueba == "continuidad":
         test = TestContinuidad(equipo_id=equipo.id, fecha=datetime.utcnow())
     elif tipo_prueba == "megado":
@@ -100,7 +102,8 @@ async def guardar_formulario(
             "resultado_valor": resultado.get("resultado_valor"),
             "aprobado": resultado.get("aprobado"),
             "observaciones": resultado.get("observaciones"),
-            "imagen_url": imagen_nombre
+            "imagen_url": imagen_nombre,
+            "tipo_alimentacion": tipo_alimentacion
         }
 
         if tipo_prueba == "continuidad":
@@ -125,7 +128,8 @@ async def guardar_formulario(
         "Ubicación Principal": f"{ubicacion_1} Nº{numero_ubicacion_1}",
         "Ubicación Secundaria": f"{ubicacion_2} Nº{numero_ubicacion_2}" if ubicacion_2 else "-",
         "Tipo de Equipo": f"{tipo_equipo} Nº{numero_tipo_equipo}",
-        "Subequipo": f"{sub_equipo} Nº{numero_sub_equipo}" if sub_equipo else "-"
+        "Subequipo": f"{sub_equipo} Nº{numero_sub_equipo}" if sub_equipo else "-",
+        "Tipo de Alimentación": tipo_alimentacion
     }
 
     test_data = {
