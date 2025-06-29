@@ -138,7 +138,7 @@ function initFormularioContinuidad(tipoAlimentacion) {
         formData.append("numero_ubicacion_1", numero_ubicacion_1);
         formData.append("ubicacion_2", ubicacion_2);
         formData.append("numero_ubicacion_2", numero_ubicacion_2);
-        formData.append("tipo", tipo_equipo);
+        formData.append("tipo_equipo", tipo_equipo);
         formData.append("numero_tipo_equipo", numero_tipo_equipo);
         formData.append("sub_equipo", sub_equipo);
         formData.append("numero_sub_equipo", numero_sub_equipo);
