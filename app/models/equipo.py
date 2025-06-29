@@ -36,8 +36,10 @@ class Equipo(Base):
     terminal = Column(String(50), nullable=True)
     tipo_alimentacion = Column(String(50), nullable=True)
     cable_set = Column(Integer, nullable=True)
-
     fecha_creacion = Column(DateTime, default=datetime.utcnow)
+
+    # Esta es la línea que debes agregar
+    codigo = Column(String, unique=True, index=True)
 
     # Relación con proyecto
     proyecto = relationship("Proyecto", back_populates="equipos")
