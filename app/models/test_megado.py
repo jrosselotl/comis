@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
+# app/models/test_megado.py
+
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Float, Text
 from sqlalchemy.orm import relationship
 from app.database import Base
 from datetime import datetime
@@ -8,22 +10,27 @@ class TestMegado(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     equipo_id = Column(Integer, ForeignKey("equipos.id"), nullable=False)
-    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)  # ← nullable=True si no siempre hay usuario
     fecha = Column(DateTime, default=datetime.utcnow)
-    observaciones = Column(String(255))
+    observaciones = Column(String(255), nullable=True)
 
-    equipo = relationship("Equipo", backref="tests_megado")
-    usuario = relationship("Usuario", backref="tests_megado")
+    equipo = relationship("Equipo", back_populates="tests_megado")
+    usuario = relationship("Usuario", back_populates="tests_megado")
+    resultados = relationship("ResultadoMegado", back_populates="test", cascade="all, delete-orphan")
+
 
 class ResultadoMegado(Base):
     __tablename__ = "resultado_megado"
 
     id = Column(Integer, primary_key=True, index=True)
     test_id = Column(Integer, ForeignKey("test_megado.id"), nullable=False)
-    punto_prueba = Column(String(50), nullable=False)
-    referencia_valor = Column(String(50))
-    resultado_valor = Column(String(50))
+    cable_set = Column(Integer, nullable=False)  # ← requerido por la lógica de agrupación
+    punto_prueba = Column(String(100), nullable=False)
+    referencia_valor = Column(Float, nullable=True)
+    resultado_valor = Column(Float, nullable=True)
+    tiempo_aplicado = Column(Float, nullable=True)
     aprobado = Column(Boolean, default=False)
-    imagen_url = Column(String(255))  # NUEVO
+    observaciones = Column(Text, nullable=True)
+    imagen_url = Column(String(255), nullable=True)
 
-    test = relationship("TestMegado", backref="resultados")
+    test = relationship("TestMegado", back_populates="resultados")
