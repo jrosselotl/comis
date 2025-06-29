@@ -22,7 +22,7 @@ async def guardar_formulario(
     numero_ubicacion_1: str = Form(...),
     ubicacion_2: str = Form(None),
     numero_ubicacion_2: str = Form(None),
-    tipo: str = Form(...),
+    tipo_equipo: str = Form(...),
     numero_tipo_equipo: str = Form(...),
     sub_equipo: str = Form(None),
     numero_sub_equipo: str = Form(None),
@@ -41,7 +41,7 @@ async def guardar_formulario(
     partes = [str(proyecto_id), f"{ubicacion_1}{numero_ubicacion_1}"]
     if ubicacion_1 == "COLO" and ubicacion_2 and numero_ubicacion_2:
         partes.append(f"{ubicacion_2}{numero_ubicacion_2}")
-    partes.append(f"{tipo}{numero_tipo_equipo}")
+    partes.append(f"{tipo_equipo}{numero_tipo_equipo}")
     if sub_equipo and numero_sub_equipo:
         partes.append(f"{sub_equipo}{numero_sub_equipo}")
     codigo_equipo = "-".join(partes)
@@ -49,7 +49,11 @@ async def guardar_formulario(
     # Buscar o crear equipo
     equipo = db.query(Equipo).filter_by(codigo=codigo_equipo).first()
     if not equipo:
-        equipo = Equipo(codigo=codigo_equipo, tipo=tipo, proyecto_id=proyecto_id)
+        equipo = Equipo(
+            codigo=codigo_equipo,
+            tipo_equipo=tipo_equipo,
+            proyecto_id=proyecto_id
+        )
         db.add(equipo)
         db.commit()
         db.refresh(equipo)
@@ -61,6 +65,7 @@ async def guardar_formulario(
         test = TestMegado(equipo_id=equipo.id, fecha=datetime.utcnow())
     else:
         raise HTTPException(status_code=400, detail="Tipo de prueba no válido")
+
     db.add(test)
     db.commit()
     db.refresh(test)
@@ -114,7 +119,7 @@ async def guardar_formulario(
         "Proyecto": proyecto.nombre,
         "Ubicación Principal": f"{ubicacion_1} Nº{numero_ubicacion_1}",
         "Ubicación Secundaria": f"{ubicacion_2} Nº{numero_ubicacion_2}" if ubicacion_2 else "-",
-        "Tipo de Equipo": f"{tipo} Nº{numero_tipo_equipo}",
+        "Tipo de Equipo": f"{tipo_equipo} Nº{numero_tipo_equipo}",
         "Subequipo": f"{sub_equipo} Nº{numero_sub_equipo}" if sub_equipo else "-"
     }
 
