@@ -10,13 +10,14 @@ class TestMegado(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     equipo_id = Column(Integer, ForeignKey("equipos.id"), nullable=False)
-    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)  # puede ser nullable si no siempre hay usuario
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
     fecha = Column(DateTime, default=datetime.utcnow)
     observaciones = Column(String(255), nullable=True)
 
     equipo = relationship("Equipo", back_populates="tests_megado")
     usuario = relationship("Usuario", back_populates="tests_megado")
     resultados = relationship("ResultadoMegado", back_populates="test", cascade="all, delete-orphan")
+
 
 class ResultadoMegado(Base):
     __tablename__ = "resultado_megado"
@@ -31,6 +32,6 @@ class ResultadoMegado(Base):
     aprobado = Column(Boolean, default=False)
     observaciones = Column(Text, nullable=True)
     imagen_url = Column(String(255), nullable=True)
-    tipo_alimentacion = Column(String(20), nullable=True)
+    tipo_alimentacion = Column(String(50), nullable=True)  # ← nuevo campo agregado
 
     test = relationship("TestMegado", back_populates="resultados")
