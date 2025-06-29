@@ -29,5 +29,6 @@ class ResultadoContinuidad(Base):
     aprobado = Column(Boolean, default=False)
     observaciones = Column(Text, nullable=True)
     imagen_url = Column(String(255), nullable=True)
+    tipo_alimentacion = Column(String(20), nullable=True)
 
     test = relationship("TestContinuidad", back_populates="resultados")
