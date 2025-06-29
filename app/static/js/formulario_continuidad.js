@@ -8,7 +8,6 @@ function initFormularioContinuidad(tipoAlimentacion) {
         ? ["L", "N", "PE"]
         : ["L1", "L2", "L3", "N", "PE"];
 
-    // Genera combinaciones únicas A-B sin repetir B-A
     function generarCombinaciones(lista) {
         const combos = [];
         for (let i = 0; i < lista.length; i++) {
@@ -42,7 +41,7 @@ function initFormularioContinuidad(tipoAlimentacion) {
                     <th>Imagen</th>
                 </tr>`;
 
-            combinaciones.forEach((punto, idx) => {
+            combinaciones.forEach((punto) => {
                 const fila = document.createElement("tr");
                 fila.innerHTML = `
                     <td>${punto}</td>
@@ -76,7 +75,6 @@ function initFormularioContinuidad(tipoAlimentacion) {
     referenciaComunInput.addEventListener("input", generarCampos);
     generarCampos();
 
-    // ENVÍO DE FORMULARIO
     document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
         const tipo = document.getElementById("tipo-prueba")?.value;
         if (tipo !== "continuidad") return;
@@ -89,8 +87,10 @@ function initFormularioContinuidad(tipoAlimentacion) {
         const datos = [];
         const imagenes = [];
 
-        // Obtener campos del nombre del equipo
-        const proyecto_id = document.getElementById("proyecto_id").value;
+        const proyectoSelect = document.getElementById("proyecto_id");
+        const proyecto_id = proyectoSelect.value;
+        const proyecto_nombre = proyectoSelect.options[proyectoSelect.selectedIndex].text;
+
         const ubicacion_1 = document.getElementById("ubicacion_1").value;
         const numero_ubicacion_1 = document.getElementById("numero_ubicacion_1").value;
         const ubicacion_2 = document.getElementById("ubicacion_2")?.value || "";
@@ -100,8 +100,7 @@ function initFormularioContinuidad(tipoAlimentacion) {
         const sub_equipo = document.getElementById("sub_equipo")?.value || "";
         const numero_sub_equipo = document.getElementById("numero_sub_equipo")?.value || "";
 
-        // Armar código del equipo
-        let partes = [`${proyecto_id}`, `${ubicacion_1}${numero_ubicacion_1}`];
+        let partes = [proyecto_nombre, `${ubicacion_1}${numero_ubicacion_1}`];
         if (ubicacion_1 === "COLO" && ubicacion_2 && numero_ubicacion_2) {
             partes.push(`${ubicacion_2}${numero_ubicacion_2}`);
         }
