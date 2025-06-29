@@ -37,10 +37,20 @@ async def guardar_formulario(
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Formato de datos inválido")
 
+    # Obtener nombre del proyecto
+    proyecto = db.query(Proyecto).filter_by(id=proyecto_id).first()
+    if not proyecto:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+
     # Generar nombre completo del equipo
-    partes = [str(proyecto_id), f"{ubicacion_1}{numero_ubicacion_1}"]
+    partes = [proyecto.nombre, f"{ubicacion_1}{numero_ubicacion_1}"]
+    ubicacion_1_completa = f"{ubicacion_1}{numero_ubicacion_1}"
+
+    ubicacion_2_completa = None
     if ubicacion_1 == "COLO" and ubicacion_2 and numero_ubicacion_2:
-        partes.append(f"{ubicacion_2}{numero_ubicacion_2}")
+        ubicacion_2_completa = f"{ubicacion_2}{numero_ubicacion_2}"
+        partes.append(ubicacion_2_completa)
+
     partes.append(f"{tipo_equipo}{numero_tipo_equipo}")
     if sub_equipo and numero_sub_equipo:
         partes.append(f"{sub_equipo}{numero_sub_equipo}")
@@ -52,7 +62,9 @@ async def guardar_formulario(
         equipo = Equipo(
             codigo=codigo_equipo,
             tipo_equipo=tipo_equipo,
-            proyecto_id=proyecto_id
+            proyecto_id=proyecto_id,
+            ubicacion_1=ubicacion_1_completa,
+            ubicacion_2=ubicacion_2_completa
         )
         db.add(equipo)
         db.commit()
@@ -111,8 +123,6 @@ async def guardar_formulario(
             })
 
     db.commit()
-
-    proyecto = db.query(Proyecto).filter_by(id=proyecto_id).first()
 
     nombre_equipo = codigo_equipo
     detalles_equipo = {
