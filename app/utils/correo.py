@@ -1,9 +1,9 @@
+# app/utils/correo.py
 import smtplib
 from email.message import EmailMessage
 import os
 from dotenv import load_dotenv
 
-# Cargar variables del archivo .env
 load_dotenv()
 
 SMTP_HOST = os.getenv("SMTP_HOST")
@@ -12,26 +12,16 @@ SMTP_USER = os.getenv("SMTP_USER")
 SMTP_PASS = os.getenv("SMTP_PASS")
 
 def enviar_correo_con_pdf(destinatarios: list[str], asunto: str, cuerpo: str, archivo_pdf: str):
-    try:
-        msg = EmailMessage()
-        msg["Subject"] = asunto
-        msg["From"] = SMTP_USER
-        msg["To"] = ", ".join(destinatarios)
-        msg.set_content(cuerpo)
+    msg = EmailMessage()
+    msg["Subject"] = asunto
+    msg["From"] = SMTP_USER
+    msg["To"] = ", ".join(destinatarios)
+    msg.set_content(cuerpo)
 
-        with open(archivo_pdf, "rb") as f:
-            contenido_pdf = f.read()
-            msg.add_attachment(
-                contenido_pdf,
-                maintype="application",
-                subtype="pdf",
-                filename=os.path.basename(archivo_pdf)
-            )
+    with open(archivo_pdf, "rb") as f:
+        contenido_pdf = f.read()
+        msg.add_attachment(contenido_pdf, maintype="application", subtype="pdf", filename=os.path.basename(archivo_pdf))
 
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as smtp:
-            smtp.login(SMTP_USER, SMTP_PASS)
-            smtp.send_message(msg)
-        print("Correo enviado con éxito.")
-    except Exception as e:
-        print(f"Error al enviar correo: {e}")
-        raise
+    with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as smtp:
+        smtp.login(SMTP_USER, SMTP_PASS)
+        smtp.send_message(msg)
