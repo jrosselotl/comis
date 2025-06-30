@@ -15,6 +15,13 @@ router = APIRouter(prefix="/formulario", tags=["Formulario"])
 UPLOAD_DIR = "static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+# Diccionarios para mapear el tipo de prueba con sus modelos
+TEST_MODELS = {
+    "continuidad": (TestContinuidad, ResultadoContinuidad),
+    "megado": (TestMegado, ResultadoMegado)
+    # Agrega aquí más tipos de prueba cuando existan
+}
+
 @router.post("/guardar")
 async def guardar_formulario(
     proyecto_id: int = Form(...),
@@ -37,6 +44,11 @@ async def guardar_formulario(
         datos_parsed = json.loads(datos)
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Formato de datos inválido")
+
+    if tipo_prueba not in TEST_MODELS:
+        raise HTTPException(status_code=400, detail=f"Tipo de prueba no válido: {tipo_prueba}")
+
+    TestModel, ResultadoModel = TEST_MODELS[tipo_prueba]
 
     proyecto = db.query(Proyecto).filter_by(id=proyecto_id).first()
     if not proyecto:
@@ -70,13 +82,7 @@ async def guardar_formulario(
         db.commit()
         db.refresh(equipo)
 
-    if tipo_prueba == "continuidad":
-        test = TestContinuidad(equipo_id=equipo.id, fecha=datetime.utcnow())
-    elif tipo_prueba == "megado":
-        test = TestMegado(equipo_id=equipo.id, fecha=datetime.utcnow())
-    else:
-        raise HTTPException(status_code=400, detail="Tipo de prueba no válido")
-
+    test = TestModel(equipo_id=equipo.id, fecha=datetime.utcnow())
     db.add(test)
     db.commit()
     db.refresh(test)
@@ -108,9 +114,8 @@ async def guardar_formulario(
 
         if tipo_prueba == "megado":
             campos_comunes["tiempo_aplicado"] = resultado.get("tiempo_aplicado")
-            db.add(ResultadoMegado(**campos_comunes))
-        elif tipo_prueba == "continuidad":
-            db.add(ResultadoContinuidad(**campos_comunes))
+
+        db.add(ResultadoModel(**campos_comunes))
 
         if imagen_path:
             imagenes_info.append({
@@ -159,8 +164,8 @@ async def guardar_formulario(
 
     enviar_correo_con_pdf(
         destinatarios=["jrosselot@alancx.com"],
-        asunto=nombre_equipo,
-        cuerpo="",
+        asunto=f"{tipo_prueba.capitalize()} - {nombre_equipo}",
+        cuerpo=f"Informe de {tipo_prueba} para el equipo {nombre_equipo}",
         archivo_pdf=output_pdf_path
     )
 
