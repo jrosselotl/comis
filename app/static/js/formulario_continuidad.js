@@ -61,9 +61,32 @@ function initFormularioContinuidad(tipoAlimentacion) {
                 const label = fila.querySelector("label");
                 const inputFile = label.querySelector("input[type='file']");
                 const textoAdjunto = label.querySelector(".adjunto-texto");
+                const resultadoInput = fila.querySelector(`input[name="resultado_${i}_${punto}"]`);
 
-                inputFile.addEventListener("change", (e) => {
-                    textoAdjunto.textContent = e.target.files.length > 0 ? "📎 Archivo adjunto" : "";
+                inputFile.addEventListener("change", async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        textoAdjunto.textContent = "📎 Archivo adjunto";
+
+                        const reader = new FileReader();
+                        reader.onload = async () => {
+                            try {
+                                const { data: { text } } = await Tesseract.recognize(reader.result, 'eng', {
+                                    tessedit_char_whitelist: '0123456789.'
+                                });
+
+                                const numeroDetectado = text.match(/[0-9.]+/);
+                                if (numeroDetectado) {
+                                    resultadoInput.value = numeroDetectado[0];
+                                }
+                            } catch (err) {
+                                console.error("Error OCR:", err);
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        textoAdjunto.textContent = "";
+                    }
                 });
             });
 
