@@ -1,170 +1,184 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Formulario de Pruebas</title>
-  <link rel="stylesheet" href="/static/css/style.css" />
-</head>
-<body>
+function initFormularioContinuidad(tipoAlimentacion) {
+    const cableSetInput = document.getElementById("cable_sets");
+    const referenciaComunInput = document.getElementById("referencia-comun");
+    const contenedorResultados = document.getElementById("contenedor-resultados");
+    const bloqueResultados = document.getElementById("bloque-resultados");
 
-<div style="display: flex; justify-content: space-between; align-items: center; background-color: #d9534f;">
-  <h1 style="margin: 0;">Formulario de Pruebas Eléctricas</h1>
-  <a href="/logout" style="padding: 8px 12px; color: white; text-decoration: none; border-radius: 5px;">
-    Cerrar Sesión
-  </a>
-</div>
+    const conductores = tipoAlimentacion === "monofasica"
+        ? ["L", "N", "PE"]
+        : ["L1", "L2", "L3", "N", "PE"];
 
-<form id="formulario-pruebas" enctype="multipart/form-data">
-  <fieldset>
-  <legend>1. Datos del Equipo</legend>
+    function generarCombinaciones(lista) {
+        const combos = [];
+        for (let i = 0; i < lista.length; i++) {
+            for (let j = i + 1; j < lista.length; j++) {
+                combos.push(`${lista[i]}-${lista[j]}`);
+            }
+        }
+        return combos;
+    }
 
-  <label>Proyecto:
-    <select id="proyecto_id" name="proyecto_id" required>
-      <option value="">Cargando...</option>
-    </select>
-  </label>
+    const combinaciones = generarCombinaciones(conductores);
 
-  <label>Ubicación principal:
-    <div class="field-group">
-      <select id="ubicacion_1" name="ubicacion_1" required>
-        <option value="">Seleccione</option>
-        <option value="COLO">COLO</option>
-        <option value="WTP">WTP</option>
-        <option value="ADMIN">ADMIN</option>
-      </select>
-      <input type="number" id="numero_ubicacion_1" name="numero_ubicacion_1" placeholder="Nº" required />
-    </div>
-  </label>
+    function generarCampos() {
+        const cantidad = parseInt(cableSetInput.value) || 0;
+        const referenciaComun = referenciaComunInput.value;
+        contenedorResultados.innerHTML = "";
+        bloqueResultados.style.display = cantidad > 0 ? "block" : "none";
 
-  <label id="label-ubicacion_2" style="display:none;">Ubicación secundaria:
-    <div class="field-group">
-      <select id="ubicacion_2" name="ubicacion_2">
-        <option value="CE">CE</option>
-      </select>
-      <input type="number" id="numero_ubicacion_2" name="numero_ubicacion_2" placeholder="Nº" />
-    </div>
-  </label>
+        for (let i = 1; i <= cantidad; i++) {
+            const tabla = document.createElement("table");
+            tabla.classList.add("tabla-prueba");
 
-  <label>Tipo de equipo:
-    <div class="field-group">
-      <select id="tipo_equipo" name="tipo_equipo" required>
-        <option value="">Seleccione</option>
-        <option value="MSB">MSB</option>
-        <option value="PDU">PDU</option>
-        <option value="LBP">LBP</option>
-        <option value="ADP">ADP</option>
-        <option value="PNL">PNL</option>
-        <option value="NLP">NLP</option>
-        <option value="ATS">ATS</option>
-      </select>
-      <input type="number" id="numero_tipo_equipo" name="numero_tipo_equipo" placeholder="Nº" />
-    </div>
-  </label>
+            tabla.innerHTML = `
+                <caption>Continuidad - Cable Set ${i}</caption>
+                <tr>
+                    <th>Punto</th>
+                    <th>Referencia</th>
+                    <th>Resultado</th>
+                    <th>¿Aprobado?</th>
+                    <th>Observaciones</th>
+                    <th>Imagen</th>
+                </tr>`;
 
-  <label id="label-sub_equipo" style="display:none;">Sub-equipo:
-    <div class="field-group">
-      <select id="sub_equipo" name="sub_equipo">
-        <option value="">--</option>
-        <option value="BSW">BSW</option>
-        <option value="FCB">FCB</option>
-      </select>
-      <input type="number" id="numero_sub_equipo" name="numero_sub_equipo" placeholder="Nº" />
-    </div>
-  </label>
+            combinaciones.forEach((punto) => {
+                const fila = document.createElement("tr");
+                fila.innerHTML = `
+                    <td>${punto}</td>
+                    <td><input name="referencia_${i}_${punto}" type="text" value="${referenciaComun}" readonly /></td>
+                    <td><input name="resultado_${i}_${punto}" type="text" /></td>
+                    <td><input name="aprobado_${i}_${punto}" type="checkbox" /></td>
+                    <td><input name="observaciones_${i}_${punto}" type="text" /></td>
+                    <td>
+                        <label class="camera-label">
+                            📷 <span class="adjunto-texto"></span>
+                            <input type="file" accept="image/*" name="imagen_${i}_${punto}" style="display:none;" />
+                        </label>
+                    </td>
+                `;
+                tabla.appendChild(fila);
 
-  <label>Terminal:
-    <input type="text" id="terminal" name="terminal" placeholder="Nº Terminal" />
-  </label>
+                const label = fila.querySelector("label");
+                const inputFile = label.querySelector("input[type='file']");
+                const textoAdjunto = label.querySelector(".adjunto-texto");
+                const resultadoInput = fila.querySelector(`input[name="resultado_${i}_${punto}"]`);
 
-  <label>Tipo de alimentación:
-    <select id="tipo_alimentacion" name="tipo_alimentacion" required>
-      <option value="trifasica">Trifásica (L1, L2, L3, N, PE)</option>
-      <option value="monofasica">Monofásica (L, N, PE)</option>
-    </select>
-  </label>
-</fieldset>
+                inputFile.addEventListener("change", async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        textoAdjunto.textContent = "📎 Archivo adjunto";
 
-<fieldset>
-  <legend>2. Prueba</legend>
-  <div class="field-group">
-    <div id="nombre-equipo" style="font-weight: bold; font-size: 1.1rem; margin-bottom: 1rem;"></div>
+                        const reader = new FileReader();
+                        reader.onload = async () => {
+                            try {
+                                const { data: { text } } = await Tesseract.recognize(reader.result, 'eng', {
+                                    tessedit_char_whitelist: '0123456789.'
+                                });
 
-    <label>Tipo de prueba:
-      <select id="tipo-prueba" name="tipo_prueba" required>
-        <option value="">Selecciona la prueba</option>
-        <option value="continuidad">Continuidad</option>
-        <option value="megado">Megado</option>
-      </select>
-    </label>
+                                const numeroDetectado = text.match(/[0-9.]+/);
+                                if (numeroDetectado) {
+                                    resultadoInput.value = numeroDetectado[0];
+                                }
+                            } catch (err) {
+                                console.error("Error OCR:", err);
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        textoAdjunto.textContent = "";
+                    }
+                });
+            });
 
-    <label>Valor de Referencia:
-      <input type="text" id="referencia-comun" placeholder="Ej: 0.3 Ω" required />
-    </label>
+            contenedorResultados.appendChild(tabla);
+        }
+    }
 
-    <div id="campo-tiempo-aplicado" style="display: none;">
-      <label>Tiempo aplicado (s):
-        <input type="text" id="tiempo-aplicado-global" placeholder="Ej: 60" />
-      </label>
-    </div>
+    cableSetInput.addEventListener("input", generarCampos);
+    referenciaComunInput.addEventListener("input", generarCampos);
+    generarCampos();
 
-    <label>Cable Sets:
-      <input type="number" id="cable_sets" min="1" value="1" required />
-    </label>
-  </div>
-</fieldset>
+    document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
+        const tipo = document.getElementById("tipo-prueba")?.value;
+        if (tipo !== "continuidad") return;
 
-<div id="bloque-resultados" style="display:none; margin-top: 30px;">
-  <h4>3. Resultados Test</h4>
-  <div id="contenedor-resultados"></div>
-</div>
+        e.preventDefault();
 
-<button type="submit">Guardar</button>
-</form>
+        const cableSets = parseInt(cableSetInput.value);
+        const referenciaComun = referenciaComunInput.value;
 
-<script>
-document.addEventListener("DOMContentLoaded", async () => {
-  const proyectoSelect = document.getElementById("proyecto_id");
-  const ubicacion1 = document.getElementById("ubicacion_1");
-  const ubicacion2 = document.getElementById("ubicacion_2");
-  const labelUbicacion2 = document.getElementById("label-ubicacion_2");
+        const datos = [];
+        const imagenes = [];
 
-  const tipoEquipo = document.getElementById("tipo_equipo");
-  const labelSubEquipo = document.getElementById("label-sub_equipo");
+        const proyectoSelect = document.getElementById("proyecto_id");
+        const proyecto_id = proyectoSelect.value;
+        const proyecto_nombre = proyectoSelect.options[proyectoSelect.selectedIndex].text;
 
-  try {
-    const res = await fetch("/proyectos/");
-    const proyectos = await res.json();
-    proyectoSelect.innerHTML = "";
-    proyectos.forEach((p) => {
-      const option = document.createElement("option");
-      option.value = p.id;
-      option.textContent = p.nombre;
-      proyectoSelect.appendChild(option);
+        const ubicacion_1 = document.getElementById("ubicacion_1").value;
+        const numero_ubicacion_1 = document.getElementById("numero_ubicacion_1").value;
+        const ubicacion_2 = document.getElementById("ubicacion_2")?.value || "";
+        const numero_ubicacion_2 = document.getElementById("numero_ubicacion_2")?.value || "";
+        const tipo_equipo = document.getElementById("tipo_equipo").value;
+        const numero_tipo_equipo = document.getElementById("numero_tipo_equipo").value;
+        const sub_equipo = document.getElementById("sub_equipo")?.value || "";
+        const numero_sub_equipo = document.getElementById("numero_sub_equipo")?.value || "";
+        const tipo_alimentacion = document.getElementById("tipo_alimentacion")?.value;
+
+        let partes = [proyecto_nombre, `${ubicacion_1}${numero_ubicacion_1}`];
+        if (ubicacion_1 === "COLO" && ubicacion_2 && numero_ubicacion_2) {
+            partes.push(`${ubicacion_2}${numero_ubicacion_2}`);
+        }
+        partes.push(`${tipo_equipo}${numero_tipo_equipo}`);
+        if (sub_equipo && numero_sub_equipo) {
+            partes.push(`${sub_equipo}${numero_sub_equipo}`);
+        }
+        const codigo_equipo = partes.join("-");
+
+        for (let i = 1; i <= cableSets; i++) {
+            for (const punto of combinaciones) {
+                const resultado = document.querySelector(`[name="resultado_${i}_${punto}"]`)?.value || "";
+                const aprobado = document.querySelector(`[name="aprobado_${i}_${punto}"]`)?.checked || false;
+                const observaciones = document.querySelector(`[name="observaciones_${i}_${punto}"]`)?.value || "";
+                const imagenInput = document.querySelector(`[name="imagen_${i}_${punto}"]`);
+                const imagen = imagenInput?.files[0];
+
+                datos.push({
+                    cable_set: i,
+                    punto_prueba: punto,
+                    referencia_valor: referenciaComun,
+                    resultado_valor: resultado,
+                    aprobado: aprobado,
+                    observaciones: observaciones
+                });
+
+                imagenes.push(imagen || new File([], ""));
+            }
+        }
+
+        const formData = new FormData();
+        formData.append("proyecto_id", proyecto_id);
+        formData.append("ubicacion_1", ubicacion_1);
+        formData.append("numero_ubicacion_1", numero_ubicacion_1);
+        formData.append("ubicacion_2", ubicacion_2);
+        formData.append("numero_ubicacion_2", numero_ubicacion_2);
+        formData.append("tipo_equipo", tipo_equipo);
+        formData.append("numero_tipo_equipo", numero_tipo_equipo);
+        formData.append("sub_equipo", sub_equipo);
+        formData.append("numero_sub_equipo", numero_sub_equipo);
+        formData.append("tipo_prueba", "continuidad");
+        formData.append("cable_sets", cableSets);
+        formData.append("tipo_alimentacion", tipo_alimentacion);
+        formData.append("datos", JSON.stringify(datos));
+        imagenes.forEach(img => formData.append("imagenes", img));
+
+        const response = await fetch("/formulario/guardar", {
+            method: "POST",
+            body: formData
+        });
+
+        const res = await response.json().catch(() => alert("Error interno del servidor"));
+        alert(res?.mensaje || "Error al guardar");
     });
-  } catch (err) {
-    proyectoSelect.innerHTML = '<option>Error cargando proyectos</option>';
-  }
+}
 
-  ubicacion1.addEventListener("change", () => {
-    if (ubicacion1.value === "COLO") {
-      labelUbicacion2.style.display = "block";
-    } else {
-      labelUbicacion2.style.display = "none";
-      ubicacion2.value = "";
-    }
-  });
-
-  tipoEquipo.addEventListener("change", () => {
-    if (["MSB", "PDU"].includes(tipoEquipo.value)) {
-      labelSubEquipo.style.display = "block";
-    } else {
-      labelSubEquipo.style.display = "none";
-    }
-  });
-});
-</script>
-<script src="/static/js/formulario_loader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
-</body>
-</html>
+window.initFormularioContinuidad = initFormularioContinuidad;
