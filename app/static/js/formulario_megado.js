@@ -62,12 +62,29 @@ function initFormularioMegado(tipoAlimentacion) {
                 `;
                 tabla.appendChild(fila);
 
-                const label = fila.querySelector("label");
-                const inputFile = label.querySelector("input[type='file']");
-                const textoAdjunto = label.querySelector(".adjunto-texto");
+                const inputFile = fila.querySelector("input[type='file']");
+                const resultadoInput = fila.querySelector(`input[name="resultado_${i}_${punto}"]`);
+                const textoAdjunto = fila.querySelector(".adjunto-texto");
 
-                inputFile.addEventListener("change", (e) => {
-                    textoAdjunto.textContent = e.target.files.length > 0 ? "📎 Archivo adjunto" : "";
+                inputFile.addEventListener("change", async (e) => {
+                    if (e.target.files.length > 0) {
+                        const archivo = e.target.files[0];
+                        textoAdjunto.textContent = "📎 Archivo adjunto";
+
+                        // OCR automático
+                        const reader = new FileReader();
+                        reader.onload = async function () {
+                            const result = await Tesseract.recognize(reader.result, 'eng', {
+                                logger: m => console.log(m)
+                            });
+                            const texto = result.data.text;
+                            const numeroDetectado = texto.match(/[\d.]+/)?.[0] || '';
+                            resultadoInput.value = numeroDetectado;
+                        };
+                        reader.readAsDataURL(archivo);
+                    } else {
+                        textoAdjunto.textContent = "";
+                    }
                 });
             });
 
