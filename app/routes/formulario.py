@@ -9,17 +9,17 @@ import shutil, os, json
 from datetime import datetime
 from app.utils.pdf_generator import generar_pdf_test
 from app.utils.correo import enviar_correo_con_pdf
+from app.utils.ocr import extraer_numero_desde_imagen  # OCR INTEGRADO
 
 router = APIRouter(prefix="/formulario", tags=["Formulario"])
 
 UPLOAD_DIR = "static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Diccionarios para mapear el tipo de prueba con sus modelos
 TEST_MODELS = {
     "continuidad": (TestContinuidad, ResultadoContinuidad),
     "megado": (TestMegado, ResultadoMegado)
-    # Agrega aquí más tipos de prueba cuando existan
+    # Se pueden añadir más tipos aquí
 }
 
 @router.post("/guardar")
@@ -88,9 +88,12 @@ async def guardar_formulario(
     db.refresh(test)
 
     imagenes_info = []
+
     for i, resultado in enumerate(datos_parsed):
         imagen_nombre = None
         imagen_path = None
+        imagen_bytes = None
+
         if i < len(imagenes):
             imagen = imagenes[i]
             if imagen.filename:
@@ -98,14 +101,22 @@ async def guardar_formulario(
                 imagen_nombre = f"{codigo_equipo}-{tipo_prueba}-CS{resultado['cable_set']}-{resultado['punto_prueba']}{extension}"
                 imagen_path = os.path.join(UPLOAD_DIR, imagen_nombre)
                 with open(imagen_path, "wb") as buffer:
-                    shutil.copyfileobj(imagen.file, buffer)
+                    contenido = await imagen.read()
+                    buffer.write(contenido)
+                    imagen_bytes = contenido  # Para OCR
+
+        resultado_valor = resultado.get("resultado_valor", "").strip()
+
+        # Extraer con OCR si el campo viene vacío y hay imagen
+        if not resultado_valor and imagen_bytes:
+            resultado_valor = extraer_numero_desde_imagen(imagen_bytes)
 
         campos_comunes = {
             "test_id": test.id,
             "cable_set": resultado.get("cable_set"),
             "punto_prueba": resultado.get("punto_prueba"),
             "referencia_valor": resultado.get("referencia_valor"),
-            "resultado_valor": resultado.get("resultado_valor"),
+            "resultado_valor": resultado_valor,
             "aprobado": resultado.get("aprobado"),
             "observaciones": resultado.get("observaciones"),
             "imagen_url": imagen_nombre,
@@ -121,7 +132,7 @@ async def guardar_formulario(
             imagenes_info.append({
                 "nombre": imagen_nombre,
                 "punto_prueba": resultado.get("punto_prueba"),
-                "resultado": resultado.get("resultado_valor"),
+                "resultado": resultado_valor,
                 "ruta": imagen_path,
                 "cable_set": resultado.get("cable_set")
             })
