@@ -59,4 +59,35 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (tipoPruebaSelect.value) {
         await loadScript();
     }
+
+    // 🔁 Condicionalidad de campos especiales
+
+    const ubicacion1 = document.getElementById("ubicacion_1");
+    const labelUbicacion2 = document.getElementById("label-ubicacion_2");
+
+    const tipoEquipo = document.getElementById("tipo_equipo");
+    const labelSubequipo = document.getElementById("label-sub_equipo");
+
+    function actualizarVisibilidadCampos() {
+        // Mostrar u ocultar ubicación secundaria
+        if (ubicacion1.value === "COLO") {
+            labelUbicacion2.style.display = "block";
+        } else {
+            labelUbicacion2.style.display = "none";
+        }
+
+        // Mostrar u ocultar sub_equipo
+        if (["PDU", "MSB"].includes(tipoEquipo.value)) {
+            labelSubequipo.style.display = "block";
+        } else {
+            labelSubequipo.style.display = "none";
+        }
+    }
+
+    // Ejecutar al cargar por si vienen valores por defecto
+    actualizarVisibilidadCampos();
+
+    // Asociar eventos
+    ubicacion1.addEventListener("change", actualizarVisibilidadCampos);
+    tipoEquipo.addEventListener("change", actualizarVisibilidadCampos);
 });
