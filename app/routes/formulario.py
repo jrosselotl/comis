@@ -106,10 +106,17 @@ async def guardar_formulario(
                     buffer.write(contenido)
                     imagen_bytes = contenido
 
-        resultado_valor = resultado.get("resultado_valor", "").strip()
+resultado_valor = resultado.get("resultado_valor")
+if resultado_valor == "":
+    resultado_valor = None
+else:
+    resultado_valor = float(resultado_valor)
 
-        if not resultado_valor and imagen_bytes:
-            resultado_valor = extraer_texto_desde_imagen(imagen_bytes)
+referencia_valor = resultado.get("referencia_valor")
+if referencia_valor == "":
+    referencia_valor = None
+else:
+    referencia_valor = float(referencia_valor)
 
         campos_comunes = {
             "test_id": test.id,
