@@ -9,7 +9,7 @@ import shutil, os, json
 from datetime import datetime
 from app.utils.pdf_generator import generar_pdf_test
 from app.utils.correo import enviar_correo_con_pdf
-from app.utils.ocr import extraer_numero_desde_imagen  # OCR INTEGRADO
+from app.utils.ocr import extraer_texto_desde_imagen
 
 router = APIRouter(prefix="/formulario", tags=["Formulario"])
 
