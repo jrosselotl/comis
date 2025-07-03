@@ -71,13 +71,12 @@ function initFormularioContinuidad(tipoAlimentacion) {
                         const reader = new FileReader();
                         reader.onload = async () => {
                             try {
-                                const { data: { text } } = await Tesseract.recognize(reader.result, 'eng', {
-                                    tessedit_char_whitelist: '0123456789.'
-                                });
-
-                                const numeroDetectado = text.match(/[0-9.]+/);
-                                if (numeroDetectado) {
-                                    resultadoInput.value = numeroDetectado[0];
+                                const { data: { text } } = await Tesseract.recognize(reader.result, 'eng');
+                                const match = text.match(/[\d]+(?:[\.,]\d+)?\s?(?:kV|KV|Ω|ohm|MΩ|GΩ|V|mA|A)?/);
+                                if (match) {
+                                    resultadoInput.value = match[0].replace(",", ".").trim();
+                                } else {
+                                    resultadoInput.value = text.trim(); // fallback
                                 }
                             } catch (err) {
                                 console.error("Error OCR:", err);
