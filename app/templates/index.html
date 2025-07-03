@@ -122,48 +122,7 @@
 <button type="submit">Guardar</button>
 </form>
 
-<script>
-document.addEventListener("DOMContentLoaded", async () => {
-  const proyectoSelect = document.getElementById("proyecto_id");
-  const ubicacion1 = document.getElementById("ubicacion_1");
-  const ubicacion2 = document.getElementById("ubicacion_2");
-  const labelUbicacion2 = document.getElementById("label-ubicacion_2");
 
-  const tipoEquipo = document.getElementById("tipo_equipo");
-  const labelSubEquipo = document.getElementById("label-sub_equipo");
-
-  try {
-    const res = await fetch("/proyectos/");
-    const proyectos = await res.json();
-    proyectoSelect.innerHTML = "";
-    proyectos.forEach((p) => {
-      const option = document.createElement("option");
-      option.value = p.id;
-      option.textContent = p.nombre;
-      proyectoSelect.appendChild(option);
-    });
-  } catch (err) {
-    proyectoSelect.innerHTML = '<option>Error cargando proyectos</option>';
-  }
-
-  ubicacion1.addEventListener("change", () => {
-    if (ubicacion1.value === "COLO") {
-      labelUbicacion2.style.display = "block";
-    } else {
-      labelUbicacion2.style.display = "none";
-      ubicacion2.value = "";
-    }More actions
-  });
-
-  tipoEquipo.addEventListener("change", () => {
-    if (["MSB", "PDU"].includes(tipoEquipo.value)) {
-      labelSubEquipo.style.display = "block";
-    } else {
-      labelSubEquipo.style.display = "none";
-    }
-  });
-});
-</script>
 <script src="/static/js/formulario_loader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
 </body>
