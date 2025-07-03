@@ -10,6 +10,8 @@ from datetime import datetime
 from app.utils.pdf_generator import generar_pdf_test
 from app.utils.correo import enviar_correo_con_pdf
 from app.utils.ocr import extraer_texto_desde_imagen
+import numpy as np
+from PIL import Image
 
 router = APIRouter(prefix="/formulario", tags=["Formulario"])
 
@@ -19,7 +21,6 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 TEST_MODELS = {
     "continuidad": (TestContinuidad, ResultadoContinuidad),
     "megado": (TestMegado, ResultadoMegado)
-    # Se pueden añadir más tipos aquí
 }
 
 @router.post("/guardar")
@@ -103,13 +104,12 @@ async def guardar_formulario(
                 with open(imagen_path, "wb") as buffer:
                     contenido = await imagen.read()
                     buffer.write(contenido)
-                    imagen_bytes = contenido  # Para OCR
+                    imagen_bytes = contenido
 
         resultado_valor = resultado.get("resultado_valor", "").strip()
 
-        # Extraer con OCR si el campo viene vacío y hay imagen
         if not resultado_valor and imagen_bytes:
-            resultado_valor = extraer_numero_desde_imagen(imagen_bytes)
+            resultado_valor = extraer_texto_desde_imagen(imagen_bytes)
 
         campos_comunes = {
             "test_id": test.id,
