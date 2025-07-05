@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", async function () {
     // Cargar lista de proyectos
-    const select = document.getElementById("proyecto_id"); // corregido id (era proyecto-id)
+    const select = document.getElementById("proyecto_id");
     try {
         const res = await fetch("/proyectos/");
         const data = await res.json();
@@ -60,33 +60,32 @@ document.addEventListener("DOMContentLoaded", async function () {
         await loadScript();
     }
 
-document.addEventListener("DOMContentLoaded", function () {
-  const ubicacion1 = document.getElementById("ubicacion_1");
-  const labelUbicacion2 = document.getElementById("label-ubicacion_2");
+    // Mostrar campos condicionales
+    const ubicacion1 = document.getElementById("ubicacion_1");
+    const labelUbicacion2 = document.getElementById("label-ubicacion_2");
 
-  const tipoEquipo = document.getElementById("tipo_equipo");
-  const labelSubEquipo = document.getElementById("label-sub_equipo");
+    const tipoEquipo = document.getElementById("tipo_equipo");
+    const labelSubEquipo = document.getElementById("label-sub_equipo");
 
-  ubicacion1.addEventListener("change", () => {
-    if (ubicacion1.value === "COLO") {
-      labelUbicacion2.style.display = "block";
-    } else {
-      labelUbicacion2.style.display = "none";
+    function actualizarVisibilidadCampos() {
+        if (ubicacion1.value === "COLO") {
+            labelUbicacion2.style.display = "block";
+        } else {
+            labelUbicacion2.style.display = "none";
+            document.getElementById("ubicacion_2").value = "";
+            document.getElementById("numero_ubicacion_2").value = "";
+        }
+
+        if (tipoEquipo.value === "PDU" || tipoEquipo.value === "MSB") {
+            labelSubEquipo.style.display = "block";
+        } else {
+            labelSubEquipo.style.display = "none";
+            document.getElementById("sub_equipo").value = "";
+            document.getElementById("numero_sub_equipo").value = "";
+        }
     }
-  });
 
-  tipoEquipo.addEventListener("change", () => {
-    const valor = tipoEquipo.value;
-    if (valor === "PDU" || valor === "MSB") {
-      labelSubEquipo.style.display = "block";
-    } else {
-      labelSubEquipo.style.display = "none";
-    }
-  });
-});
-
-
-    // Ejecutar al cargar por si vienen valores por defecto
+    // Ejecutar al cargar
     actualizarVisibilidadCampos();
 
     // Asociar eventos
