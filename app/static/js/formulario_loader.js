@@ -23,22 +23,26 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     function actualizarVisibilidadCampos() {
         // Mostrar/ocultar ubicación secundaria
-        if (ubicacion1.value === "COLO") {
-            labelUbicacion2.style.display = "block";
-        } else {
-            labelUbicacion2.style.display = "none";
+        if (ubicacion1 && labelUbicacion2) {
+            if (ubicacion1.value === "COLO") {
+                labelUbicacion2.style.display = "block";
+            } else {
+                labelUbicacion2.style.display = "none";
+            }
         }
 
         // Mostrar/ocultar subequipo
-        if (["PDU", "MSB"].includes(tipoEquipo.value)) {
-            labelSubEquipo.style.display = "block";
-        } else {
-            labelSubEquipo.style.display = "none";
+        if (tipoEquipo && labelSubEquipo) {
+            if (["PDU", "MSB"].includes(tipoEquipo.value)) {
+                labelSubEquipo.style.display = "block";
+            } else {
+                labelSubEquipo.style.display = "none";
+            }
         }
     }
 
-    ubicacion1.addEventListener("change", actualizarVisibilidadCampos);
-    tipoEquipo.addEventListener("change", actualizarVisibilidadCampos);
+    if (ubicacion1) ubicacion1.addEventListener("change", actualizarVisibilidadCampos);
+    if (tipoEquipo) tipoEquipo.addEventListener("change", actualizarVisibilidadCampos);
     actualizarVisibilidadCampos();
 
     // --- Carga dinámica de scripts según prueba ---
