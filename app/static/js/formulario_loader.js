@@ -15,7 +15,31 @@ document.addEventListener("DOMContentLoaded", async function () {
         select.innerHTML = `<option value="">Error cargando proyectos</option>`;
     }
 
-    // Manejadores de prueba
+    // Visibilidad condicional
+    const ubicacion1 = document.getElementById("ubicacion_1");
+    const labelUbicacion2 = document.getElementById("label-ubicacion_2");
+    const tipoEquipo = document.getElementById("tipo_equipo");
+    const labelSubEquipo = document.getElementById("label-sub_equipo");
+
+    function actualizarVisibilidadCampos() {
+        if (ubicacion1.value === "COLO") {
+            labelUbicacion2.style.display = "block";
+        } else {
+            labelUbicacion2.style.display = "none";
+        }
+
+        if (["PDU", "MSB"].includes(tipoEquipo.value)) {
+            labelSubEquipo.style.display = "block";
+        } else {
+            labelSubEquipo.style.display = "none";
+        }
+    }
+
+    ubicacion1.addEventListener("change", actualizarVisibilidadCampos);
+    tipoEquipo.addEventListener("change", actualizarVisibilidadCampos);
+    actualizarVisibilidadCampos(); // Ejecutar al inicio por si hay valores cargados
+
+    // Manejo de scripts por tipo de prueba
     const tipoPruebaSelect = document.getElementById("tipo-prueba");
     const tipoAlimentacionSelect = document.getElementById("tipo_alimentacion");
     const cableSetsInput = document.getElementById("cable_sets");
@@ -59,36 +83,4 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (tipoPruebaSelect.value) {
         await loadScript();
     }
-
-    // Mostrar campos condicionales
-    const ubicacion1 = document.getElementById("ubicacion_1");
-    const labelUbicacion2 = document.getElementById("label-ubicacion_2");
-
-    const tipoEquipo = document.getElementById("tipo_equipo");
-    const labelSubEquipo = document.getElementById("label-sub_equipo");
-
-    function actualizarVisibilidadCampos() {
-        if (ubicacion1.value === "COLO") {
-            labelUbicacion2.style.display = "block";
-        } else {
-            labelUbicacion2.style.display = "none";
-            document.getElementById("ubicacion_2").value = "";
-            document.getElementById("numero_ubicacion_2").value = "";
-        }
-
-        if (tipoEquipo.value === "PDU" || tipoEquipo.value === "MSB") {
-            labelSubEquipo.style.display = "block";
-        } else {
-            labelSubEquipo.style.display = "none";
-            document.getElementById("sub_equipo").value = "";
-            document.getElementById("numero_sub_equipo").value = "";
-        }
-    }
-
-    // Ejecutar al cargar
-    actualizarVisibilidadCampos();
-
-    // Asociar eventos
-    ubicacion1.addEventListener("change", actualizarVisibilidadCampos);
-    tipoEquipo.addEventListener("change", actualizarVisibilidadCampos);
 });
