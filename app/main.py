@@ -54,5 +54,5 @@ async def render_index(request: Request):
 
 
 # ✅ Montar carpeta estática (CSS, JS, imágenes)
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
