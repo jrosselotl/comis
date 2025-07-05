@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", async function () {
-    // Cargar lista de proyectos
+    // --- Cargar proyectos ---
     const select = document.getElementById("proyecto_id");
     try {
         const res = await fetch("/proyectos/");
@@ -15,19 +15,21 @@ document.addEventListener("DOMContentLoaded", async function () {
         select.innerHTML = `<option value="">Error cargando proyectos</option>`;
     }
 
-    // Visibilidad condicional
+    // --- Visibilidad condicional de campos ---
     const ubicacion1 = document.getElementById("ubicacion_1");
     const labelUbicacion2 = document.getElementById("label-ubicacion_2");
     const tipoEquipo = document.getElementById("tipo_equipo");
     const labelSubEquipo = document.getElementById("label-sub_equipo");
 
     function actualizarVisibilidadCampos() {
+        // Mostrar/ocultar ubicación secundaria
         if (ubicacion1.value === "COLO") {
             labelUbicacion2.style.display = "block";
         } else {
             labelUbicacion2.style.display = "none";
         }
 
+        // Mostrar/ocultar subequipo
         if (["PDU", "MSB"].includes(tipoEquipo.value)) {
             labelSubEquipo.style.display = "block";
         } else {
@@ -37,9 +39,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     ubicacion1.addEventListener("change", actualizarVisibilidadCampos);
     tipoEquipo.addEventListener("change", actualizarVisibilidadCampos);
-    actualizarVisibilidadCampos(); // Ejecutar al inicio por si hay valores cargados
+    actualizarVisibilidadCampos();
 
-    // Manejo de scripts por tipo de prueba
+    // --- Carga dinámica de scripts según prueba ---
     const tipoPruebaSelect = document.getElementById("tipo-prueba");
     const tipoAlimentacionSelect = document.getElementById("tipo_alimentacion");
     const cableSetsInput = document.getElementById("cable_sets");
