@@ -73,7 +73,7 @@ async def guardar_formulario(
         equipo = Equipo(
             codigo=codigo_equipo,
             tipo_equipo=tipo_equipo,
-            numero_tipo_equipo=numero_tipo_equipo,
+            numero_tipo_equipo=int(numero_tipo_equipo),
             sub_equipo=sub_equipo,
             terminal=terminal,
             proyecto_id=proyecto_id,
