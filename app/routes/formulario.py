@@ -5,13 +5,12 @@ from app.models.test_continuidad import TestContinuidad, ResultadoContinuidad
 from app.models.test_megado import TestMegado, ResultadoMegado
 from app.models.equipo import Equipo
 from app.models.proyecto import Proyecto
-import shutil, os, json
-from datetime import datetime
 from app.utils.pdf_generator import generar_pdf_test
 from app.utils.correo import enviar_correo_con_pdf
 from app.utils.ocr import extraer_texto_desde_imagen
-import numpy as np
+from datetime import datetime
 from PIL import Image
+import shutil, os, json
 
 router = APIRouter(prefix="/formulario", tags=["Formulario"])
 
@@ -31,9 +30,10 @@ async def guardar_formulario(
     ubicacion_2: str = Form(None),
     numero_ubicacion_2: str = Form(None),
     tipo_equipo: str = Form(...),
-    numero_tipo_equipo: str = Form(...),
+    numero_tipo_equipo: int = Form(...),
     sub_equipo: str = Form(None),
     numero_sub_equipo: str = Form(None),
+    terminal: str = Form(None),
     tipo_prueba: str = Form(...),
     tipo_alimentacion: str = Form(...),
     cable_sets: int = Form(...),
@@ -73,11 +73,14 @@ async def guardar_formulario(
         equipo = Equipo(
             codigo=codigo_equipo,
             tipo_equipo=tipo_equipo,
+            numero_tipo_equipo=numero_tipo_equipo,
+            sub_equipo=sub_equipo,
+            terminal=terminal,
             proyecto_id=proyecto_id,
             ubicacion_1=ubicacion_1_completa,
             ubicacion_2=ubicacion_2_completa,
             tipo_alimentacion=tipo_alimentacion,
-            cable_set=cable_sets
+            cable_set=cable_sets,
         )
         db.add(equipo)
         db.commit()
@@ -127,7 +130,7 @@ async def guardar_formulario(
             "aprobado": resultado.get("aprobado"),
             "observaciones": resultado.get("observaciones"),
             "imagen_url": imagen_nombre,
-            "tipo_alimentacion": tipo_alimentacion
+            "tipo_alimentacion": tipo_alimentacion,
         }
 
         if tipo_prueba == "megado":
