@@ -79,7 +79,8 @@ if not equipo:
         ubicacion_1=ubicacion_1_completa,
         ubicacion_2=ubicacion_2_completa,
         tipo_alimentacion=tipo_alimentacion,
-        cable_set=cable_sets
+        cable_set=cable_sets,
+        terminal=terminal
     )
     db.add(equipo)
     db.commit()
