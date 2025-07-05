@@ -3,7 +3,6 @@ from typing import Optional
 from enum import Enum
 from datetime import datetime
 
-
 class TipoEquipo(str, Enum):
     ADP = "ADP"
     ATS = "ATS"
@@ -13,18 +12,16 @@ class TipoEquipo(str, Enum):
     PNL = "PNL"
     PDU = "PDU"
 
-
 class SubEquipo(str, Enum):
     BSW = "BSW"
     FCB = "FCB"
 
-
-# Para crear un nuevo equipo
 class EquipoCreate(BaseModel):
     proyecto_id: int
     ubicacion_1: Optional[str]
     ubicacion_2: Optional[str]
     tipo: TipoEquipo
+    numero_tipo_equipo: Optional[int]
     sub_equipo: Optional[SubEquipo]
     terminal: Optional[str]
     tipo_alimentacion: Optional[str]
@@ -32,7 +29,7 @@ class EquipoCreate(BaseModel):
 
     @validator("ubicacion_1")
     def validar_ubicacion_1(cls, v, values):
-        if values.get("proyecto_id") == 1:  # Proyecto MAD03 (ejemplo)
+        if values.get("proyecto_id") == 1:
             if v not in ["COLO", "WTP", "ADMIN"]:
                 raise ValueError("Ubicación 1 inválida para MAD03")
         return v
@@ -49,14 +46,13 @@ class EquipoCreate(BaseModel):
             raise ValueError("Sub-equipo inválido para este tipo")
         return v
 
-
-# Para mostrar un equipo
 class EquipoOut(BaseModel):
     id: int
     proyecto_id: int
     ubicacion_1: Optional[str]
     ubicacion_2: Optional[str]
     tipo: TipoEquipo
+    numero_tipo_equipo: Optional[int]
     sub_equipo: Optional[SubEquipo]
     terminal: Optional[str]
     tipo_alimentacion: Optional[str]
