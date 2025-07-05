@@ -69,22 +69,22 @@ async def guardar_formulario(
     codigo_equipo = "-".join(partes)
 
     equipo = db.query(Equipo).filter_by(codigo=codigo_equipo).first()
-    if not equipo:
-        equipo = Equipo(
-            codigo=codigo_equipo,
-            tipo_equipo=tipo_equipo,
-            numero_tipo_equipo=int(numero_tipo_equipo),
-            sub_equipo=sub_equipo,
-            terminal=terminal,
-            proyecto_id=proyecto_id,
-            ubicacion_1=ubicacion_1_completa,
-            ubicacion_2=ubicacion_2_completa,
-            tipo_alimentacion=tipo_alimentacion,
-            cable_set=cable_sets,
-        )
-        db.add(equipo)
-        db.commit()
-        db.refresh(equipo)
+if not equipo:
+    equipo = Equipo(
+        codigo=codigo_equipo,
+        tipo_equipo=tipo_equipo,
+        numero_tipo_equipo=int(numero_tipo_equipo),  
+        sub_equipo=sub_equipo if sub_equipo else None,  # 
+        proyecto_id=proyecto_id,
+        ubicacion_1=ubicacion_1_completa,
+        ubicacion_2=ubicacion_2_completa,
+        tipo_alimentacion=tipo_alimentacion,
+        cable_set=cable_sets
+    )
+    db.add(equipo)
+    db.commit()
+    db.refresh(equipo)
+
 
     test = TestModel(equipo_id=equipo.id, fecha=datetime.utcnow())
     db.add(test)
