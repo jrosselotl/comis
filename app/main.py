@@ -53,6 +53,6 @@ async def render_index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
-# ✅ Montar carpeta estática (CSS, JS, imágenes)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# ✅ Montar carpeta estática correctamente (CSS, JS, imágenes)
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
