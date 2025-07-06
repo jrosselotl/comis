@@ -29,10 +29,10 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 # Página raíz: redirige según el rol guardado en sesión
 @app.get("/", response_class=HTMLResponse)
 async def render_index(request: Request):
-    if not request.session.get("usuario_id") or not request.session.get("usuario_rol"):
+    if not request.session.get("usuario_id"):
         return RedirectResponse(url="/login", status_code=302)
 
-    if request.session["usuario_rol"] == "proyecto":
+    if request.session.get("usuario_rol") == "proyecto":
         return RedirectResponse(url="/admin", status_code=302)
 
     return templates.TemplateResponse("index.html", {"request": request})
