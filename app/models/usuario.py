@@ -1,14 +1,13 @@
 from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.orm import relationship  
+from sqlalchemy.orm import relationship
 from app.database import Base
 from datetime import datetime
 import enum
 
-
 class RolUsuario(str, enum.Enum):
     admin = "admin"
     tecnico = "tecnico"
-
+    proyecto = "proyecto"
 
 class Usuario(Base):
     __tablename__ = "usuarios"
@@ -17,7 +16,7 @@ class Usuario(Base):
     nombre = Column(String, nullable=False)
     correo = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
-    rol = Column(String, default="tecnico")
+    rol = Column(String, default="tecnico")  # Puede ser admin, tecnico o proyecto
     fecha_registro = Column(DateTime, default=datetime.utcnow)
 
     tests_continuidad = relationship("TestContinuidad", back_populates="usuario")
