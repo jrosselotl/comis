@@ -11,6 +11,8 @@ from app.database import get_db
 from app.models.usuario import Usuario
 
 app = FastAPI()
+
+# Middleware de sesiones y CORS
 app.add_middleware(SessionMiddleware, secret_key="una_clave_segura_123")
 app.add_middleware(
     CORSMiddleware,
@@ -20,15 +22,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Directorios
+# Directorios base
 BASE_DIR = pathlib.Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 TEMPLATES_DIR = BASE_DIR / "templates"
 
-# Templates
+# Configuración de Jinja2
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
-# Ruta principal: redirige según el rol
+# Página raíz: redirige según el rol
 @app.get("/", response_class=HTMLResponse)
 async def render_index(request: Request, db: Session = Depends(get_db)):
     if not request.session.get("usuario_id"):
@@ -37,22 +39,26 @@ async def render_index(request: Request, db: Session = Depends(get_db)):
     usuario_id = request.session["usuario_id"]
     usuario = db.query(Usuario).filter_by(id=usuario_id).first()
 
+    if not usuario:
+        request.session.clear()
+        return RedirectResponse(url="/login", status_code=302)
+
     if usuario.rol == "proyecto":
         return RedirectResponse(url="/admin", status_code=302)
     else:
         return templates.TemplateResponse("index.html", {"request": request})
 
-# Vista para usuarios con rol "proyecto"
+# Página para usuarios con rol "proyecto"
 @app.get("/admin", response_class=HTMLResponse)
 async def render_admin(request: Request):
     if not request.session.get("usuario_id") or request.session.get("usuario_rol") != "proyecto":
         return RedirectResponse(url="/login", status_code=302)
     return templates.TemplateResponse("index_admin.html", {"request": request})
 
-# Archivos estáticos
+# Montar carpeta /static para CSS/JS
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-# Rutas
+# Incluir rutas
 from app.routes import (
     auth, usuarios, proyectos, equipos, tests,
     continuidad, megado, test_pdf, formulario
