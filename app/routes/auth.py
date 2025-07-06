@@ -6,15 +6,11 @@ from app.models.usuario import Usuario
 from starlette.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.status import HTTP_302_FOUND
-from passlib.hash import bcrypt
 from passlib.context import CryptContext
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-def verificar_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
 
 @router.get("/login", response_class=HTMLResponse)
 def login_form(request: Request):
@@ -33,9 +29,15 @@ def login(
         return templates.TemplateResponse("login.html", {"request": request, "error": "Credenciales inválidas"})
 
     request.session["usuario_id"] = usuario.id
+    request.session["usuario_rol"] = usuario.rol
     if recordar:
         request.session["recordar"] = True
-    return RedirectResponse(url="/", status_code=HTTP_302_FOUND)
+
+    # Redirección según el rol
+    if usuario.rol == "proyecto":
+        return RedirectResponse(url="/admin", status_code=HTTP_302_FOUND)
+    else:
+        return RedirectResponse(url="/", status_code=HTTP_302_FOUND)
 
 @router.get("/logout")
 def logout(request: Request):
