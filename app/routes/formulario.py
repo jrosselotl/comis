@@ -5,6 +5,8 @@ from app.models.test_continuidad import TestContinuidad, ResultadoContinuidad
 from app.models.test_megado import TestMegado, ResultadoMegado
 from app.models.equipo import Equipo
 from app.models.proyecto import Proyecto
+from app.models.usuario import Usuario
+from app.models.test import Test
 from app.utils.pdf_generator import generar_pdf_test
 from app.utils.correo import enviar_correo_con_pdf
 from app.utils.ocr import extraer_texto_desde_imagen
@@ -18,8 +20,8 @@ UPLOAD_DIR = "static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 TEST_MODELS = {
-    "continuidad": (TestContinuidad, ResultadoContinuidad),
-    "megado": (TestMegado, ResultadoMegado)
+    "continuidad": (TestContinuidad, ResultadoContinuidad, 1),
+    "megado": (TestMegado, ResultadoMegado, 2)
 }
 
 @router.post("/guardar")
@@ -38,6 +40,7 @@ async def guardar_formulario(
     terminal: str = Form(None),
     cable_sets: int = Form(...),
     datos: str = Form(...),
+    usuario_id: int = Form(...),
     imagenes: list[UploadFile] = File(default=[]),
     db: Session = Depends(get_db)
 ):
@@ -49,7 +52,7 @@ async def guardar_formulario(
     if tipo_prueba not in TEST_MODELS:
         raise HTTPException(status_code=400, detail=f"Tipo de prueba no válido: {tipo_prueba}")
 
-    TestModel, ResultadoModel = TEST_MODELS[tipo_prueba]
+    TestModel, ResultadoModel, test_id_ref = TEST_MODELS[tipo_prueba]
 
     proyecto = db.query(Proyecto).filter_by(id=proyecto_id).first()
     if not proyecto:
@@ -69,25 +72,30 @@ async def guardar_formulario(
     codigo_equipo = "-".join(partes)
 
     equipo = db.query(Equipo).filter_by(codigo=codigo_equipo).first()
-if not equipo:
-    equipo = Equipo(
-        codigo=codigo_equipo,
-        tipo_equipo=tipo_equipo,
-        numero_tipo_equipo=int(numero_tipo_equipo),  
-        sub_equipo=sub_equipo if sub_equipo else None,  # 
+    if not equipo:
+        equipo = Equipo(
+            codigo=codigo_equipo,
+            tipo_equipo=tipo_equipo,
+            numero_tipo_equipo=numero_tipo_equipo,
+            sub_equipo=sub_equipo if sub_equipo else None,
+            proyecto_id=proyecto_id,
+            ubicacion_1=ubicacion_1_completa,
+            ubicacion_2=ubicacion_2_completa,
+            tipo_alimentacion=tipo_alimentacion,
+            cable_set=cable_sets,
+            terminal=terminal
+        )
+        db.add(equipo)
+        db.commit()
+        db.refresh(equipo)
+
+    test = TestModel(
+        equipo_id=equipo.id,
+        usuario_id=usuario_id,
         proyecto_id=proyecto_id,
-        ubicacion_1=ubicacion_1_completa,
-        ubicacion_2=ubicacion_2_completa,
-        tipo_alimentacion=tipo_alimentacion,
-        cable_set=cable_sets,
-        terminal=terminal
+        test_id=test_id_ref,
+        fecha=datetime.utcnow()
     )
-    db.add(equipo)
-    db.commit()
-    db.refresh(equipo)
-
-
-    test = TestModel(equipo_id=equipo.id, fecha=datetime.utcnow())
     db.add(test)
     db.commit()
     db.refresh(test)
