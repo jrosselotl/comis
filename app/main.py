@@ -40,8 +40,8 @@ app.include_router(test_pdf.router)
 app.include_router(formulario.router)
 
 # Rutas absolutas a static/ y templates/
-STATIC_DIR = BASE_DIR / "app" / "static"
-TEMPLATES_DIR = BASE_DIR / "app" / "templates"
+STATIC_DIR = pathlib.Path("app/static")
+TEMPLATES_DIR = pathlib.Path("app/templates")
 
 # Templates
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
