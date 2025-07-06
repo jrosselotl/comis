@@ -59,7 +59,7 @@ BASE_DIR = pathlib.Path(__file__).resolve().parent
 
 app.mount(
     "/static",
-    StaticFiles(directory=BASE_DIR / "static"),
+    StaticFiles(directory=BASE_DIR / "app" / "static"),  # ✅ fijamos correctamente la ruta
     name="static"
 )
 
