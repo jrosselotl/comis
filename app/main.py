@@ -1,11 +1,14 @@
 import pathlib
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.requests import Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
+from sqlalchemy.orm import Session
+
+from app.database import get_db
+from app.models.usuario import Usuario
 
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key="una_clave_segura_123")
@@ -25,16 +28,21 @@ TEMPLATES_DIR = BASE_DIR / "templates"
 # Templates
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
-# Página para técnicos
+# Ruta principal: redirige según el rol
 @app.get("/", response_class=HTMLResponse)
-async def render_index(request: Request):
+async def render_index(request: Request, db: Session = Depends(get_db)):
     if not request.session.get("usuario_id"):
         return RedirectResponse(url="/login", status_code=302)
-    if request.session.get("usuario_rol") == "proyecto":
-        return RedirectResponse(url="/admin", status_code=302)
-    return templates.TemplateResponse("index.html", {"request": request})
 
-# Página para comisionadores/proyecto
+    usuario_id = request.session["usuario_id"]
+    usuario = db.query(Usuario).filter_by(id=usuario_id).first()
+
+    if usuario.rol == "proyecto":
+        return RedirectResponse(url="/admin", status_code=302)
+    else:
+        return templates.TemplateResponse("index.html", {"request": request})
+
+# Vista para usuarios con rol "proyecto"
 @app.get("/admin", response_class=HTMLResponse)
 async def render_admin(request: Request):
     if not request.session.get("usuario_id") or request.session.get("usuario_rol") != "proyecto":
