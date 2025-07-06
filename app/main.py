@@ -40,7 +40,6 @@ app.include_router(test_pdf.router)
 app.include_router(formulario.router)
 
 # Rutas absolutas a static/ y templates/
-BASE_DIR = pathlib.Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "app" / "static"
 TEMPLATES_DIR = BASE_DIR / "app" / "templates"
 
