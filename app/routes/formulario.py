@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, Request
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.test_continuidad import TestContinuidad, ResultadoContinuidad
@@ -26,6 +26,7 @@ TEST_MODELS = {
 
 @router.post("/guardar")
 async def guardar_formulario(
+    request: Request,
     proyecto_id: int = Form(...),
     ubicacion_1: str = Form(...),
     numero_ubicacion_1: str = Form(...),
@@ -40,10 +41,13 @@ async def guardar_formulario(
     terminal: str = Form(None),
     cable_sets: int = Form(...),
     datos: str = Form(...),
-    usuario_id: int = Form(...),
     imagenes: list[UploadFile] = File(default=[]),
     db: Session = Depends(get_db)
 ):
+    
+    usuario_id = request.session.get("usuario_id")
+    if not usuario_id:
+        raise HTTPException(status_code=401, detail="No autenticado")
     try:
         datos_parsed = json.loads(datos)
     except json.JSONDecodeError:
