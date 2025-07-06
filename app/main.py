@@ -26,23 +26,36 @@ TEMPLATES_DIR = BASE_DIR / "templates"
 # Configuración de Jinja2
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
-# Página raíz: redirige según el rol guardado en sesión
+# Página raíz: redirige según el rol del usuario
 @app.get("/", response_class=HTMLResponse)
-async def render_index(request: Request):
-    if not request.session.get("usuario_id"):
+async def render_index(request: Request, db: Session = Depends(get_db)):
+    usuario_id = request.session.get("usuario_id")
+    if not usuario_id:
         return RedirectResponse(url="/login", status_code=302)
 
-    if request.session.get("usuario_rol") == "proyecto":
-        return RedirectResponse(url="/admin", status_code=302)
+    usuario = db.query(Usuario).filter_by(id=usuario_id).first()
+    if not usuario:
+        request.session.clear()
+        return RedirectResponse(url="/login", status_code=302)
 
+    if usuario.rol == "proyecto":
+        return RedirectResponse(url="/admin", status_code=302)
+    
     return templates.TemplateResponse("index.html", {"request": request})
 
 # Página para usuarios con rol "proyecto"
 @app.get("/admin", response_class=HTMLResponse)
-async def render_admin(request: Request):
-    if not request.session.get("usuario_id") or request.session.get("usuario_rol") != "proyecto":
+async def render_admin(request: Request, db: Session = Depends(get_db)):
+    usuario_id = request.session.get("usuario_id")
+    if not usuario_id:
         return RedirectResponse(url="/login", status_code=302)
+
+    usuario = db.query(Usuario).filter_by(id=usuario_id).first()
+    if not usuario or usuario.rol != "proyecto":
+        return RedirectResponse(url="/login", status_code=302)
+
     return templates.TemplateResponse("index_admin.html", {"request": request})
+
 
 # Montar carpeta /static para CSS/JS
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
