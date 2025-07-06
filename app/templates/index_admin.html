@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Proyecto - Parámetros</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div style="display: flex;">
+        <!-- Sidebar -->
+        <aside style="width: 200px; background-color: #f4f4f4; padding: 1rem; height: 100vh;">
+            <h3>Panel Proyecto</h3>
+            <ul>
+                <li><a href="#" onclick="mostrarSeccion('parametros')">Parámetros Técnicos</a></li>
+            </ul>
+        </aside>
+
+        <!-- Contenido -->
+        <main style="flex-grow: 1; padding: 2rem;">
+            <!-- Sección Parámetros -->
+            <section id="parametros" style="display: block;">
+                <h2>Asignar Parámetros Técnicos</h2>
+
+                <form id="parametros-form">
+                    <label for="test">Tipo de Test:</label>
+                    <select id="test" name="test">
+                        <option value="continuidad">Continuidad</option>
+                        <option value="megado">Megado</option>
+                    </select>
+
+                    <label for="ubicacion_1">Ubicación 1:</label>
+                    <select name="ubicacion_1" id="ubicacion_1">
+                        <option value="COLO">COLO</option>
+                        <option value="CE">CE</option>
+                    </select>
+
+                    <label for="ubicacion_2">Ubicación 2:</label>
+                    <select name="ubicacion_2" id="ubicacion_2">
+                        <option value="CE">CE</option>
+                        <option value="ME">ME</option>
+                    </select>
+
+                    <label for="tipo_equipo">Tipo de Equipo:</label>
+                    <select name="tipo_equipo" id="tipo_equipo">
+                        <option value="PDU">PDU</option>
+                        <option value="MSB">MSB</option>
+                        <option value="UPS">UPS</option>
+                    </select>
+
+                    <label for="sub_equipo">Sub Equipo:</label>
+                    <select name="sub_equipo" id="sub_equipo">
+                        <option value="FCB">FCB</option>
+                        <option value="MCB">MCB</option>
+                    </select>
+
+                    <label for="valor_minimo">Valor mínimo:</label>
+                    <input type="number" step="any" name="valor_minimo" id="valor_minimo">
+
+                    <label for="valor_maximo">Valor máximo:</label>
+                    <input type="number" step="any" name="valor_maximo" id="valor_maximo">
+
+                    <label for="unidad">Unidad:</label>
+                    <input type="text" name="unidad" id="unidad">
+
+                    <label for="voltaje_requerido">Voltaje requerido:</label>
+                    <input type="number" step="any" name="voltaje_requerido" id="voltaje_requerido">
+
+                    <label for="observaciones">Observaciones:</label>
+                    <textarea name="observaciones" id="observaciones"></textarea>
+
+                    <button type="submit">Guardar Parámetro</button>
+                </form>
+
+                <h3>Parámetros Existentes</h3>
+                <table border="1" id="tabla-parametros">
+                    <thead>
+                        <tr>
+                            <th>Ubicación 1</th>
+                            <th>Ubicación 2</th>
+                            <th>Tipo</th>
+                            <th>Sub</th>
+                            <th>Valor Min</th>
+                            <th>Valor Max</th>
+                            <th>Unidad</th>
+                            <th>Voltaje</th>
+                            <th>Observaciones</th>
+                            <th>Editar</th>
+                            <th>Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/js/admin_panel.js"></script>
+</body>
+</html>
