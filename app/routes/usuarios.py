@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Form
 from sqlalchemy.orm import Session
 from app.schemas.usuario import UsuarioCreate, UsuarioOut
-from app.models.usuario import Usuario
+from app.models.usuario import Usuario, RolUsuario
 from app.database import get_db
 from passlib.context import CryptContext
-from fastapi import Form
 
 router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -20,7 +19,8 @@ def crear_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db)):
     nuevo_usuario = Usuario(
         nombre=usuario.nombre,
         correo=usuario.correo,
-        password_hash=hashed_pw
+        password_hash=hashed_pw,
+        rol=getattr(usuario, "rol", RolUsuario.tecnico)
     )
     db.add(nuevo_usuario)
     db.commit()
@@ -32,6 +32,7 @@ def crear_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db)):
 def listar_usuarios(db: Session = Depends(get_db)):
     return db.query(Usuario).all()
 
+# Reset de contraseña
 @router.post("/reset-password")
 def reset_password(
     correo: str = Form(...),
