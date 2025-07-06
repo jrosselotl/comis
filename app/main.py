@@ -1,14 +1,10 @@
 import pathlib
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
-from sqlalchemy.orm import Session
-
-from app.database import get_db
-from app.models.usuario import Usuario
 
 app = FastAPI()
 
@@ -30,23 +26,16 @@ TEMPLATES_DIR = BASE_DIR / "templates"
 # Configuración de Jinja2
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
-# Página raíz: redirige según el rol
+# Página raíz: redirige según el rol guardado en sesión
 @app.get("/", response_class=HTMLResponse)
-async def render_index(request: Request, db: Session = Depends(get_db)):
-    if not request.session.get("usuario_id"):
+async def render_index(request: Request):
+    if not request.session.get("usuario_id") or not request.session.get("usuario_rol"):
         return RedirectResponse(url="/login", status_code=302)
 
-    usuario_id = request.session["usuario_id"]
-    usuario = db.query(Usuario).filter_by(id=usuario_id).first()
-
-    if not usuario:
-        request.session.clear()
-        return RedirectResponse(url="/login", status_code=302)
-
-    if usuario.rol == "proyecto":
+    if request.session["usuario_rol"] == "proyecto":
         return RedirectResponse(url="/admin", status_code=302)
-    else:
-        return templates.TemplateResponse("index.html", {"request": request})
+
+    return templates.TemplateResponse("index.html", {"request": request})
 
 # Página para usuarios con rol "proyecto"
 @app.get("/admin", response_class=HTMLResponse)
