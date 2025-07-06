@@ -76,7 +76,7 @@ function initFormularioContinuidad(tipoAlimentacion) {
                                 if (match) {
                                     resultadoInput.value = match[0].replace(",", ".").trim();
                                 } else {
-                                    resultadoInput.value = text.trim(); // fallback
+                                    resultadoInput.value = text.trim();
                                 }
                             } catch (err) {
                                 console.error("Error OCR:", err);
@@ -106,12 +106,16 @@ function initFormularioContinuidad(tipoAlimentacion) {
         const cableSets = parseInt(cableSetInput.value);
         const referenciaComun = referenciaComunInput.value;
 
+        if (!cableSets || !referenciaComun) {
+            alert("Debe ingresar Cable Sets y un Valor de Referencia.");
+            return;
+        }
+
         const datos = [];
         const imagenes = [];
 
         const proyectoSelect = document.getElementById("proyecto_id");
         const proyecto_id = proyectoSelect.value;
-        const proyecto_nombre = proyectoSelect.options[proyectoSelect.selectedIndex].text;
 
         const ubicacion_1 = document.getElementById("ubicacion_1").value;
         const numero_ubicacion_1 = document.getElementById("numero_ubicacion_1").value;
@@ -122,16 +126,7 @@ function initFormularioContinuidad(tipoAlimentacion) {
         const sub_equipo = document.getElementById("sub_equipo")?.value || "";
         const numero_sub_equipo = document.getElementById("numero_sub_equipo")?.value || "";
         const tipo_alimentacion = document.getElementById("tipo_alimentacion")?.value;
-
-        let partes = [proyecto_nombre, `${ubicacion_1}${numero_ubicacion_1}`];
-        if (ubicacion_1 === "COLO" && ubicacion_2 && numero_ubicacion_2) {
-            partes.push(`${ubicacion_2}${numero_ubicacion_2}`);
-        }
-        partes.push(`${tipo_equipo}${numero_tipo_equipo}`);
-        if (sub_equipo && numero_sub_equipo) {
-            partes.push(`${sub_equipo}${numero_sub_equipo}`);
-        }
-        const codigo_equipo = partes.join("-");
+        const terminal = document.getElementById("terminal")?.value || "";
 
         for (let i = 1; i <= cableSets; i++) {
             for (const punto of combinaciones) {
@@ -167,6 +162,7 @@ function initFormularioContinuidad(tipoAlimentacion) {
         formData.append("tipo_prueba", "continuidad");
         formData.append("cable_sets", cableSets);
         formData.append("tipo_alimentacion", tipo_alimentacion);
+        formData.append("terminal", terminal);
         formData.append("datos", JSON.stringify(datos));
         imagenes.forEach(img => formData.append("imagenes", img));
 
@@ -175,8 +171,12 @@ function initFormularioContinuidad(tipoAlimentacion) {
             body: formData
         });
 
-        const res = await response.json().catch(() => alert("Error interno del servidor"));
-        alert(res?.mensaje || "Error al guardar");
+        const res = await response.json().catch(() => null);
+        if (response.ok && res?.mensaje) {
+            alert(res.mensaje);
+        } else {
+            alert(res?.detail || "Error al guardar el formulario.");
+        }
     });
 }
 
