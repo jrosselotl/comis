@@ -89,11 +89,16 @@ async def guardar_formulario(
         db.commit()
         db.refresh(equipo)
 
+    test_general = Test(nombre=tipo_prueba)
+    db.add(test_general)
+    db.commit()
+    db.refresh(test_general)
+
     test = TestModel(
         equipo_id=equipo.id,
         usuario_id=usuario_id,
         proyecto_id=proyecto_id,
-        test_id=test_id_ref,
+        test_id=test_general.id,
         fecha=datetime.utcnow()
     )
     db.add(test)
