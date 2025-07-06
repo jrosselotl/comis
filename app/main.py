@@ -1,3 +1,6 @@
+import os
+import pathlib
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -6,12 +9,11 @@ from fastapi.requests import Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
-
-import os
-
+# Crear app
 app = FastAPI()
+
+# Middleware de sesión y CORS
 app.add_middleware(SessionMiddleware, secret_key="una_clave_segura_123")
-# ✅ Middleware CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,19 +22,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Importar y registrar rutas
+# Importar rutas
 from app.routes import (
-    auth,
-    usuarios,
-    proyectos,
-    equipos,
-    tests,
-    continuidad,
-    megado,
-    test_pdf,
-    formulario  # si ya tienes el formulario.py
+    auth, usuarios, proyectos, equipos, tests,
+    continuidad, megado, test_pdf, formulario
 )
 
+# Registrar rutas
 app.include_router(auth.router)
 app.include_router(usuarios.router)
 app.include_router(proyectos.router)
@@ -43,8 +39,13 @@ app.include_router(megado.router)
 app.include_router(test_pdf.router)
 app.include_router(formulario.router)
 
-# ✅ Directorio de plantillas
-templates = Jinja2Templates(directory="app/templates")
+# Rutas absolutas a static/ y templates/
+BASE_DIR = pathlib.Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "app" / "static"
+TEMPLATES_DIR = BASE_DIR / "app" / "templates"
+
+# Templates
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 @app.get("/", response_class=HTMLResponse)
 async def render_index(request: Request):
@@ -52,14 +53,5 @@ async def render_index(request: Request):
         return RedirectResponse(url="/login", status_code=302)
     return templates.TemplateResponse("index.html", {"request": request})
 
-
-import pathlib
-
-BASE_DIR = pathlib.Path(__file__).resolve().parent
-
-app.mount(
-    "/static",
-    StaticFiles(directory=BASE_DIR / "app" / "static"),  # ✅ fijamos correctamente la ruta
-    name="static"
-)
-
+# Static
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
