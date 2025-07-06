@@ -17,24 +17,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ⬇️ RUTAS CORRECTAS RELATIVAS A main.py (que vive en app/)
+# Directorios
 BASE_DIR = pathlib.Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 TEMPLATES_DIR = BASE_DIR / "templates"
 
-# ⬇️ Templates
+# Templates
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
+# Página para técnicos
 @app.get("/", response_class=HTMLResponse)
 async def render_index(request: Request):
     if not request.session.get("usuario_id"):
         return RedirectResponse(url="/login", status_code=302)
+    if request.session.get("usuario_rol") == "proyecto":
+        return RedirectResponse(url="/admin", status_code=302)
     return templates.TemplateResponse("index.html", {"request": request})
 
-# ⬇️ Montar carpeta static
+# Página para comisionadores/proyecto
+@app.get("/admin", response_class=HTMLResponse)
+async def render_admin(request: Request):
+    if not request.session.get("usuario_id") or request.session.get("usuario_rol") != "proyecto":
+        return RedirectResponse(url="/login", status_code=302)
+    return templates.TemplateResponse("index_admin.html", {"request": request})
+
+# Archivos estáticos
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-# ⬇️ Importar rutas
+# Rutas
 from app.routes import (
     auth, usuarios, proyectos, equipos, tests,
     continuidad, megado, test_pdf, formulario
