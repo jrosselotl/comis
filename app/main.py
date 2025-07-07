@@ -1,10 +1,12 @@
 import pathlib
 from fastapi import FastAPI, Request, Depends
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy.orm import Session
 from starlette.middleware.sessions import SessionMiddleware
+from app.routes import auth, formulario
+from app.database import get_db
+from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
 
