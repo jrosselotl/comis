@@ -26,24 +26,23 @@ TEST_MODELS = {
 
 @router.post("/guardar")
 async def guardar_formulario(
-    request: Request,
     proyecto_id: int = Form(...),
     ubicacion_1: str = Form(...),
     numero_ubicacion_1: str = Form(...),
-    ubicacion_2: str = Form(None),
-    numero_ubicacion_2: str = Form(None),
+    ubicacion_2: str = Form(""),
+    numero_ubicacion_2: str = Form(""),
     tipo_equipo: str = Form(...),
-    numero_tipo_equipo: int = Form(...),
-    sub_equipo: str = Form(None),
-    numero_sub_equipo: str = Form(None),
+    numero_tipo_equipo: str = Form(...),
+    sub_equipo: str = Form(""),
+    numero_sub_equipo: str = Form(""),
     tipo_prueba: str = Form(...),
-    tipo_alimentacion: str = Form(...),
-    terminal: str = Form(None),
     cable_sets: int = Form(...),
+    tipo_alimentacion: str = Form(...),
     datos: str = Form(...),
-    imagenes: list[UploadFile] = File(default=[]),
+    imagenes: list[UploadFile] = File(...),
     db: Session = Depends(get_db)
 ):
+
     
     usuario_id = request.session.get("usuario_id")
     if not usuario_id:
