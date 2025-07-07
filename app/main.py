@@ -1,3 +1,6 @@
+import pathlib
+import os
+import uvicorn
 from fastapi import FastAPI, Request, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -6,8 +9,6 @@ from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 from starlette.templating import Jinja2Templates
-import os
-import uvicorn
 
 # Importar base de datos y modelos
 from app.database import get_db
