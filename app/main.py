@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 from starlette.templating import Jinja2Templates
 import os
+import uvicorn
 
 # Importar base de datos y modelos
 from app.database import get_db
@@ -84,3 +85,7 @@ app.include_router(continuidad.router)
 app.include_router(megado.router)
 app.include_router(test_pdf.router)
 app.include_router(formulario.router)
+
+
+if __name__ == "__main__":
+    uvicorn.run("app.main:app", host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
