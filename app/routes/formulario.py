@@ -14,6 +14,7 @@ from datetime import datetime
 from PIL import Image
 import shutil, os, json
 
+datos_list = json.loads(datos)
 router = APIRouter(prefix="/formulario", tags=["Formulario"])
 
 UPLOAD_DIR = "static/uploads"
