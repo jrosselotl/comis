@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.sessions import SessionMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 from starlette.templating import Jinja2Templates
@@ -18,7 +18,7 @@ from app.routes.formulario import router as formulario_router
 app = FastAPI()
 
 # Middleware de sesiones y CORS
-app.add_middleware(SessionMiddleware, secret_key="una_clave_segura_123")
+app.add_middleware(SessionMiddleware, secret_key="w97k8Zj9B4fD1VmL3zXeT5GqNpHs0YuA")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
