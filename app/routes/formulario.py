@@ -14,19 +14,19 @@ from datetime import datetime
 from PIL import Image
 import shutil, os, json
 
-datos_list = json.loads(datos)
 router = APIRouter(prefix="/formulario", tags=["Formulario"])
 
 UPLOAD_DIR = "static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 TEST_MODELS = {
-    "continuidad": (TestContinuidad, ResultadoContinuidad, 1),
-    "megado": (TestMegado, ResultadoMegado, 2)
+    "continuidad": (TestContinuidad, ResultadoContinuidad),
+    "megado": (TestMegado, ResultadoMegado)
 }
 
 @router.post("/guardar")
 async def guardar_formulario(
+    request: Request,
     proyecto_id: int = Form(...),
     ubicacion_1: str = Form(...),
     numero_ubicacion_1: str = Form(...),
@@ -44,10 +44,10 @@ async def guardar_formulario(
     db: Session = Depends(get_db)
 ):
 
-    
     usuario_id = request.session.get("usuario_id")
     if not usuario_id:
         raise HTTPException(status_code=401, detail="No autenticado")
+
     try:
         datos_parsed = json.loads(datos)
     except json.JSONDecodeError:
@@ -56,7 +56,11 @@ async def guardar_formulario(
     if tipo_prueba not in TEST_MODELS:
         raise HTTPException(status_code=400, detail=f"Tipo de prueba no válido: {tipo_prueba}")
 
-    TestModel, ResultadoModel, test_id_ref = TEST_MODELS[tipo_prueba]
+    TestModel, ResultadoModel = TEST_MODELS[tipo_prueba]
+
+    test_general = db.query(Test).filter_by(nombre=tipo_prueba).first()
+    if not test_general:
+        raise HTTPException(status_code=400, detail=f"Tipo de prueba '{tipo_prueba}' no existe en la tabla tests")
 
     proyecto = db.query(Proyecto).filter_by(id=proyecto_id).first()
     if not proyecto:
@@ -64,8 +68,8 @@ async def guardar_formulario(
 
     partes = [proyecto.nombre, f"{ubicacion_1}{numero_ubicacion_1}"]
     ubicacion_1_completa = f"{ubicacion_1}{numero_ubicacion_1}"
-
     ubicacion_2_completa = None
+
     if ubicacion_1 == "COLO" and ubicacion_2 and numero_ubicacion_2:
         ubicacion_2_completa = f"{ubicacion_2}{numero_ubicacion_2}"
         partes.append(ubicacion_2_completa)
@@ -87,16 +91,10 @@ async def guardar_formulario(
             ubicacion_2=ubicacion_2_completa,
             tipo_alimentacion=tipo_alimentacion,
             cable_set=cable_sets,
-            terminal=terminal
         )
         db.add(equipo)
         db.commit()
         db.refresh(equipo)
-
-    test_general = Test(nombre=tipo_prueba)
-    db.add(test_general)
-    db.commit()
-    db.refresh(test_general)
 
     test = TestModel(
         equipo_id=equipo.id,
