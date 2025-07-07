@@ -7,6 +7,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.routes import auth, formulario
 from app.database import get_db
 from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
