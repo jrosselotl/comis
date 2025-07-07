@@ -1,14 +1,19 @@
-import pathlib
 from fastapi import FastAPI, Request, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy.orm import Session
-from starlette.middleware.sessions import SessionMiddleware
-from app.routes import auth, formulario
-from app.database import get_db
-from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.sessions import SessionMiddleware
+from sqlalchemy.orm import Session
+from starlette.responses import JSONResponse
+from starlette.templating import Jinja2Templates
+import os
+
+# Importar base de datos y modelos
+from app.database import get_db
 from app.models.usuario import Usuario
+from app.routes.auth import router as auth_router
+from app.routes.formulario import router as formulario_router
+
 
 app = FastAPI()
 
