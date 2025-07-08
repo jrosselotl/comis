@@ -13,16 +13,15 @@
             <h3>Panel Proyecto</h3>
             <ul>
                 <li><a href="#" onclick="mostrarSeccion('parametros')">Parámetros Técnicos</a></li>
+                <li><a href="/auth/logout">Cerrar sesión</a></li>
             </ul>
         </aside>
 
         <!-- Contenido -->
         <main style="flex-grow: 1; padding: 2rem;">
-            <!-- Sección Parámetros -->
-            
-            <section id="parametros" style="display: block;">
+            <!-- Sección de Parámetros -->
+            <section id="parametros">
                 <h2>Asignar Parámetros Técnicos</h2>
-
                 <form id="parametros-form">
                     <label for="test">Tipo de Test:</label>
                     <select id="test" name="test">
@@ -86,8 +85,7 @@
                             <th>Unidad</th>
                             <th>Voltaje</th>
                             <th>Observaciones</th>
-                            <th>Editar</th>
-                            <th>Eliminar</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
