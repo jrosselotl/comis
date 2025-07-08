@@ -1,23 +1,24 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models.parametros_continuidad import ParametroContinuidad
-from app.models.parametros_megado import ParametroMegado
+from app.models.parametros_continuidad import ParametrosContinuidad
+from app.models.parametros_megado import ParametrosMegado
 
 router = APIRouter(prefix="/parametros", tags=["Parámetros"])
 
 MODELOS = {
-    "continuidad": ParametroContinuidad,
-    "megado": ParametroMegado
+    "continuidad": ParametrosContinuidad,
+    "megado": ParametrosMegado
 }
 
 @router.post("/{tipo_test}/crear")
-def crear_parametro(tipo_test: str, datos: dict, db: Session = Depends(get_db)):
+async def crear_parametro(tipo_test: str, request: Request, db: Session = Depends(get_db)):
     modelo = MODELOS.get(tipo_test)
     if not modelo:
         raise HTTPException(status_code=400, detail="Tipo de test inválido")
 
-    nuevo = modelo(**datos)
+    data = await request.json()
+    nuevo = modelo(**data)
     db.add(nuevo)
     db.commit()
     db.refresh(nuevo)
@@ -31,31 +32,32 @@ def listar_parametros(tipo_test: str, db: Session = Depends(get_db)):
     return db.query(modelo).all()
 
 @router.put("/{tipo_test}/{id}/editar")
-def editar_parametro(tipo_test: str, id: int, datos: dict, db: Session = Depends(get_db)):
+async def editar_parametro(tipo_test: str, id: int, request: Request, db: Session = Depends(get_db)):
     modelo = MODELOS.get(tipo_test)
     if not modelo:
         raise HTTPException(status_code=400, detail="Tipo de test inválido")
-    
-    param = db.query(modelo).get(id)
-    if not param:
+
+    parametro = db.query(modelo).get(id)
+    if not parametro:
         raise HTTPException(status_code=404, detail="Parámetro no encontrado")
-    
-    for k, v in datos.items():
-        setattr(param, k, v)
-    
+
+    data = await request.json()
+    for campo, valor in data.items():
+        setattr(parametro, campo, valor)
+
     db.commit()
-    return {"ok": True}
+    return {"success": True}
 
 @router.delete("/{tipo_test}/{id}/eliminar")
 def eliminar_parametro(tipo_test: str, id: int, db: Session = Depends(get_db)):
     modelo = MODELOS.get(tipo_test)
     if not modelo:
         raise HTTPException(status_code=400, detail="Tipo de test inválido")
-    
-    param = db.query(modelo).get(id)
-    if not param:
+
+    parametro = db.query(modelo).get(id)
+    if not parametro:
         raise HTTPException(status_code=404, detail="Parámetro no encontrado")
 
-    db.delete(param)
+    db.delete(parametro)
     db.commit()
-    return {"ok": True}
+    return {"success": True}
