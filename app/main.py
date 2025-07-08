@@ -10,11 +10,13 @@ from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 from starlette.templating import Jinja2Templates
 
+
 # Importar base de datos y modelos
 from app.database import get_db
 from app.models.usuario import Usuario
 from app.routes.auth import router as auth_router
 from app.routes.formulario import router as formulario_router
+from app.routes import parametros
 
 
 app = FastAPI()
@@ -86,6 +88,7 @@ app.include_router(continuidad.router)
 app.include_router(megado.router)
 app.include_router(test_pdf.router)
 app.include_router(formulario.router)
+app.include_router(parametros.router)
 
 
 if __name__ == "__main__":
