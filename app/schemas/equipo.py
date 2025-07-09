@@ -19,10 +19,13 @@ class SubEquipo(str, Enum):
 class EquipoCreate(BaseModel):
     proyecto_id: int
     ubicacion_1: Optional[str]
+    numero_ubicacion_1: int
     ubicacion_2: Optional[str]
+    numero_ubicacion_2: Optional[int]
     tipo: TipoEquipo
-    numero_tipo_equipo: Optional[int]
+    numero_tipo_equipo: int
     sub_equipo: Optional[SubEquipo]
+    numero_sub_equipo: Optional[int]
     terminal: Optional[str]
     tipo_alimentacion: Optional[str]
     cable_set: Optional[int]
@@ -36,7 +39,7 @@ class EquipoCreate(BaseModel):
 
     @validator("ubicacion_2")
     def validar_ubicacion_2(cls, v, values):
-        if values.get("proyecto_id") == 1 and v != "CE":
+        if values.get("proyecto_id") == 1 and v and v != "CE":
             raise ValueError("Ubicación 2 debe ser 'CE' en MAD03")
         return v
 
@@ -50,13 +53,17 @@ class EquipoOut(BaseModel):
     id: int
     proyecto_id: int
     ubicacion_1: Optional[str]
+    numero_ubicacion_1: int
     ubicacion_2: Optional[str]
+    numero_ubicacion_2: Optional[int]
     tipo: TipoEquipo
-    numero_tipo_equipo: Optional[int]
+    numero_tipo_equipo: int
     sub_equipo: Optional[SubEquipo]
+    numero_sub_equipo: Optional[int]
     terminal: Optional[str]
     tipo_alimentacion: Optional[str]
     cable_set: Optional[int]
+    codigo: str
     fecha_creacion: Optional[datetime]
 
     class Config:
