@@ -39,6 +39,7 @@ async def guardar_formulario(
     tipo_prueba: str = Form(...),
     cable_sets: int = Form(...),
     tipo_alimentacion: str = Form(...),
+    terminal: str = Form(""),
     datos: str = Form(...),
     imagenes: list[UploadFile] = File(...),
     db: Session = Depends(get_db)
