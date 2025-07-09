@@ -11,7 +11,6 @@ class TestContinuidad(Base):
     equipo_id = Column(Integer, ForeignKey("equipos.id"), nullable=False)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
     fecha = Column(DateTime, default=datetime.utcnow)
-    observaciones = Column(String(255), nullable=True)
 
     equipo = relationship("Equipo", back_populates="tests_continuidad")
     usuario = relationship("Usuario", back_populates="tests_continuidad")
