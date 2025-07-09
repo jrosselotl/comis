@@ -1,4 +1,3 @@
-# app/models/equipo.py
 from enum import Enum
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
@@ -26,9 +25,17 @@ class Equipo(Base):
     proyecto_id = Column(Integer, ForeignKey("proyectos.id"), nullable=False)
 
     ubicacion_1 = Column(String(50), nullable=True)
+    numero_ubicacion_1 = Column(Integer, nullable=False, default=1)
+
     ubicacion_2 = Column(String(50), nullable=True)
-    tipo_equipo = Column("tipo_equipo", SQLEnum(TipoEquipo, name="tipo_equipo"), nullable=False)
+    numero_ubicacion_2 = Column(Integer)
+
+    tipo_equipo = Column(SQLEnum(TipoEquipo, name="tipo_equipo"), nullable=False)
+    numero_tipo_equipo = Column(Integer, nullable=False, default=1)
+
     sub_equipo = Column(SQLEnum(SubEquipo, name="sub_equipo"), nullable=True)
+    numero_sub_equipo = Column(Integer)
+
     terminal = Column(String(50), nullable=True)
     tipo_alimentacion = Column(String(50), nullable=True)
     cable_set = Column(Integer, nullable=True)
