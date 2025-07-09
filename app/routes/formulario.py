@@ -92,6 +92,7 @@ async def guardar_formulario(
             numero_tipo_equipo=numero_tipo_equipo,
             sub_equipo=sub_equipo if sub_equipo else None,
             numero_sub_equipo=numero_sub_equipo if numero_sub_equipo else None,
+            terminal=terminal,
             tipo_alimentacion=tipo_alimentacion,
             cable_set=cable_sets,
             codigo=codigo_equipo
