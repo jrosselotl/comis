@@ -13,8 +13,6 @@ class TestMegado(Base):
     equipo_id = Column(Integer, ForeignKey("equipos.id"), nullable=False)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
     fecha = Column(DateTime, default=datetime.utcnow)
-    observaciones = Column(String(255), nullable=True)
-
     equipo = relationship("Equipo", back_populates="tests_megado")
     usuario = relationship("Usuario", back_populates="tests_megado")
     resultados = relationship("ResultadoMegado", back_populates="test", cascade="all, delete-orphan")
@@ -24,7 +22,6 @@ class ResultadoMegado(Base):
     __tablename__ = "resultado_megado"
 
     id = Column(Integer, primary_key=True, index=True)
-    test_id = Column(Integer, ForeignKey("test_megado.id"), nullable=False)
     cable_set = Column(Integer, nullable=False)
     punto_prueba = Column(String(100), nullable=False)
     referencia_valor = Column(Float, nullable=True)
