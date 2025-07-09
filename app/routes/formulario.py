@@ -29,13 +29,13 @@ async def guardar_formulario(
     request: Request,
     proyecto_id: int = Form(...),
     ubicacion_1: str = Form(...),
-    numero_ubicacion_1: str = Form(...),
+    numero_ubicacion_1: int = Form(...),
     ubicacion_2: str = Form(""),
-    numero_ubicacion_2: str = Form(""),
+    numero_ubicacion_2: int = Form(0),
     tipo_equipo: str = Form(...),
-    numero_tipo_equipo: str = Form(...),
+    numero_tipo_equipo: int = Form(...),
     sub_equipo: str = Form(""),
-    numero_sub_equipo: str = Form(""),
+    numero_sub_equipo: int = Form(0),
     tipo_prueba: str = Form(...),
     cable_sets: int = Form(...),
     tipo_alimentacion: str = Form(...),
@@ -82,15 +82,18 @@ async def guardar_formulario(
     equipo = db.query(Equipo).filter_by(codigo=codigo_equipo).first()
     if not equipo:
         equipo = Equipo(
-            codigo=codigo_equipo,
+            proyecto_id=proyecto_id,
+            ubicacion_1=ubicacion_1,
+            numero_ubicacion_1=numero_ubicacion_1,
+            ubicacion_2=ubicacion_2 if ubicacion_2 else None,
+            numero_ubicacion_2=numero_ubicacion_2 if numero_ubicacion_2 else None,
             tipo_equipo=tipo_equipo,
             numero_tipo_equipo=numero_tipo_equipo,
             sub_equipo=sub_equipo if sub_equipo else None,
-            proyecto_id=proyecto_id,
-            ubicacion_1=ubicacion_1_completa,
-            ubicacion_2=ubicacion_2_completa,
+            numero_sub_equipo=numero_sub_equipo if numero_sub_equipo else None,
             tipo_alimentacion=tipo_alimentacion,
             cable_set=cable_sets,
+            codigo=codigo_equipo
         )
         db.add(equipo)
         db.commit()
