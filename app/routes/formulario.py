@@ -105,7 +105,6 @@ async def guardar_formulario(
         equipo_id=equipo.id,
         usuario_id=usuario_id,
         proyecto_id=proyecto_id,
-        test_id=test_general.id,
         fecha=datetime.utcnow()
     )
     db.add(test)
