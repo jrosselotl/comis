@@ -9,7 +9,7 @@ class TestMegado(Base):
     __tablename__ = "test_megado"
 
     id = Column(Integer, primary_key=True, index=True)
-    proyecto_id = Column(Integer, nullable=False)
+    proyecto_id = Column(Integer, ForeignKey("proyectos.id"), nullable=False)
     equipo_id = Column(Integer, ForeignKey("equipos.id"), nullable=False)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
     fecha = Column(DateTime, default=datetime.utcnow)
