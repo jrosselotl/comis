@@ -4,6 +4,8 @@ from fastapi.templating import Jinja2Templates
 from starlette.status import HTTP_302_FOUND
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
+from app.models.test_continuidad import TestContinuidad
+from app.models.test_megado import TestMegado
 
 from app.database import get_db
 from app.models.usuario import Usuario
