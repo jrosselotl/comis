@@ -21,6 +21,7 @@ class ResultadoContinuidad(Base):
     __tablename__ = "resultado_continuidad"
 
     id = Column(Integer, primary_key=True, index=True)
+    test_id = Column(Integer, ForeignKey("test_continuidad.id", ondelete="CASCADE"), nullable=False)  # ← FALTABA ESTA LÍNEA
     cable_set = Column(Integer, nullable=False)
     punto_prueba = Column(String(100), nullable=False)
     referencia_valor = Column(Float, nullable=True)
@@ -28,6 +29,6 @@ class ResultadoContinuidad(Base):
     aprobado = Column(Boolean, default=False)
     observaciones = Column(Text, nullable=True)
     imagen_url = Column(String(255), nullable=True)
-    tipo_alimentacion = Column(String(50), nullable=True)  # ← nuevo campo agregado
+    tipo_alimentacion = Column(String(50), nullable=True)
 
     test = relationship("TestContinuidad", back_populates="resultados")
