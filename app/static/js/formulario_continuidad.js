@@ -36,9 +36,11 @@ function initFormularioContinuidad(tipoAlimentacion) {
                 <caption>Continuidad - Cable Set ${i}</caption>
                 <tr>
                     <th>Punto</th>
-                    <th>Unidad</th>
+                    <th>Referencia</th>
                     <th>Resultado / N/A</th>
+                    <th>Unidad</th>
                     <th>Observaciones</th>
+                    <th>¿Aprobado?</th>
                     <th>Imagen</th>
                 </tr>`;
 
@@ -46,17 +48,20 @@ function initFormularioContinuidad(tipoAlimentacion) {
                 const fila = document.createElement("tr");
                 const idResultado = `resultado_${i}_${punto}`;
                 const idNA = `na_${i}_${punto}`;
+                const idUnidad = `unidad_${i}_${punto}`;
 
                 fila.innerHTML = `
                     <td>${punto}</td>
-                    <td><input name="unidad_${i}_${punto}" type="text" value="${unidad}" readonly /></td>
+                    <td>${referenciaComun} ${unidad}</td>
                     <td>
                       <div class="resultado-combinado">
                         <button type="button" class="na-btn" id="${idNA}">N/A</button>
                         <input type="text" name="${idResultado}" id="${idResultado}" />
                       </div>
                     </td>
+                    <td><input name="${idUnidad}" type="text" value="${unidad}" readonly /></td>
                     <td><input name="observaciones_${i}_${punto}" type="text" /></td>
+                    <td><input name="aprobado_${i}_${punto}" type="checkbox" disabled /></td>
                     <td>
                         <label class="camera-label">
                             📷 <span class="adjunto-texto"></span>
@@ -112,9 +117,10 @@ function initFormularioContinuidad(tipoAlimentacion) {
 
         const cableSets = parseInt(cableSetInput.value);
         const unidad = unidadSelect.value;
+        const referenciaComun = referenciaComunInput.value;
 
-        if (!cableSets || !unidad) {
-            alert("Debe ingresar Cable Sets y seleccionar unidad de medida.");
+        if (!cableSets || !unidad || !referenciaComun) {
+            alert("Debe ingresar Cable Sets, unidad de medida y valor de referencia.");
             return;
         }
 
@@ -143,7 +149,7 @@ function initFormularioContinuidad(tipoAlimentacion) {
                 datos.push({
                     cable_set: i,
                     punto_prueba: punto,
-                    referencia_valor: null,
+                    referencia_valor: referenciaComun,
                     resultado_valor: resultado,
                     unidad: unidad,
                     observaciones: observaciones
