@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.test_continuidad import TestContinuidad, ResultadoContinuidad
 from app.models.test_megado import TestMegado, ResultadoMegado
+from app.models.test_contact_resistance import TestContactResistance, ResultadoContactResistance
+from app.models.test_torque import TestTorque, ResultadoTorque
 from app.models.equipo import Equipo
 from app.models.proyecto import Proyecto
 from app.models.usuario import Usuario
@@ -21,7 +23,9 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 TEST_MODELS = {
     "continuidad": (TestContinuidad, ResultadoContinuidad),
-    "megado": (TestMegado, ResultadoMegado)
+    "megado": (TestMegado, ResultadoMegado),
+    "contact_resistance": (TestContactResistance, ResultadoContactResistance),
+    "torque": (TestTorque, ResultadoTorque)
 }
 
 @router.post("/guardar")
@@ -155,6 +159,10 @@ async def guardar_formulario(
 
         if tipo_prueba == "megado":
             campos_comunes["tiempo_aplicado"] = resultado.get("tiempo_aplicado")
+
+        if tipo_prueba == "torque":
+            campos_comunes["valor_nominal"] = float(resultado.get("valor_nominal", 0))
+            campos_comunes["valor_comprobacion"] = float(resultado.get("valor_comprobacion", 0))
 
         db.add(ResultadoModel(**campos_comunes))
 
