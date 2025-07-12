@@ -5,15 +5,14 @@ from app.models.test_continuidad import TestContinuidad, ResultadoContinuidad
 from app.models.test_megado import TestMegado, ResultadoMegado
 from app.models.test_contact_resistance import TestContactResistance, ResultadoContactResistance
 from app.models.test_torque import TestTorque, ResultadoTorque
+from app.models.parametros_continuidad import ParametrosContinuidad
 from app.models.equipo import Equipo
 from app.models.proyecto import Proyecto
 from app.models.usuario import Usuario
 from app.models.test import Test
 from app.utils.pdf_generator import generar_pdf_test
 from app.utils.correo import enviar_correo_con_pdf
-#from app.utils.ocr import extraer_texto_desde_imagen
 from datetime import datetime
-from PIL import Image
 import shutil, os, json
 
 router = APIRouter(prefix="/formulario", tags=["Formulario"])
@@ -48,7 +47,6 @@ async def guardar_formulario(
     imagenes: list[UploadFile] = File(...),
     db: Session = Depends(get_db)
 ):
-
     usuario_id = request.session.get("usuario_id")
     if not usuario_id:
         raise HTTPException(status_code=401, detail="No autenticado")
@@ -72,13 +70,8 @@ async def guardar_formulario(
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
 
     partes = [proyecto.nombre, f"{ubicacion_1}{numero_ubicacion_1}"]
-    ubicacion_1_completa = f"{ubicacion_1}{numero_ubicacion_1}"
-    ubicacion_2_completa = None
-
     if ubicacion_1 == "COLO" and ubicacion_2 and numero_ubicacion_2:
-        ubicacion_2_completa = f"{ubicacion_2}{numero_ubicacion_2}"
-        partes.append(ubicacion_2_completa)
-
+        partes.append(f"{ubicacion_2}{numero_ubicacion_2}")
     partes.append(f"{tipo_equipo}{numero_tipo_equipo}")
     if sub_equipo and numero_sub_equipo:
         partes.append(f"{sub_equipo}{numero_sub_equipo}")
@@ -115,54 +108,67 @@ async def guardar_formulario(
     db.commit()
     db.refresh(test)
 
+    # Cargar parámetros técnicos desde DB
+    parametros = {}
+    if tipo_prueba == "continuidad":
+        parametros = {
+            (p.codigo_equipo, p.proyecto_id): (p.referencia, p.logica)
+            for p in db.query(ParametrosContinuidad).filter_by(proyecto_id=proyecto_id, codigo_equipo=codigo_equipo)
+        }
+
     imagenes_info = []
 
     for i, resultado in enumerate(datos_parsed):
         imagen_nombre = None
         imagen_path = None
-        imagen_bytes = None
-
-        if i < len(imagenes):
-            imagen = imagenes[i]
-            if imagen.filename:
-                extension = os.path.splitext(imagen.filename)[1]
-                imagen_nombre = f"{codigo_equipo}-{tipo_prueba}-CS{resultado['cable_set']}-{resultado['punto_prueba']}{extension}"
-                imagen_path = os.path.join(UPLOAD_DIR, imagen_nombre)
-                with open(imagen_path, "wb") as buffer:
-                    contenido = await imagen.read()
-                    buffer.write(contenido)
-                    imagen_bytes = contenido
-
         resultado_valor = resultado.get("resultado_valor")
-        if resultado_valor == "":
-            resultado_valor = None
-        else:
-            resultado_valor = float(resultado_valor)
 
-        referencia_valor = resultado.get("referencia_valor")
-        if referencia_valor == "":
-            referencia_valor = None
+        if i < len(imagenes) and imagenes[i].filename:
+            imagen = imagenes[i]
+            extension = os.path.splitext(imagen.filename)[1]
+            imagen_nombre = f"{codigo_equipo}-{tipo_prueba}-CS{resultado['cable_set']}-{resultado['punto_prueba']}{extension}"
+            imagen_path = os.path.join(UPLOAD_DIR, imagen_nombre)
+            with open(imagen_path, "wb") as buffer:
+                contenido = await imagen.read()
+                buffer.write(contenido)
+
+        # Evaluación automática de aprobado
+        aprobado = None
+        if resultado_valor == "N/A":
+            aprobado = True
+            resultado_valor_db = None
         else:
-            referencia_valor = float(referencia_valor)
+            try:
+                resultado_valor_db = float(resultado_valor)
+            except:
+                resultado_valor_db = None
+
+            referencia, logica = parametros.get((codigo_equipo, proyecto_id), (None, None))
+
+            if referencia is not None and resultado_valor_db is not None:
+                if logica == "=":
+                    aprobado = resultado_valor_db == referencia
+                elif logica == "<":
+                    aprobado = resultado_valor_db < referencia
+                elif logica == ">":
+                    aprobado = resultado_valor_db > referencia
+                elif logica == "<=":
+                    aprobado = resultado_valor_db <= referencia
+                elif logica == ">=":
+                    aprobado = resultado_valor_db >= referencia
+                else:
+                    aprobado = None
 
         campos_comunes = {
             "test_id": test.id,
             "cable_set": resultado.get("cable_set"),
             "punto_prueba": resultado.get("punto_prueba"),
-            "referencia_valor": referencia_valor,
-            "resultado_valor": resultado_valor,
-            "aprobado": resultado.get("aprobado"),
+            "resultado_valor": resultado_valor_db,
+            "aprobado": aprobado,
             "observaciones": resultado.get("observaciones"),
             "imagen_url": imagen_nombre,
             "tipo_alimentacion": tipo_alimentacion,
         }
-
-        if tipo_prueba == "megado":
-            campos_comunes["tiempo_aplicado"] = resultado.get("tiempo_aplicado")
-
-        if tipo_prueba == "torque":
-            campos_comunes["valor_nominal"] = float(resultado.get("valor_nominal", 0))
-            campos_comunes["valor_comprobacion"] = float(resultado.get("valor_comprobacion", 0))
 
         db.add(ResultadoModel(**campos_comunes))
 
@@ -177,6 +183,7 @@ async def guardar_formulario(
 
     db.commit()
 
+    # Generación del PDF
     nombre_equipo = codigo_equipo
     detalles_equipo = {
         "Proyecto": proyecto.nombre,
@@ -198,9 +205,9 @@ async def guardar_formulario(
     resultados_pdf = [
         {
             "punto_prueba": r["punto_prueba"],
-            "referencia_valor": r["referencia_valor"],
+            "referencia_valor": referencia,
             "resultado_valor": r["resultado_valor"],
-            "aprobado": r["aprobado"],
+            "aprobado": aprobado,
             "observaciones": r.get("observaciones", ""),
             "cable_set": r.get("cable_set")
         }
