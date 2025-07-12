@@ -6,8 +6,8 @@ class ProyectoTipoTest(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     proyecto_id = Column(Integer, ForeignKey("proyectos.id", ondelete="CASCADE"), nullable=False)
-    tipo_test = Column(Integer, nullable=False)  # 1 = continuidad, 2 = megado, 3 = torque, etc.
+    test_id = Column(Integer, ForeignKey("tests.id", ondelete="CASCADE"), nullable=False)
 
     __table_args__ = (
-        UniqueConstraint('proyecto_id', 'tipo_test', name='uix_proyecto_tipo_test'),
+        UniqueConstraint("proyecto_id", "test_id", name="uix_proyecto_test"),
     )
