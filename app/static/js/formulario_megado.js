@@ -72,7 +72,7 @@ function initFormularioMegado(tipoAlimentacion) {
                         textoAdjunto.textContent = "📎 Archivo adjunto";
 
                         const reader = new FileReader();
-                        reader.onload = async function () {
+                        /*reader.onload = async function () {
                             try {
                                 const { data: { text } } = await Tesseract.recognize(reader.result, 'eng');
                                 const match = text.match(/[\d]+(?:[\.,]\d+)?\s?(?:kV|KV|Ω|ohm|MΩ|GΩ|V|mA|A)?/);
@@ -85,7 +85,7 @@ function initFormularioMegado(tipoAlimentacion) {
                                 console.error("Error OCR:", err);
                             }
                         };
-                        reader.readAsDataURL(archivo);
+                        reader.readAsDataURL(archivo);*/
                     } else {
                         textoAdjunto.textContent = "";
                     }
