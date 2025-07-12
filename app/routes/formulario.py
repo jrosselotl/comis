@@ -11,7 +11,7 @@ from app.models.usuario import Usuario
 from app.models.test import Test
 from app.utils.pdf_generator import generar_pdf_test
 from app.utils.correo import enviar_correo_con_pdf
-from app.utils.ocr import extraer_texto_desde_imagen
+#from app.utils.ocr import extraer_texto_desde_imagen
 from datetime import datetime
 from PIL import Image
 import shutil, os, json
