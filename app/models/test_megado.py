@@ -15,7 +15,7 @@ class TestMegado(Base):
     fecha = Column(DateTime, default=datetime.utcnow)
     equipo = relationship("Equipo", back_populates="tests_megado")
     usuario = relationship("Usuario", back_populates="tests_megado")
-    resultados = relationship("ResultadoMegado", back_populates="test", cascade="all, delete-orphan")
+    resultados = relationship("ResultadoMegado", back_populates="test", cascade="all, delete-orphan", foreign_keys="ResultadoMegado.test_id")
 
 
 class ResultadoMegado(Base):
