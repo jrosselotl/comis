@@ -45,3 +45,5 @@ class Equipo(Base):
     proyecto = relationship("Proyecto", back_populates="equipos")
     tests_continuidad = relationship("TestContinuidad", back_populates="equipo")
     tests_megado = relationship("TestMegado", back_populates="equipo")
+    tests_contact_resistance = relationship("TestContactResistance", back_populates="equipo")
+    tests_torque = relationship("TestTorque", back_populates="equipo")
