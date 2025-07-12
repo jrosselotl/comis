@@ -15,6 +15,7 @@ class TestTorque(Base):
     equipo = relationship("Equipo", back_populates="tests_torque")
     usuario = relationship("Usuario", back_populates="tests_torque")
     resultados = relationship("ResultadoTorque", back_populates="test", cascade="all, delete-orphan")
+    usuario = relationship("Usuario", back_populates="tests_torque")
 
 
 class ResultadoTorque(Base):
