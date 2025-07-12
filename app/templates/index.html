@@ -91,15 +91,16 @@
     <div class="field-group">
       <div id="nombre-equipo" style="font-weight: bold; font-size: 1.1rem; margin-bottom: 1rem;"></div>
 
-        <label>Tipo de prueba:
-          <select id="tipo-prueba" name="tipo_prueba" required>
-            <option value="">Seleccione prueba...</option>
-          </select>
-        </label>
+      <label>Tipo de prueba:
+        <select id="tipo-prueba" name="tipo_prueba" required>
+          <option value="">Seleccione prueba...</option>
+        </select>
+      </label>
 
-
-      <label>Valor de Referencia:
-        <input type="text" id="referencia-comun" placeholder="Ej: 0.3 Ω" required />
+      <label id="label-unidad" style="display:none;">Unidad:
+        <select id="unidad" name="unidad">
+          <option value="">Seleccione unidad...</option>
+        </select>
       </label>
 
       <div id="campo-tiempo-aplicado" style="display: none;">
