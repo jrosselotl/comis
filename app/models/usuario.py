@@ -21,3 +21,6 @@ class Usuario(Base):
 
     tests_continuidad = relationship("TestContinuidad", back_populates="usuario")
     tests_megado = relationship("TestMegado", back_populates="usuario")
+    tests_contact_resistance = relationship("TestContactResistance", back_populates="usuario")
+    tests_torque = relationship("TestTorque", back_populates="usuario")
+
