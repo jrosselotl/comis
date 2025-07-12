@@ -17,6 +17,7 @@ class TestContactResistance(Base):
     equipo = relationship("Equipo", back_populates="tests_contact_resistance")
     usuario = relationship("Usuario", back_populates="tests_contact_resistance")
     resultados = relationship("ResultadoContactResistance", back_populates="test", cascade="all, delete-orphan")
+    usuario = relationship("Usuario", back_populates="tests_contact_resistance")
 
 
 class ResultadoContactResistance(Base):
