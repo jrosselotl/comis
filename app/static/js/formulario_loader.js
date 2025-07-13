@@ -53,10 +53,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             data.forEach(test => {
                 const opt = document.createElement("option");
-                opt.value = test.nombre;
+                opt.value = test.nombre; // para cargar el JS correcto
+                opt.setAttribute("data-id", test.id);  // <-- necesario
                 opt.textContent = test.nombre.charAt(0).toUpperCase() + test.nombre.slice(1).replace("_", " ");
                 tipoPruebaSelect.appendChild(opt);
             });
+
 
             await loadScript(); // Cargar script si ya hay seleccionada una prueba
         } catch {
