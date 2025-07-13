@@ -76,7 +76,15 @@ function initFormularioTorque(tipoAlimentacion) {
 
                 const actualizarAprobado = () => {
                     if (checkboxAprobado && inputNominal && inputComprobacion) {
-                        checkboxAprobado.checked = validarAprobado(inputNominal.value, inputComprobacion.value);
+                        const aprobado = validarAprobado(inputNominal.value, inputComprobacion.value);
+                        checkboxAprobado.checked = aprobado;
+                
+                        const celda = checkboxAprobado.closest("td");
+                        if (aprobado) {
+                            celda.classList.add("verde");
+                        } else {
+                            celda.classList.remove("verde");
+                        }
                     }
                 };
 
