@@ -5,6 +5,10 @@ function initFormularioContinuidad(tipoAlimentacion) {
     const bloqueResultados = document.getElementById("bloque-resultados");
     const unidadSelect = document.getElementById("unidad-select");
 
+    if (!cableSetInput || !referenciaComunInput || !contenedorResultados || !bloqueResultados || !unidadSelect) {
+        return; // Salir si el formulario no está presente
+    }
+
     const conductores = tipoAlimentacion === "monofasica"
         ? ["L", "N", "PE"]
         : ["L1", "L2", "L3", "N", "PE"];
@@ -74,29 +78,27 @@ function initFormularioContinuidad(tipoAlimentacion) {
                 const inputResultado = fila.querySelector(`#${idResultado}`);
                 const botonNA = fila.querySelector(`#${idNA}`);
 
-                botonNA.addEventListener("click", () => {
-                    if (inputResultado.disabled) {
-                        inputResultado.disabled = false;
-                        inputResultado.value = "";
-                        botonNA.classList.remove("activo");
-                    } else {
-                        inputResultado.disabled = true;
-                        inputResultado.value = "N/A";
-                        botonNA.classList.add("activo");
-                    }
-                });
+                if (botonNA && inputResultado) {
+                    botonNA.addEventListener("click", () => {
+                        if (inputResultado.disabled) {
+                            inputResultado.disabled = false;
+                            inputResultado.value = "";
+                            botonNA.classList.remove("activo");
+                        } else {
+                            inputResultado.disabled = true;
+                            inputResultado.value = "N/A";
+                            botonNA.classList.add("activo");
+                        }
+                    });
+                }
 
                 const label = fila.querySelector("label");
-                const inputFile = label.querySelector("input[type='file']");
-                const textoAdjunto = label.querySelector(".adjunto-texto");
+                const inputFile = label?.querySelector("input[type='file']");
+                const textoAdjunto = label?.querySelector(".adjunto-texto");
 
-                inputFile.addEventListener("change", async (e) => {
+                inputFile?.addEventListener("change", async (e) => {
                     const file = e.target.files[0];
-                    if (file) {
-                        textoAdjunto.textContent = "📎 Archivo adjunto";
-                    } else {
-                        textoAdjunto.textContent = "";
-                    }
+                    textoAdjunto.textContent = file ? "📎 Archivo adjunto" : "";
                 });
             });
 
@@ -109,7 +111,10 @@ function initFormularioContinuidad(tipoAlimentacion) {
     unidadSelect.addEventListener("change", generarCampos);
     generarCampos();
 
-    document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
+    const form = document.getElementById("formulario-pruebas");
+    if (!form) return;
+
+    form.addEventListener("submit", async function (e) {
         const tipo = document.getElementById("tipo-prueba")?.value;
         if (tipo !== "continuidad") return;
 
