@@ -1,4 +1,4 @@
-function initFormularioContinuidad(tipoAlimentacion) {
+function initFormularioContactResistance(tipoAlimentacion) {
     const cableSetInput = document.getElementById("cable_sets");
     const referenciaComunInput = document.getElementById("referencia-comun");
     const contenedorResultados = document.getElementById("contenedor-resultados");
@@ -6,24 +6,22 @@ function initFormularioContinuidad(tipoAlimentacion) {
     const unidadSelect = document.getElementById("unidad-select");
 
     if (!cableSetInput || !referenciaComunInput || !contenedorResultados || !bloqueResultados || !unidadSelect) {
-        return; // Salir si el formulario no está presente
+        return;
     }
 
     const conductores = tipoAlimentacion === "monofasica"
         ? ["L", "N", "PE"]
         : ["L1", "L2", "L3", "N", "PE"];
 
-    function generarCombinaciones(lista) {
-        const combos = [];
-        for (let i = 0; i < lista.length; i++) {
-            for (let j = i + 1; j < lista.length; j++) {
-                combos.push(`${lista[i]}-${lista[j]}`);
-            }
-        }
-        return combos;
-    }
+    const combinaciones = conductores; // NO combinaciones cruzadas
 
-    const combinaciones = conductores;
+    function validarAprobadoContact(valor, referencia) {
+        if (!valor || valor.toLowerCase() === "n/a") return true;
+        const num = parseFloat(valor);
+        const ref = parseFloat(referencia);
+        if (isNaN(num) || isNaN(ref)) return false;
+        return num <= ref;
+    }
 
     function generarCampos() {
         const cantidad = parseInt(cableSetInput.value) || 0;
@@ -37,14 +35,14 @@ function initFormularioContinuidad(tipoAlimentacion) {
             tabla.classList.add("tabla-prueba");
 
             tabla.innerHTML = `
-                <caption>Continuidad - Cable Set ${i}</caption>
+                <caption>Contact Resistance - Cable Set ${i}</caption>
                 <tr>
                     <th>Punto</th>
                     <th>Referencia</th>
                     <th>Resultado / N/A</th>
                     <th>Unidad</th>
-                    <th>Observaciones</th>
                     <th>¿Aprobado?</th>
+                    <th>Observaciones</th>
                     <th>Imagen</th>
                 </tr>`;
 
@@ -53,6 +51,7 @@ function initFormularioContinuidad(tipoAlimentacion) {
                 const idResultado = `resultado_${i}_${punto}`;
                 const idNA = `na_${i}_${punto}`;
                 const idUnidad = `unidad_${i}_${punto}`;
+                const idAprobado = `aprobado_${i}_${punto}`;
 
                 fila.innerHTML = `
                     <td>${punto}</td>
@@ -64,8 +63,8 @@ function initFormularioContinuidad(tipoAlimentacion) {
                       </div>
                     </td>
                     <td><input name="${idUnidad}" type="text" value="${unidad}" readonly /></td>
+                    <td><input id="${idAprobado}" name="aprobado_${i}_${punto}" type="checkbox" disabled /></td>
                     <td><input name="observaciones_${i}_${punto}" type="text" /></td>
-                    <td><input name="aprobado_${i}_${punto}" type="checkbox" disabled /></td>
                     <td>
                         <label class="camera-label">
                             📷 <span class="adjunto-texto"></span>
@@ -77,8 +76,9 @@ function initFormularioContinuidad(tipoAlimentacion) {
 
                 const inputResultado = fila.querySelector(`#${idResultado}`);
                 const botonNA = fila.querySelector(`#${idNA}`);
+                const checkboxAprobado = fila.querySelector(`#${idAprobado}`);
 
-                if (botonNA && inputResultado) {
+                if (botonNA && inputResultado && checkboxAprobado) {
                     botonNA.addEventListener("click", () => {
                         if (inputResultado.disabled) {
                             inputResultado.disabled = false;
@@ -88,9 +88,21 @@ function initFormularioContinuidad(tipoAlimentacion) {
                             inputResultado.disabled = true;
                             inputResultado.value = "N/A";
                             botonNA.classList.add("activo");
+                            checkboxAprobado.checked = true;
+                            checkboxAprobado.classList.add("verde");
                         }
                     });
                 }
+
+                const actualizarAprobado = () => {
+                    if (checkboxAprobado && inputResultado) {
+                        const aprobado = validarAprobadoContact(inputResultado.value, referenciaComun);
+                        checkboxAprobado.checked = aprobado;
+                        checkboxAprobado.classList.toggle("verde", aprobado);
+                    }
+                };
+
+                inputResultado?.addEventListener("input", actualizarAprobado);
 
                 const label = fila.querySelector("label");
                 const inputFile = label?.querySelector("input[type='file']");
@@ -111,12 +123,9 @@ function initFormularioContinuidad(tipoAlimentacion) {
     unidadSelect.addEventListener("change", generarCampos);
     generarCampos();
 
-    const form = document.getElementById("formulario-pruebas");
-    if (!form) return;
-
-    form.addEventListener("submit", async function (e) {
+    document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
         const tipo = document.getElementById("tipo-prueba")?.value;
-        if (tipo !== "continuidad") return;
+        if (tipo !== "contact_resistance") return;
 
         e.preventDefault();
 
@@ -125,7 +134,7 @@ function initFormularioContinuidad(tipoAlimentacion) {
         const referenciaComun = referenciaComunInput.value;
 
         if (!cableSets || !unidad || !referenciaComun) {
-            alert("Debe ingresar Cable Sets, unidad de medida y valor de referencia.");
+            alert("Debe ingresar Cable Sets, unidad y valor de referencia.");
             return;
         }
 
@@ -143,6 +152,7 @@ function initFormularioContinuidad(tipoAlimentacion) {
         const numero_sub_equipo = document.getElementById("numero_sub_equipo")?.value || "";
         const tipo_alimentacion = document.getElementById("tipo_alimentacion")?.value;
         const terminal = document.getElementById("terminal")?.value || "";
+        const test_id = document.getElementById("tipo-prueba").selectedOptions[0]?.getAttribute("data-id");
 
         for (let i = 1; i <= cableSets; i++) {
             for (const punto of combinaciones) {
@@ -174,7 +184,6 @@ function initFormularioContinuidad(tipoAlimentacion) {
         formData.append("numero_tipo_equipo", numero_tipo_equipo);
         formData.append("sub_equipo", sub_equipo);
         formData.append("numero_sub_equipo", numero_sub_equipo);
-        const test_id = document.getElementById("tipo-prueba").selectedOptions[0]?.getAttribute("data-id");
         formData.append("test_id", test_id);
         formData.append("cable_sets", cableSets);
         formData.append("tipo_alimentacion", tipo_alimentacion);
@@ -196,4 +205,4 @@ function initFormularioContinuidad(tipoAlimentacion) {
     });
 }
 
-window.initFormularioContinuidad = initFormularioContinuidad;
+window.initFormularioContactResistance = initFormularioContactResistance;
