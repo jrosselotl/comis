@@ -3,6 +3,7 @@ function initFormularioContinuidad(tipoAlimentacion) {
     const referenciaComunInput = document.getElementById("referencia-comun");
     const contenedorResultados = document.getElementById("contenedor-resultados");
     const bloqueResultados = document.getElementById("bloque-resultados");
+    bloqueResultados.style.display = cantidad > 0 ? "block" : "none";
     const unidadSelect = document.getElementById("unidad-select");
 
     if (!cableSetInput || !referenciaComunInput || !contenedorResultados || !bloqueResultados || !unidadSelect) {
