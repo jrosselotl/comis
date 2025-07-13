@@ -83,6 +83,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
         };
         document.body.appendChild(currentScript);
+        document.getElementById("bloque-caracteristicas").style.display = tipo ? "block" : "none";
     }
 
     function actualizarUnidades(tipoPrueba) {
