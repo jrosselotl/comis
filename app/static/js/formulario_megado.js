@@ -26,6 +26,14 @@ function initFormularioMegado(tipoAlimentacion) {
 
     const combinaciones = generarCombinaciones(conductores);
 
+    function validarAprobadoMegado(valor, referencia) {
+        if (!valor || valor.toLowerCase() === "n/a") return true;
+        const num = parseFloat(valor);
+        const ref = parseFloat(referencia);
+        if (isNaN(num) || isNaN(ref)) return false;
+        return num <= ref;
+    }
+
     function generarCampos() {
         const cantidad = parseInt(cableSetInput.value) || 0;
         const referenciaComun = referenciaComunInput.value;
@@ -56,6 +64,7 @@ function initFormularioMegado(tipoAlimentacion) {
                 const idResultado = `resultado_${i}_${punto}`;
                 const idNA = `na_${i}_${punto}`;
                 const idUnidad = `unidad_${i}_${punto}`;
+                const idAprobado = `aprobado_${i}_${punto}`;
 
                 fila.innerHTML = `
                     <td>${punto}</td>
@@ -68,7 +77,7 @@ function initFormularioMegado(tipoAlimentacion) {
                     </td>
                     <td><input name="${idUnidad}" type="text" value="${unidad}" readonly /></td>
                     <td><input name="tiempo_${i}_${punto}" type="text" value="${tiempoGlobal}" readonly /></td>
-                    <td><input name="aprobado_${i}_${punto}" type="checkbox" disabled /></td>
+                    <td><input id="${idAprobado}" name="aprobado_${i}_${punto}" type="checkbox" disabled /></td>
                     <td><input name="observaciones_${i}_${punto}" type="text" /></td>
                     <td>
                         <label class="camera-label">
@@ -81,8 +90,9 @@ function initFormularioMegado(tipoAlimentacion) {
 
                 const inputResultado = fila.querySelector(`#${idResultado}`);
                 const botonNA = fila.querySelector(`#${idNA}`);
+                const checkboxAprobado = fila.querySelector(`#${idAprobado}`);
 
-                if (botonNA && inputResultado) {
+                if (botonNA && inputResultado && checkboxAprobado) {
                     botonNA.addEventListener("click", () => {
                         if (inputResultado.disabled) {
                             inputResultado.disabled = false;
@@ -92,9 +102,21 @@ function initFormularioMegado(tipoAlimentacion) {
                             inputResultado.disabled = true;
                             inputResultado.value = "N/A";
                             botonNA.classList.add("activo");
+                            checkboxAprobado.checked = true;
+                            checkboxAprobado.classList.add("verde");
                         }
                     });
                 }
+
+                const actualizarAprobado = () => {
+                    if (checkboxAprobado && inputResultado) {
+                        const aprobado = validarAprobadoMegado(inputResultado.value, referenciaComun);
+                        checkboxAprobado.checked = aprobado;
+                        checkboxAprobado.classList.toggle("verde", aprobado);
+                    }
+                };
+
+                inputResultado?.addEventListener("input", actualizarAprobado);
 
                 const label = fila.querySelector("label");
                 const inputFile = label?.querySelector("input[type='file']");
@@ -148,6 +170,7 @@ function initFormularioMegado(tipoAlimentacion) {
         const numero_sub_equipo = document.getElementById("numero_sub_equipo")?.value || "";
         const tipo_alimentacion = document.getElementById("tipo_alimentacion")?.value;
         const terminal = document.getElementById("terminal")?.value || "";
+        const test_id = document.getElementById("tipo-prueba").selectedOptions[0]?.getAttribute("data-id");
 
         for (let i = 1; i <= cableSets; i++) {
             for (const punto of combinaciones) {
@@ -180,7 +203,6 @@ function initFormularioMegado(tipoAlimentacion) {
         formData.append("numero_tipo_equipo", numero_tipo_equipo);
         formData.append("sub_equipo", sub_equipo);
         formData.append("numero_sub_equipo", numero_sub_equipo);
-        const test_id = document.getElementById("tipo-prueba").selectedOptions[0]?.getAttribute("data-id");
         formData.append("test_id", test_id);
         formData.append("cable_sets", cableSets);
         formData.append("tipo_alimentacion", tipo_alimentacion);
