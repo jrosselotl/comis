@@ -24,7 +24,7 @@ function initFormularioContinuidad(tipoAlimentacion) {
         return combos;
     }
 
-    const combinaciones = generarCombinaciones(conductores);
+    const combinaciones = conductores;
 
     function generarCampos() {
         const cantidad = parseInt(cableSetInput.value) || 0;
