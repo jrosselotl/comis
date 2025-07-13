@@ -15,43 +15,13 @@ document.addEventListener("DOMContentLoaded", async function () {
         torque: "/static/js/formulario_torque.js"
     };
 
-async function cargarTestsPorProyecto(proyectoId) {
-    try {
-        const res = await fetch(`/proyectos/${proyectoId}/tests`);
-        const data = await res.json();
-
-        tipoPruebaSelect.innerHTML = "";
-
-        // ✅ Agrega opción por defecto
-        const defaultOption = document.createElement("option");
-        defaultOption.value = "";
-        defaultOption.textContent = "Seleccione prueba...";
-        defaultOption.disabled = true;
-        defaultOption.selected = true;
-        tipoPruebaSelect.appendChild(defaultOption);
-
-        // ✅ Agrega las opciones de pruebas disponibles
-        data.forEach(test => {
-            const opt = document.createElement("option");
-            opt.value = test.nombre;
-            opt.textContent = test.nombre.charAt(0).toUpperCase() + test.nombre.slice(1).replace("_", " ");
-            tipoPruebaSelect.appendChild(opt);
-        });
-
-        await loadScript();  // Ejecuta el script del tipo seleccionado (si ya hay uno)
-    } catch {
-        tipoPruebaSelect.innerHTML = `<option value="">Error cargando tests</option>`;
-    }
-}
-
-
     async function cargarTestsPorProyecto(proyectoId) {
         try {
             const res = await fetch(`/proyectos/${proyectoId}/tests`);
             const data = await res.json();
+
             tipoPruebaSelect.innerHTML = "";
 
-            // ✅ Agrega opción por defecto
             const defaultOption = document.createElement("option");
             defaultOption.value = "";
             defaultOption.textContent = "Seleccione prueba...";
@@ -61,14 +31,13 @@ async function cargarTestsPorProyecto(proyectoId) {
 
             data.forEach(test => {
                 const opt = document.createElement("option");
-                opt.value = test.nombre; // para cargar el JS correcto
-                opt.setAttribute("data-id", test.id);  // <-- necesario
+                opt.value = test.nombre;
+                opt.setAttribute("data-id", test.id);
                 opt.textContent = test.nombre.charAt(0).toUpperCase() + test.nombre.slice(1).replace("_", " ");
                 tipoPruebaSelect.appendChild(opt);
             });
 
-
-            await loadScript(); // Cargar script si ya hay seleccionada una prueba
+            await loadScript();
         } catch {
             tipoPruebaSelect.innerHTML = `<option value="">Error cargando tests</option>`;
         }
@@ -126,7 +95,6 @@ async function cargarTestsPorProyecto(proyectoId) {
         unidadLabel.style.display = unidades.length > 0 ? "block" : "none";
     }
 
-    // Eventos
     proyectoSelect.addEventListener("change", async () => {
         await cargarTestsPorProyecto(proyectoSelect.value);
     });
@@ -135,10 +103,32 @@ async function cargarTestsPorProyecto(proyectoId) {
     tipoAlimentacionSelect.addEventListener("change", loadScript);
     cableSetsInput.addEventListener("input", loadScript);
 
-    // Iniciar
+    async function cargarProyectos() {
+        try {
+            const res = await fetch("/proyectos/listar");
+            const proyectos = await res.json();
+
+            proyectoSelect.innerHTML = "";
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "Seleccione proyecto...";
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            proyectoSelect.appendChild(defaultOption);
+
+            proyectos.forEach(p => {
+                const opt = document.createElement("option");
+                opt.value = p.id;
+                opt.textContent = p.nombre;
+                proyectoSelect.appendChild(opt);
+            });
+        } catch {
+            proyectoSelect.innerHTML = `<option value="">Error cargando proyectos</option>`;
+        }
+    }
+
     await cargarProyectos();
 
-    // Mostrar/ocultar campos condicionales
     const ubicacion1 = document.getElementById("ubicacion_1");
     const tipoEquipo = document.getElementById("tipo_equipo");
     const labelUbicacion2 = document.getElementById("label-ubicacion_2");
