@@ -15,27 +15,35 @@ document.addEventListener("DOMContentLoaded", async function () {
         torque: "/static/js/formulario_torque.js"
     };
 
-    async function cargarProyectos() {
-        try {
-            const res = await fetch("/proyectos/");
-            const data = await res.json();
-            proyectoSelect.innerHTML = "";
+async function cargarTestsPorProyecto(proyectoId) {
+    try {
+        const res = await fetch(`/proyectos/${proyectoId}/tests`);
+        const data = await res.json();
 
-            data.forEach(p => {
-                const opt = document.createElement("option");
-                opt.value = p.id;
-                opt.textContent = p.nombre;
-                proyectoSelect.appendChild(opt);
-            });
+        tipoPruebaSelect.innerHTML = "";
 
-            if (data.length > 0) {
-                proyectoSelect.value = data[0].id;
-                await cargarTestsPorProyecto(data[0].id);
-            }
-        } catch {
-            proyectoSelect.innerHTML = `<option value="">Error cargando proyectos</option>`;
-        }
+        // ✅ Agrega opción por defecto
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.textContent = "Seleccione prueba...";
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        tipoPruebaSelect.appendChild(defaultOption);
+
+        // ✅ Agrega las opciones de pruebas disponibles
+        data.forEach(test => {
+            const opt = document.createElement("option");
+            opt.value = test.nombre;
+            opt.textContent = test.nombre.charAt(0).toUpperCase() + test.nombre.slice(1).replace("_", " ");
+            tipoPruebaSelect.appendChild(opt);
+        });
+
+        await loadScript();  // Ejecuta el script del tipo seleccionado (si ya hay uno)
+    } catch {
+        tipoPruebaSelect.innerHTML = `<option value="">Error cargando tests</option>`;
     }
+}
+
 
     async function cargarTestsPorProyecto(proyectoId) {
         try {
