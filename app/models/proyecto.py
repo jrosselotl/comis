@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, DateTime
 from datetime import datetime
 from app.database import Base
 from sqlalchemy.orm import relationship
+from app.models.proyecto_tipo_test import ProyectoTipoTest
 
 class Proyecto(Base):
     __tablename__ = "proyectos"
@@ -13,3 +14,6 @@ class Proyecto(Base):
 
     # Relación con equipos
     equipos = relationship("Equipo", back_populates="proyecto")
+    
+    # ✅ Relación con tipos de test
+    tipos_test = relationship("ProyectoTipoTest", back_populates="proyecto")
