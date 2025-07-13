@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             const res = await fetch("/proyectos/");
             const data = await res.json();
             proyectoSelect.innerHTML = "";
+
             data.forEach(p => {
                 const opt = document.createElement("option");
                 opt.value = p.id;
@@ -42,6 +43,14 @@ document.addEventListener("DOMContentLoaded", async function () {
             const data = await res.json();
             tipoPruebaSelect.innerHTML = "";
 
+            // ✅ Agrega opción por defecto
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "Seleccione prueba...";
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            tipoPruebaSelect.appendChild(defaultOption);
+
             data.forEach(test => {
                 const opt = document.createElement("option");
                 opt.value = test.nombre;
@@ -49,7 +58,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 tipoPruebaSelect.appendChild(opt);
             });
 
-            await loadScript();  // También ejecuta cargar unidades
+            await loadScript(); // Cargar script si ya hay seleccionada una prueba
         } catch {
             tipoPruebaSelect.innerHTML = `<option value="">Error cargando tests</option>`;
         }
@@ -63,6 +72,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         if (!tipo || !scriptMap[tipo]) {
             contenedorResultados.innerHTML = "";
+            document.getElementById("bloque-caracteristicas").style.display = "none";
             return;
         }
 
@@ -83,7 +93,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
         };
         document.body.appendChild(currentScript);
-        document.getElementById("bloque-caracteristicas").style.display = tipo ? "block" : "none";
+        document.getElementById("bloque-caracteristicas").style.display = "block";
     }
 
     function actualizarUnidades(tipoPrueba) {
