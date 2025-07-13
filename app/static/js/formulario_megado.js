@@ -4,6 +4,7 @@ function initFormularioMegado(tipoAlimentacion) {
     const tiempoInputGlobal = document.getElementById("tiempo-aplicado-global");
     const contenedorResultados = document.getElementById("contenedor-resultados");
     const bloqueResultados = document.getElementById("bloque-resultados");
+    bloqueResultados.style.display = cantidad > 0 ? "block" : "none";
 
     const conductores = tipoAlimentacion === "monofasica"
         ? ["L", "N", "PE"]
