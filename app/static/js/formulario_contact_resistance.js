@@ -171,7 +171,8 @@ function initFormularioContactResistance(tipoAlimentacion) {
         formData.append("numero_tipo_equipo", numero_tipo_equipo);
         formData.append("sub_equipo", sub_equipo);
         formData.append("numero_sub_equipo", numero_sub_equipo);
-        formData.append("tipo_prueba", "contact_resistance");
+        const test_id = document.getElementById("tipo-prueba").selectedOptions[0]?.getAttribute("data-id");
+        formData.append("test_id", test_id);
         formData.append("cable_sets", cableSets);
         formData.append("tipo_alimentacion", tipo_alimentacion);
         formData.append("terminal", terminal);
