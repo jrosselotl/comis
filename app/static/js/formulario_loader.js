@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     const tipoAlimentacionSelect = document.getElementById("tipo_alimentacion");
     const cableSetsInput = document.getElementById("cable_sets");
     const contenedorResultados = document.getElementById("contenedor-resultados");
+    const unidadLabel = document.getElementById("label-unidad");
+    const unidadSelect = document.getElementById("unidad");
     let currentScript;
 
     const scriptMap = {
@@ -47,7 +49,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 tipoPruebaSelect.appendChild(opt);
             });
 
-            await loadScript();  // Cargar el script al cambiar proyecto
+            await loadScript();  // También ejecuta cargar unidades
         } catch {
             tipoPruebaSelect.innerHTML = `<option value="">Error cargando tests</option>`;
         }
@@ -56,6 +58,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     async function loadScript() {
         const tipo = tipoPruebaSelect.value;
         const tipoAlimentacion = tipoAlimentacionSelect.value;
+
+        actualizarUnidades(tipo);
 
         if (!tipo || !scriptMap[tipo]) {
             contenedorResultados.innerHTML = "";
@@ -79,6 +83,26 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
         };
         document.body.appendChild(currentScript);
+    }
+
+    function actualizarUnidades(tipoPrueba) {
+        if (!window.UNIDADES_POR_TEST) {
+            console.warn("UNIDADES_POR_TEST no está definido.");
+            unidadLabel.style.display = "none";
+            return;
+        }
+
+        const unidades = window.UNIDADES_POR_TEST[tipoPrueba] || [];
+        unidadSelect.innerHTML = `<option value="">Seleccione unidad...</option>`;
+
+        unidades.forEach(u => {
+            const opt = document.createElement("option");
+            opt.value = u;
+            opt.textContent = u;
+            unidadSelect.appendChild(opt);
+        });
+
+        unidadLabel.style.display = unidades.length > 0 ? "block" : "none";
     }
 
     // Eventos
