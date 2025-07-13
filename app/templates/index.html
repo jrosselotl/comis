@@ -16,6 +16,7 @@
 </div>
 
 <form id="formulario-pruebas" enctype="multipart/form-data">
+  <!-- Paso 1: Datos del equipo -->
   <fieldset>
     <legend>1. Datos del Equipo</legend>
 
@@ -86,44 +87,50 @@
     </label>
   </fieldset>
 
+  <!-- Paso 2: Tipo de prueba -->
   <fieldset>
-    <legend>2. Prueba</legend>
-    <div class="field-group">
-      <div id="nombre-equipo" style="font-weight: bold; font-size: 1.1rem; margin-bottom: 1rem;"></div>
+    <legend>2. Tipo de prueba</legend>
+    <label>Tipo de prueba:
+      <select id="tipo-prueba" name="tipo_prueba" required>
+        <option value="">Seleccione prueba...</option>
+      </select>
+    </label>
+  </fieldset>
 
-      <label>Tipo de prueba:
-        <select id="tipo-prueba" name="tipo_prueba" required>
-          <option value="">Seleccione prueba...</option>
-        </select>
-      </label>
+  <!-- Paso 3: Características -->
+  <fieldset id="bloque-caracteristicas" style="display:none;">
+    <legend>3. Características</legend>
 
-      <label id="label-unidad" style="display:none;">Unidad:
-        <select id="unidad" name="unidad">
-          <option value="">Seleccione unidad...</option>
-        </select>
-      </label>
+    <label>Cable Sets:
+      <input type="number" id="cable_sets" name="cable_sets" min="1" value="1" required />
+    </label>
 
-      <div id="campo-tiempo-aplicado" style="display: none;">
-        <label>Tiempo aplicado (s):
-          <input type="text" id="tiempo-aplicado-global" placeholder="Ej: 60" />
-        </label>
-      </div>
+    <label id="label-unidad" style="display:none;">Unidad:
+      <select id="unidad" name="unidad">
+        <option value="">Seleccione unidad...</option>
+      </select>
+    </label>
 
-      <label>Cable Sets:
-        <input type="number" id="cable_sets" name="cable_sets" min="1" value="1" required />
+    <div id="campo-tiempo-aplicado" style="display: none;">
+      <label>Tiempo aplicado (s):
+        <input type="text" id="tiempo-aplicado-global" placeholder="Ej: 60" />
       </label>
     </div>
   </fieldset>
 
-  <div id="bloque-resultados" style="display:none; margin-top: 30px;">
-    <h4>3. Resultados Test</h4>
+  <!-- Paso 4: Resultados -->
+  <fieldset id="bloque-resultados" style="display:none;">
+    <legend>4. Resultados de la prueba</legend>
     <div id="contenedor-resultados"></div>
-  </div>
+  </fieldset>
+
   <button type="submit">Guardar</button>
 </form>
 
+<!-- Scripts -->
 <script src="/static/js/unidades_por_test.js"></script>
 <script src="/static/js/formulario_loader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+
 </body>
 </html>
