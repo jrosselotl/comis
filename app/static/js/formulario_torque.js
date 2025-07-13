@@ -17,7 +17,7 @@ function initFormularioTorque(tipoAlimentacion) {
         return combos;
     }
 
-    const combinaciones = generarCombinaciones(conductores);
+    const combinaciones = conductores;
 
     function validarAprobado(nominal, comprobacion) {
         const n = parseFloat(nominal);
