@@ -6,6 +6,11 @@ function initFormularioMegado(tipoAlimentacion) {
     const bloqueResultados = document.getElementById("bloque-resultados");
     const unidadSelect = document.getElementById("unidad");
 
+    if (!cableSetInput || !referenciaComunInput || !tiempoInputGlobal || !contenedorResultados || !bloqueResultados || !unidadSelect) {
+        console.error("Formulario de megado: elementos clave no disponibles");
+        return;
+    }
+
     const conductores = tipoAlimentacion === "monofasica"
         ? ["L", "N", "PE"]
         : ["L1", "L2", "L3", "N", "PE"];
@@ -130,7 +135,8 @@ function initFormularioMegado(tipoAlimentacion) {
     tiempoInputGlobal.addEventListener("input", generarCampos);
     generarCampos();
 
-    document.getElementById("campo-tiempo-aplicado").style.display = "block";
+    const campoTiempo = document.getElementById("campo-tiempo-aplicado");
+    if (campoTiempo) campoTiempo.style.display = "block";
 }
 
 window.initFormularioMegado = initFormularioMegado;
