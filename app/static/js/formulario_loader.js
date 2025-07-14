@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     async function cargarProyectos() {
         try {
-            const res = await fetch("/proyectos/listar");
+            const res = await fetch("/proyectos/");
             const proyectos = await res.json();
 
             proyectoSelect.innerHTML = "";
