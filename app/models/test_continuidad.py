@@ -30,4 +30,3 @@ class ResultadoContinuidad(Base):
     imagen = Column(String, nullable=True)
 
     test = relationship("TestContinuidad", back_populates="resultados")
-
