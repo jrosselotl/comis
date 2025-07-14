@@ -1,9 +1,9 @@
 function initFormularioMegado(tipoAlimentacion) {
     const cableSetInput = document.getElementById("cable_sets");
     const referenciaComunInput = document.getElementById("referencia-comun");
-    const tiempoInputGlobal = document.getElementById("tiempo-aplicado-global");
     const contenedorResultados = document.getElementById("contenedor-resultados");
     const bloqueResultados = document.getElementById("bloque-resultados");
+    const unidadSelect = document.getElementById("unidad-select");
 
     const conductores = tipoAlimentacion === "monofasica"
         ? ["L", "N", "PE"]
@@ -24,7 +24,7 @@ function initFormularioMegado(tipoAlimentacion) {
     function generarCampos() {
         const cantidad = parseInt(cableSetInput.value) || 0;
         const referenciaComun = referenciaComunInput.value;
-        const tiempoGlobal = tiempoInputGlobal.value;
+        const unidad = unidadSelect.value;
         contenedorResultados.innerHTML = "";
         bloqueResultados.style.display = cantidad > 0 ? "block" : "none";
 
@@ -37,22 +37,34 @@ function initFormularioMegado(tipoAlimentacion) {
                 <tr>
                     <th>Punto</th>
                     <th>Referencia</th>
-                    <th>Resultado</th>
-                    <th>Tiempo</th>
-                    <th>¿Aprobado?</th>
+                    <th>Resultado / N/A</th>
+                    <th>Unidad</th>
+                    <th>Tiempo aplicado (s)</th>
                     <th>Observaciones</th>
+                    <th>¿Aprobado?</th>
                     <th>Imagen</th>
                 </tr>`;
 
             combinaciones.forEach((punto) => {
                 const fila = document.createElement("tr");
+                const idResultado = `resultado_${i}_${punto}`;
+                const idNA = `na_${i}_${punto}`;
+                const idUnidad = `unidad_${i}_${punto}`;
+                const idTiempo = `tiempo_${i}_${punto}`;
+
                 fila.innerHTML = `
                     <td>${punto}</td>
-                    <td><input name="referencia_${i}_${punto}" type="text" value="${referenciaComun}" readonly /></td>
-                    <td><input name="resultado_${i}_${punto}" type="text" /></td>
-                    <td><input name="tiempo_${i}_${punto}" type="text" value="${tiempoGlobal}" readonly /></td>
-                    <td><input name="aprobado_${i}_${punto}" type="checkbox" /></td>
+                    <td>${referenciaComun} ${unidad}</td>
+                    <td>
+                      <div class="resultado-combinado">
+                        <button type="button" class="na-btn" id="${idNA}">N/A</button>
+                        <input type="text" name="${idResultado}" id="${idResultado}" />
+                      </div>
+                    </td>
+                    <td><input name="${idUnidad}" type="text" value="${unidad}" readonly /></td>
+                    <td><input name="${idTiempo}" type="number" min="0" /></td>
                     <td><input name="observaciones_${i}_${punto}" type="text" /></td>
+                    <td><input name="aprobado_${i}_${punto}" type="checkbox" disabled /></td>
                     <td>
                         <label class="camera-label">
                             📷 <span class="adjunto-texto"></span>
@@ -62,33 +74,26 @@ function initFormularioMegado(tipoAlimentacion) {
                 `;
                 tabla.appendChild(fila);
 
-                const inputFile = fila.querySelector("input[type='file']");
-                const resultadoInput = fila.querySelector(`input[name="resultado_${i}_${punto}"]`);
-                const textoAdjunto = fila.querySelector(".adjunto-texto");
-
-                inputFile.addEventListener("change", async (e) => {
-                    if (e.target.files.length > 0) {
-                        const archivo = e.target.files[0];
-                        textoAdjunto.textContent = "📎 Archivo adjunto";
-
-                        const reader = new FileReader();
-                        /*reader.onload = async function () {
-                            try {
-                                const { data: { text } } = await Tesseract.recognize(reader.result, 'eng');
-                                const match = text.match(/[\d]+(?:[\.,]\d+)?\s?(?:kV|KV|Ω|ohm|MΩ|GΩ|V|mA|A)?/);
-                                if (match) {
-                                    resultadoInput.value = match[0].replace(",", ".").trim();
-                                } else {
-                                    resultadoInput.value = text.trim(); // fallback
-                                }
-                            } catch (err) {
-                                console.error("Error OCR:", err);
-                            }
-                        };
-                        reader.readAsDataURL(archivo);*/
+                const inputResultado = fila.querySelector(`#${idResultado}`);
+                const botonNA = fila.querySelector(`#${idNA}`);
+                botonNA.addEventListener("click", () => {
+                    if (inputResultado.disabled) {
+                        inputResultado.disabled = false;
+                        inputResultado.value = "";
+                        botonNA.classList.remove("activo");
                     } else {
-                        textoAdjunto.textContent = "";
+                        inputResultado.disabled = true;
+                        inputResultado.value = "N/A";
+                        botonNA.classList.add("activo");
                     }
+                });
+
+                const label = fila.querySelector("label");
+                const inputFile = label.querySelector("input[type='file']");
+                const textoAdjunto = label.querySelector(".adjunto-texto");
+
+                inputFile.addEventListener("change", () => {
+                    textoAdjunto.textContent = inputFile.files[0] ? "📎 Archivo adjunto" : "";
                 });
             });
 
@@ -98,28 +103,28 @@ function initFormularioMegado(tipoAlimentacion) {
 
     cableSetInput.addEventListener("input", generarCampos);
     referenciaComunInput.addEventListener("input", generarCampos);
-    tiempoInputGlobal.addEventListener("input", generarCampos);
+    unidadSelect.addEventListener("change", generarCampos);
     generarCampos();
 
-    document.getElementById("campo-tiempo-aplicado").style.display = "block";
-
     document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
-        const tipo_prueba_valor = document.getElementById("tipo-prueba")?.value;
-        if (tipo_prueba_valor !== "megado") return;
+        const tipo = document.getElementById("tipo-prueba")?.value;
+        if (tipo !== "megado") return;
 
         e.preventDefault();
 
         const cableSets = parseInt(cableSetInput.value);
+        const unidad = unidadSelect.value;
         const referenciaComun = referenciaComunInput.value;
-        const tiempoGlobal = tiempoInputGlobal.value;
+
+        if (!cableSets || !unidad || !referenciaComun) {
+            alert("Debe ingresar Cable Sets, unidad de medida y valor de referencia.");
+            return;
+        }
 
         const datos = [];
         const imagenes = [];
 
-        const proyectoSelect = document.getElementById("proyecto_id");
-        const proyecto_id = proyectoSelect.value;
-        const proyecto_nombre = proyectoSelect.options[proyectoSelect.selectedIndex].text;
-
+        const proyecto_id = document.getElementById("proyecto_id").value;
         const ubicacion_1 = document.getElementById("ubicacion_1").value;
         const numero_ubicacion_1 = document.getElementById("numero_ubicacion_1").value;
         const ubicacion_2 = document.getElementById("ubicacion_2")?.value || "";
@@ -129,22 +134,13 @@ function initFormularioMegado(tipoAlimentacion) {
         const sub_equipo = document.getElementById("sub_equipo")?.value || "";
         const numero_sub_equipo = document.getElementById("numero_sub_equipo")?.value || "";
         const tipo_alimentacion = document.getElementById("tipo_alimentacion")?.value;
-
-        let partes = [proyecto_nombre, `${ubicacion_1}${numero_ubicacion_1}`];
-        if (ubicacion_1 === "COLO" && ubicacion_2 && numero_ubicacion_2) {
-            partes.push(`${ubicacion_2}${numero_ubicacion_2}`);
-        }
-        partes.push(`${tipo_equipo}${numero_tipo_equipo}`);
-        if (sub_equipo && numero_sub_equipo) {
-            partes.push(`${sub_equipo}${numero_sub_equipo}`);
-        }
-        const codigo_equipo = partes.join("-");
+        const terminal = document.getElementById("terminal")?.value || "";
 
         for (let i = 1; i <= cableSets; i++) {
             for (const punto of combinaciones) {
                 const resultado = document.querySelector(`[name="resultado_${i}_${punto}"]`)?.value || "";
-                const aprobado = document.querySelector(`[name="aprobado_${i}_${punto}"]`)?.checked || false;
                 const observaciones = document.querySelector(`[name="observaciones_${i}_${punto}"]`)?.value || "";
+                const tiempo_aplicado = document.querySelector(`[name="tiempo_${i}_${punto}"]`)?.value || "";
                 const imagenInput = document.querySelector(`[name="imagen_${i}_${punto}"]`);
                 const imagen = imagenInput?.files[0];
 
@@ -153,8 +149,8 @@ function initFormularioMegado(tipoAlimentacion) {
                     punto_prueba: punto,
                     referencia_valor: referenciaComun,
                     resultado_valor: resultado,
-                    tiempo_aplicado: tiempoGlobal,
-                    aprobado: aprobado,
+                    tiempo_aplicado: tiempo_aplicado,
+                    unidad: unidad,
                     observaciones: observaciones
                 });
 
@@ -175,6 +171,7 @@ function initFormularioMegado(tipoAlimentacion) {
         formData.append("tipo_prueba", "megado");
         formData.append("cable_sets", cableSets);
         formData.append("tipo_alimentacion", tipo_alimentacion);
+        formData.append("terminal", terminal);
         formData.append("datos", JSON.stringify(datos));
         imagenes.forEach(img => formData.append("imagenes", img));
 
@@ -183,8 +180,12 @@ function initFormularioMegado(tipoAlimentacion) {
             body: formData
         });
 
-        const res = await response.json().catch(() => alert("Error interno del servidor"));
-        alert(res?.mensaje || "Error al guardar");
+        const res = await response.json().catch(() => null);
+        if (response.ok && res?.mensaje) {
+            alert(res.mensaje);
+        } else {
+            alert(res?.detail || "Error al guardar el formulario.");
+        }
     });
 }
 
