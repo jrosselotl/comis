@@ -63,19 +63,26 @@ document.addEventListener("DOMContentLoaded", async function () {
         currentScript = document.createElement("script");
         currentScript.src = scriptMap[tipo];
         currentScript.onload = () => {
-            setTimeout(() => {
-                const initFunctionName = `initFormulario${tipo
-                    .split("_")
-                    .map(p => p.charAt(0).toUpperCase() + p.slice(1))
-                    .join("")}`;
-                const initFunction = window[initFunctionName];
-                if (typeof initFunction === "function") {
-                    initFunction(tipoAlimentacion);
-                } else {
-                    console.error(`Función ${initFunctionName} no encontrada.`);
-                }
-            }, 0);
-        };
+    setTimeout(() => {
+        const initFunctionName = `initFormulario${tipo
+            .split("_")
+            .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+            .join("")}`;
+        const initFunction = window[initFunctionName];
+        if (typeof initFunction === "function") {
+            initFunction(tipoAlimentacion);
+
+            // 🟢 Forzar generación de campos si ya hay cable sets definidos
+            const cableSetInput = document.getElementById("cable_sets");
+            if (cableSetInput && cableSetInput.value) {
+                cableSetInput.dispatchEvent(new Event("input"));
+            }
+        } else {
+            console.error(`Función ${initFunctionName} no encontrada.`);
+        }
+    }, 50); // ligera espera para asegurar que el DOM esté listo
+};
+
         document.body.appendChild(currentScript);
         document.getElementById("bloque-caracteristicas").style.display = "block";
     }
