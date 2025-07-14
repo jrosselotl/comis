@@ -5,6 +5,11 @@ function initFormularioContinuidad(tipoAlimentacion) {
     const bloqueResultados = document.getElementById("bloque-resultados");
     const unidadSelect = document.getElementById("unidad");
 
+    if (!cableSetInput || !referenciaComunInput || !contenedorResultados || !bloqueResultados || !unidadSelect) {
+        console.warn("initFormularioContinuidad: elementos del DOM no disponibles todavía.");
+        return;
+    }
+
     const conductores = tipoAlimentacion === "monofasica"
         ? ["L", "N", "PE"]
         : ["L1", "L2", "L3", "N", "PE"];
