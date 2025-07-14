@@ -37,4 +37,4 @@ def obtener_correos_admins(db: Session, proyecto_id: int) -> list[str]:
         .all()
     )
     correos = [u.correo for u in usuarios_admins]
-    return correos or ["soporte@miempresa.com"]  # Fallback
+    return correos or ["jrosselot@alancx.com"]  # Fallback
