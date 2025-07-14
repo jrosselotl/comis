@@ -4,12 +4,6 @@ function initFormularioMegado(tipoAlimentacion) {
     const tiempoInputGlobal = document.getElementById("tiempo-aplicado-global");
     const contenedorResultados = document.getElementById("contenedor-resultados");
     const bloqueResultados = document.getElementById("bloque-resultados");
-    const unidadSelect = document.getElementById("unidad");
-
-    if (!cableSetInput || !referenciaComunInput || !tiempoInputGlobal || !contenedorResultados || !bloqueResultados || !unidadSelect) {
-        console.error("Formulario de megado: elementos clave no disponibles");
-        return;
-    }
 
     const conductores = tipoAlimentacion === "monofasica"
         ? ["L", "N", "PE"]
@@ -27,31 +21,23 @@ function initFormularioMegado(tipoAlimentacion) {
 
     const combinaciones = generarCombinaciones(conductores);
 
-    function validarAprobado(valor, referencia) {
-        if (!valor || valor.toLowerCase() === "n/a") return true;
-        const num = parseFloat(valor);
-        const ref = parseFloat(referencia);
-        if (isNaN(num) || isNaN(ref)) return false;
-        return num <= ref;
-    }
-
     function generarCampos() {
         const cantidad = parseInt(cableSetInput.value) || 0;
-        const unidad = unidadSelect.value;
-        const referencia = referenciaComunInput.value;
-        const tiempo = tiempoInputGlobal.value;
+        const referenciaComun = referenciaComunInput.value;
+        const tiempoGlobal = tiempoInputGlobal.value;
         contenedorResultados.innerHTML = "";
         bloqueResultados.style.display = cantidad > 0 ? "block" : "none";
 
         for (let i = 1; i <= cantidad; i++) {
             const tabla = document.createElement("table");
             tabla.classList.add("tabla-prueba");
+
             tabla.innerHTML = `
                 <caption>Megado - Cable Set ${i}</caption>
                 <tr>
                     <th>Punto</th>
+                    <th>Referencia</th>
                     <th>Resultado</th>
-                    <th>Unidad</th>
                     <th>Tiempo</th>
                     <th>¿Aprobado?</th>
                     <th>Observaciones</th>
@@ -59,22 +45,13 @@ function initFormularioMegado(tipoAlimentacion) {
                 </tr>`;
 
             combinaciones.forEach((punto) => {
-                const idResultado = `resultado_${i}_${punto}`;
-                const idNA = `na_${i}_${punto}`;
-                const idAprobado = `aprobado_${i}_${punto}`;
-
                 const fila = document.createElement("tr");
                 fila.innerHTML = `
                     <td>${punto}</td>
-                    <td>
-                        <div class="resultado-combinado">
-                            <button type="button" class="na-btn" id="${idNA}">N/A</button>
-                            <input type="text" name="${idResultado}" id="${idResultado}" />
-                        </div>
-                    </td>
-                    <td><input name="unidad_${i}_${punto}" type="text" value="${unidad}" readonly /></td>
-                    <td><input name="tiempo_${i}_${punto}" type="text" value="${tiempo}" readonly /></td>
-                    <td><input id="${idAprobado}" name="aprobado_${i}_${punto}" type="checkbox" disabled /></td>
+                    <td><input name="referencia_${i}_${punto}" type="text" value="${referenciaComun}" readonly /></td>
+                    <td><input name="resultado_${i}_${punto}" type="text" /></td>
+                    <td><input name="tiempo_${i}_${punto}" type="text" value="${tiempoGlobal}" readonly /></td>
+                    <td><input name="aprobado_${i}_${punto}" type="checkbox" /></td>
                     <td><input name="observaciones_${i}_${punto}" type="text" /></td>
                     <td>
                         <label class="camera-label">
@@ -85,43 +62,33 @@ function initFormularioMegado(tipoAlimentacion) {
                 `;
                 tabla.appendChild(fila);
 
-                const inputResultado = fila.querySelector(`#${idResultado}`);
-                const botonNA = fila.querySelector(`#${idNA}`);
-                const checkboxAprobado = fila.querySelector(`#${idAprobado}`);
+                const inputFile = fila.querySelector("input[type='file']");
+                const resultadoInput = fila.querySelector(`input[name="resultado_${i}_${punto}"]`);
+                const textoAdjunto = fila.querySelector(".adjunto-texto");
 
-                if (botonNA && inputResultado && checkboxAprobado) {
-                    botonNA.addEventListener("click", () => {
-                        if (inputResultado.disabled) {
-                            inputResultado.disabled = false;
-                            inputResultado.value = "";
-                            botonNA.classList.remove("activo");
-                        } else {
-                            inputResultado.disabled = true;
-                            inputResultado.value = "N/A";
-                            botonNA.classList.add("activo");
-                            checkboxAprobado.checked = true;
-                            checkboxAprobado.classList.add("verde");
-                        }
-                    });
-                }
+                inputFile.addEventListener("change", async (e) => {
+                    if (e.target.files.length > 0) {
+                        const archivo = e.target.files[0];
+                        textoAdjunto.textContent = "📎 Archivo adjunto";
 
-                const actualizarAprobado = () => {
-                    if (checkboxAprobado && inputResultado) {
-                        const aprobado = validarAprobado(inputResultado.value, referencia);
-                        checkboxAprobado.checked = aprobado;
-                        checkboxAprobado.classList.toggle("verde", aprobado);
+                        const reader = new FileReader();
+                        /*reader.onload = async function () {
+                            try {
+                                const { data: { text } } = await Tesseract.recognize(reader.result, 'eng');
+                                const match = text.match(/[\d]+(?:[\.,]\d+)?\s?(?:kV|KV|Ω|ohm|MΩ|GΩ|V|mA|A)?/);
+                                if (match) {
+                                    resultadoInput.value = match[0].replace(",", ".").trim();
+                                } else {
+                                    resultadoInput.value = text.trim(); // fallback
+                                }
+                            } catch (err) {
+                                console.error("Error OCR:", err);
+                            }
+                        };
+                        reader.readAsDataURL(archivo);*/
+                    } else {
+                        textoAdjunto.textContent = "";
                     }
-                };
-
-                inputResultado?.addEventListener("input", actualizarAprobado);
-
-                const label = fila.querySelector("label");
-                const inputFile = label?.querySelector("input[type='file']");
-                const textoAdjunto = label?.querySelector(".adjunto-texto");
-
-                inputFile?.addEventListener("change", async (e) => {
-                    const file = e.target.files[0];
-                    textoAdjunto.textContent = file ? "📎 Archivo adjunto" : "";
                 });
             });
 
@@ -130,13 +97,95 @@ function initFormularioMegado(tipoAlimentacion) {
     }
 
     cableSetInput.addEventListener("input", generarCampos);
-    unidadSelect.addEventListener("change", generarCampos);
     referenciaComunInput.addEventListener("input", generarCampos);
     tiempoInputGlobal.addEventListener("input", generarCampos);
     generarCampos();
 
-    const campoTiempo = document.getElementById("campo-tiempo-aplicado");
-    if (campoTiempo) campoTiempo.style.display = "block";
+    document.getElementById("campo-tiempo-aplicado").style.display = "block";
+
+    document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
+        const tipo_prueba_valor = document.getElementById("tipo-prueba")?.value;
+        if (tipo_prueba_valor !== "megado") return;
+
+        e.preventDefault();
+
+        const cableSets = parseInt(cableSetInput.value);
+        const referenciaComun = referenciaComunInput.value;
+        const tiempoGlobal = tiempoInputGlobal.value;
+
+        const datos = [];
+        const imagenes = [];
+
+        const proyectoSelect = document.getElementById("proyecto_id");
+        const proyecto_id = proyectoSelect.value;
+        const proyecto_nombre = proyectoSelect.options[proyectoSelect.selectedIndex].text;
+
+        const ubicacion_1 = document.getElementById("ubicacion_1").value;
+        const numero_ubicacion_1 = document.getElementById("numero_ubicacion_1").value;
+        const ubicacion_2 = document.getElementById("ubicacion_2")?.value || "";
+        const numero_ubicacion_2 = document.getElementById("numero_ubicacion_2")?.value || "";
+        const tipo_equipo = document.getElementById("tipo_equipo").value;
+        const numero_tipo_equipo = document.getElementById("numero_tipo_equipo").value;
+        const sub_equipo = document.getElementById("sub_equipo")?.value || "";
+        const numero_sub_equipo = document.getElementById("numero_sub_equipo")?.value || "";
+        const tipo_alimentacion = document.getElementById("tipo_alimentacion")?.value;
+
+        let partes = [proyecto_nombre, `${ubicacion_1}${numero_ubicacion_1}`];
+        if (ubicacion_1 === "COLO" && ubicacion_2 && numero_ubicacion_2) {
+            partes.push(`${ubicacion_2}${numero_ubicacion_2}`);
+        }
+        partes.push(`${tipo_equipo}${numero_tipo_equipo}`);
+        if (sub_equipo && numero_sub_equipo) {
+            partes.push(`${sub_equipo}${numero_sub_equipo}`);
+        }
+        const codigo_equipo = partes.join("-");
+
+        for (let i = 1; i <= cableSets; i++) {
+            for (const punto of combinaciones) {
+                const resultado = document.querySelector(`[name="resultado_${i}_${punto}"]`)?.value || "";
+                const aprobado = document.querySelector(`[name="aprobado_${i}_${punto}"]`)?.checked || false;
+                const observaciones = document.querySelector(`[name="observaciones_${i}_${punto}"]`)?.value || "";
+                const imagenInput = document.querySelector(`[name="imagen_${i}_${punto}"]`);
+                const imagen = imagenInput?.files[0];
+
+                datos.push({
+                    cable_set: i,
+                    punto_prueba: punto,
+                    referencia_valor: referenciaComun,
+                    resultado_valor: resultado,
+                    tiempo_aplicado: tiempoGlobal,
+                    aprobado: aprobado,
+                    observaciones: observaciones
+                });
+
+                imagenes.push(imagen || new File([], ""));
+            }
+        }
+
+        const formData = new FormData();
+        formData.append("proyecto_id", proyecto_id);
+        formData.append("ubicacion_1", ubicacion_1);
+        formData.append("numero_ubicacion_1", numero_ubicacion_1);
+        formData.append("ubicacion_2", ubicacion_2);
+        formData.append("numero_ubicacion_2", numero_ubicacion_2);
+        formData.append("tipo_equipo", tipo_equipo);
+        formData.append("numero_tipo_equipo", numero_tipo_equipo);
+        formData.append("sub_equipo", sub_equipo);
+        formData.append("numero_sub_equipo", numero_sub_equipo);
+        formData.append("tipo_prueba", "megado");
+        formData.append("cable_sets", cableSets);
+        formData.append("tipo_alimentacion", tipo_alimentacion);
+        formData.append("datos", JSON.stringify(datos));
+        imagenes.forEach(img => formData.append("imagenes", img));
+
+        const response = await fetch("/formulario/guardar", {
+            method: "POST",
+            body: formData
+        });
+
+        const res = await response.json().catch(() => alert("Error interno del servidor"));
+        alert(res?.mensaje || "Error al guardar");
+    });
 }
 
 window.initFormularioMegado = initFormularioMegado;
