@@ -1,19 +1,18 @@
 from pydantic import BaseModel
+from typing import Optional
 
-class ParametrosContinuidadBase(BaseModel):
+class ParametroContinuidadBase(BaseModel):
     proyecto_id: int
-    codigo_equipo: str
+    tipo_equipo: str
     logica: str
     referencia: float
     unidad: str
-    voltaje_requerido: float
-    observaciones: str | None = None
 
-class ParametrosContinuidadCreate(ParametrosContinuidadBase):
+class ParametroContinuidadCreate(ParametroContinuidadBase):
     pass
 
-class ParametrosContinuidadOut(ParametrosContinuidadBase):
-    id: int
-
-    class Config:
-        orm_mode = True
+class ParametroContinuidadUpdate(BaseModel):
+    tipo_equipo: Optional[str]
+    logica: Optional[str]
+    referencia: Optional[float]
+    unidad: Optional[str]
