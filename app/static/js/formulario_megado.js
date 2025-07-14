@@ -39,7 +39,7 @@ function initFormularioMegado(tipoAlimentacion) {
                     <th>Referencia</th>
                     <th>Resultado / N/A</th>
                     <th>Unidad</th>
-                    <th>Tiempo aplicado (s)</th>
+                    <th>Tiempo (s)</th>
                     <th>Observaciones</th>
                     <th>¿Aprobado?</th>
                     <th>Imagen</th>
@@ -49,20 +49,19 @@ function initFormularioMegado(tipoAlimentacion) {
                 const fila = document.createElement("tr");
                 const idResultado = `resultado_${i}_${punto}`;
                 const idNA = `na_${i}_${punto}`;
-                const idUnidad = `unidad_${i}_${punto}`;
                 const idTiempo = `tiempo_${i}_${punto}`;
 
                 fila.innerHTML = `
                     <td>${punto}</td>
                     <td>${referenciaComun} ${unidad}</td>
                     <td>
-                      <div class="resultado-combinado">
-                        <button type="button" class="na-btn" id="${idNA}">N/A</button>
-                        <input type="text" name="${idResultado}" id="${idResultado}" />
-                      </div>
+                        <div class="resultado-combinado">
+                            <button type="button" class="na-btn" id="${idNA}">N/A</button>
+                            <input type="text" name="${idResultado}" id="${idResultado}" />
+                        </div>
                     </td>
-                    <td><input name="${idUnidad}" type="text" value="${unidad}" readonly /></td>
-                    <td><input name="${idTiempo}" type="number" min="0" /></td>
+                    <td><input name="unidad_${i}_${punto}" type="text" value="${unidad}" readonly /></td>
+                    <td><input name="${idTiempo}" type="number" /></td>
                     <td><input name="observaciones_${i}_${punto}" type="text" /></td>
                     <td><input name="aprobado_${i}_${punto}" type="checkbox" disabled /></td>
                     <td>
@@ -72,28 +71,22 @@ function initFormularioMegado(tipoAlimentacion) {
                         </label>
                     </td>
                 `;
+
                 tabla.appendChild(fila);
 
                 const inputResultado = fila.querySelector(`#${idResultado}`);
                 const botonNA = fila.querySelector(`#${idNA}`);
                 botonNA.addEventListener("click", () => {
-                    if (inputResultado.disabled) {
-                        inputResultado.disabled = false;
-                        inputResultado.value = "";
-                        botonNA.classList.remove("activo");
-                    } else {
-                        inputResultado.disabled = true;
-                        inputResultado.value = "N/A";
-                        botonNA.classList.add("activo");
-                    }
+                    inputResultado.disabled = !inputResultado.disabled;
+                    inputResultado.value = inputResultado.disabled ? "N/A" : "";
+                    botonNA.classList.toggle("activo");
                 });
 
                 const label = fila.querySelector("label");
                 const inputFile = label.querySelector("input[type='file']");
                 const textoAdjunto = label.querySelector(".adjunto-texto");
-
                 inputFile.addEventListener("change", () => {
-                    textoAdjunto.textContent = inputFile.files[0] ? "📎 Archivo adjunto" : "";
+                    textoAdjunto.textContent = inputFile.files.length ? "📎 Archivo adjunto" : "";
                 });
             });
 
@@ -140,7 +133,7 @@ function initFormularioMegado(tipoAlimentacion) {
             for (const punto of combinaciones) {
                 const resultado = document.querySelector(`[name="resultado_${i}_${punto}"]`)?.value || "";
                 const observaciones = document.querySelector(`[name="observaciones_${i}_${punto}"]`)?.value || "";
-                const tiempo_aplicado = document.querySelector(`[name="tiempo_${i}_${punto}"]`)?.value || "";
+                const tiempo = document.querySelector(`[name="tiempo_${i}_${punto}"]`)?.value || "";
                 const imagenInput = document.querySelector(`[name="imagen_${i}_${punto}"]`);
                 const imagen = imagenInput?.files[0];
 
@@ -149,8 +142,8 @@ function initFormularioMegado(tipoAlimentacion) {
                     punto_prueba: punto,
                     referencia_valor: referenciaComun,
                     resultado_valor: resultado,
-                    tiempo_aplicado: tiempo_aplicado,
                     unidad: unidad,
+                    tiempo_aplicado: tiempo,
                     observaciones: observaciones
                 });
 
