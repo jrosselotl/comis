@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.parametros_continuidad import ParametroContinuidad
 from app.schemas.parametros import ParametroContinuidadCreate, ParametroContinuidadUpdate
+from app.utils.correo import obtener_correos_admins
 
 router = APIRouter(prefix="/parametros/continuidad", tags=["Parametros Continuidad"])
 
