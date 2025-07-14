@@ -37,3 +37,11 @@ def eliminar_parametro(parametro_id: int, db: Session = Depends(get_db)):
     db.delete(parametro)
     db.commit()
     return {"mensaje": "Parámetro eliminado correctamente"}
+correos_destino = obtener_correos_admins(db, proyecto_id)
+
+enviar_correo_con_pdf(
+    destinatarios=correos_destino,
+    asunto=f"{tipo_prueba.capitalize()} - {nombre_equipo}",
+    cuerpo=f"Informe de {tipo_prueba} para el equipo {nombre_equipo}",
+    archivo_pdf=output_pdf_path
+)
