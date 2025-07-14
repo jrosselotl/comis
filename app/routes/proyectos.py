@@ -39,3 +39,6 @@ def obtener_tests_proyecto(proyecto_id: int, db: Session = Depends(get_db)):
         if test:
             lista_tests.append({"id": test.id, "nombre": test.nombre})
     return lista_tests
+@router.get("/listar")
+def alias_listar_proyectos(db: Session = Depends(get_db)):
+    return listar_proyectos(db)
