@@ -25,13 +25,12 @@ function initFormularioTorque(tipoAlimentacion) {
         for (let i = 1; i <= cantidad; i++) {
             const tabla = document.createElement("table");
             tabla.classList.add("tabla-prueba");
-
             tabla.innerHTML = `
                 <caption>Torque - Cable Set ${i}</caption>
                 <tr>
                     <th>Punto</th>
                     <th>Valor Nominal</th>
-                    <th>Valor Comprobación</th>
+                    <th>Valor Comprobación / N/A</th>
                     <th>Unidad</th>
                     <th>¿Aprobado?</th>
                     <th>Observaciones</th>
@@ -41,13 +40,19 @@ function initFormularioTorque(tipoAlimentacion) {
             conductores.forEach((punto) => {
                 const idNominal = `nominal_${i}_${punto}`;
                 const idComprobacion = `comprobacion_${i}_${punto}`;
+                const idNA = `na_${i}_${punto}`;
                 const idAprobado = `aprobado_${i}_${punto}`;
 
                 const fila = document.createElement("tr");
                 fila.innerHTML = `
                     <td>${punto}</td>
                     <td><input name="${idNominal}" type="text" /></td>
-                    <td><input name="${idComprobacion}" type="text" /></td>
+                    <td>
+                        <div class="resultado-combinado">
+                            <button type="button" class="na-btn" id="${idNA}">N/A</button>
+                            <input type="text" name="${idComprobacion}" id="${idComprobacion}" />
+                        </div>
+                    </td>
                     <td><input name="unidad_${i}_${punto}" type="text" value="${unidad}" readonly /></td>
                     <td><input id="${idAprobado}" name="${idAprobado}" type="checkbox" disabled /></td>
                     <td><input name="observaciones_${i}_${punto}" type="text" /></td>
@@ -61,8 +66,25 @@ function initFormularioTorque(tipoAlimentacion) {
                 tabla.appendChild(fila);
 
                 const inputNominal = fila.querySelector(`input[name="${idNominal}"]`);
-                const inputComprobacion = fila.querySelector(`input[name="${idComprobacion}"]`);
-                const checkboxAprobado = fila.querySelector(`input[id="${idAprobado}"]`);
+                const inputComprobacion = fila.querySelector(`#${idComprobacion}`);
+                const botonNA = fila.querySelector(`#${idNA}`);
+                const checkboxAprobado = fila.querySelector(`#${idAprobado}`);
+
+                if (botonNA && inputComprobacion && checkboxAprobado) {
+                    botonNA.addEventListener("click", () => {
+                        if (inputComprobacion.disabled) {
+                            inputComprobacion.disabled = false;
+                            inputComprobacion.value = "";
+                            botonNA.classList.remove("activo");
+                        } else {
+                            inputComprobacion.disabled = true;
+                            inputComprobacion.value = "N/A";
+                            botonNA.classList.add("activo");
+                            checkboxAprobado.checked = true;
+                            checkboxAprobado.classList.add("verde");
+                        }
+                    });
+                }
 
                 const actualizarAprobado = () => {
                     if (checkboxAprobado && inputNominal && inputComprobacion) {
@@ -73,7 +95,7 @@ function initFormularioTorque(tipoAlimentacion) {
                 };
 
                 inputNominal.addEventListener("input", actualizarAprobado);
-                inputComprobacion.addEventListener("input", actualizarAprobado);
+                inputComprobacion?.addEventListener("input", actualizarAprobado);
 
                 const label = fila.querySelector("label");
                 const inputFile = label.querySelector("input[type='file']");
