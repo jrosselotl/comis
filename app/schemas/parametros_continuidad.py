@@ -1,18 +1,24 @@
 from pydantic import BaseModel
 from typing import Optional
+from datetime import datetime
 
-class ParametroContinuidadBase(BaseModel):
-    proyecto_id: int
-    tipo_equipo: str
-    logica: str
+class ParametrosContinuidadBase(BaseModel):
+    cable_set: int
+    punto: str
+    logica: str           # Ej: "mayor_que", "menor_que", "igual"
     referencia: float
     unidad: str
 
-class ParametroContinuidadCreate(ParametroContinuidadBase):
+class ParametrosContinuidadCreate(ParametrosContinuidadBase):
+    proyecto_id: int
+
+class ParametrosContinuidadUpdate(ParametrosContinuidadBase):
     pass
 
-class ParametroContinuidadUpdate(BaseModel):
-    tipo_equipo: Optional[str]
-    logica: Optional[str]
-    referencia: Optional[float]
-    unidad: Optional[str]
+class ParametrosContinuidad(ParametrosContinuidadBase):
+    id: int
+    proyecto_id: int
+    fecha_creacion: datetime
+
+    class Config:
+        orm_mode = True
