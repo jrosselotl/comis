@@ -3,19 +3,15 @@ function initFormularioContactResistance(tipoAlimentacion) {
     const referenciaComunInput = document.getElementById("referencia-comun");
     const contenedorResultados = document.getElementById("contenedor-resultados");
     const bloqueResultados = document.getElementById("bloque-resultados");
-    const unidadSelect = document.getElementById("unidad-select");
-
-    if (!cableSetInput || !referenciaComunInput || !contenedorResultados || !bloqueResultados || !unidadSelect) {
-        return;
-    }
+    const unidadSelect = document.getElementById("unidad");
 
     const conductores = tipoAlimentacion === "monofasica"
         ? ["L", "N", "PE"]
         : ["L1", "L2", "L3", "N", "PE"];
 
-    const combinaciones = conductores; // NO combinaciones cruzadas
+    const combinaciones = conductores;
 
-    function validarAprobadoContact(valor, referencia) {
+    function validarAprobado(valor, referencia) {
         if (!valor || valor.toLowerCase() === "n/a") return true;
         const num = parseFloat(valor);
         const ref = parseFloat(referencia);
@@ -25,21 +21,19 @@ function initFormularioContactResistance(tipoAlimentacion) {
 
     function generarCampos() {
         const cantidad = parseInt(cableSetInput.value) || 0;
-        const referenciaComun = referenciaComunInput.value;
         const unidad = unidadSelect.value;
+        const referencia = referenciaComunInput.value;
         contenedorResultados.innerHTML = "";
         bloqueResultados.style.display = cantidad > 0 ? "block" : "none";
 
         for (let i = 1; i <= cantidad; i++) {
             const tabla = document.createElement("table");
             tabla.classList.add("tabla-prueba");
-
             tabla.innerHTML = `
                 <caption>Contact Resistance - Cable Set ${i}</caption>
                 <tr>
                     <th>Punto</th>
-                    <th>Referencia</th>
-                    <th>Resultado / N/A</th>
+                    <th>Resultado</th>
                     <th>Unidad</th>
                     <th>¿Aprobado?</th>
                     <th>Observaciones</th>
@@ -47,22 +41,20 @@ function initFormularioContactResistance(tipoAlimentacion) {
                 </tr>`;
 
             combinaciones.forEach((punto) => {
-                const fila = document.createElement("tr");
                 const idResultado = `resultado_${i}_${punto}`;
                 const idNA = `na_${i}_${punto}`;
-                const idUnidad = `unidad_${i}_${punto}`;
                 const idAprobado = `aprobado_${i}_${punto}`;
 
+                const fila = document.createElement("tr");
                 fila.innerHTML = `
                     <td>${punto}</td>
-                    <td>${referenciaComun} ${unidad}</td>
                     <td>
-                      <div class="resultado-combinado">
-                        <button type="button" class="na-btn" id="${idNA}">N/A</button>
-                        <input type="text" name="${idResultado}" id="${idResultado}" />
-                      </div>
+                        <div class="resultado-combinado">
+                            <button type="button" class="na-btn" id="${idNA}">N/A</button>
+                            <input type="text" name="${idResultado}" id="${idResultado}" />
+                        </div>
                     </td>
-                    <td><input name="${idUnidad}" type="text" value="${unidad}" readonly /></td>
+                    <td><input name="unidad_${i}_${punto}" type="text" value="${unidad}" readonly /></td>
                     <td><input id="${idAprobado}" name="aprobado_${i}_${punto}" type="checkbox" disabled /></td>
                     <td><input name="observaciones_${i}_${punto}" type="text" /></td>
                     <td>
@@ -96,7 +88,7 @@ function initFormularioContactResistance(tipoAlimentacion) {
 
                 const actualizarAprobado = () => {
                     if (checkboxAprobado && inputResultado) {
-                        const aprobado = validarAprobadoContact(inputResultado.value, referenciaComun);
+                        const aprobado = validarAprobado(inputResultado.value, referencia);
                         checkboxAprobado.checked = aprobado;
                         checkboxAprobado.classList.toggle("verde", aprobado);
                     }
@@ -119,90 +111,9 @@ function initFormularioContactResistance(tipoAlimentacion) {
     }
 
     cableSetInput.addEventListener("input", generarCampos);
-    referenciaComunInput.addEventListener("input", generarCampos);
     unidadSelect.addEventListener("change", generarCampos);
+    referenciaComunInput.addEventListener("input", generarCampos);
     generarCampos();
-
-    document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
-        const tipo = document.getElementById("tipo-prueba")?.value;
-        if (tipo !== "contact_resistance") return;
-
-        e.preventDefault();
-
-        const cableSets = parseInt(cableSetInput.value);
-        const unidad = unidadSelect.value;
-        const referenciaComun = referenciaComunInput.value;
-
-        if (!cableSets || !unidad || !referenciaComun) {
-            alert("Debe ingresar Cable Sets, unidad y valor de referencia.");
-            return;
-        }
-
-        const datos = [];
-        const imagenes = [];
-
-        const proyecto_id = document.getElementById("proyecto_id").value;
-        const ubicacion_1 = document.getElementById("ubicacion_1").value;
-        const numero_ubicacion_1 = document.getElementById("numero_ubicacion_1").value;
-        const ubicacion_2 = document.getElementById("ubicacion_2")?.value || "";
-        const numero_ubicacion_2 = document.getElementById("numero_ubicacion_2")?.value || "";
-        const tipo_equipo = document.getElementById("tipo_equipo").value;
-        const numero_tipo_equipo = document.getElementById("numero_tipo_equipo").value;
-        const sub_equipo = document.getElementById("sub_equipo")?.value || "";
-        const numero_sub_equipo = document.getElementById("numero_sub_equipo")?.value || "";
-        const tipo_alimentacion = document.getElementById("tipo_alimentacion")?.value;
-        const terminal = document.getElementById("terminal")?.value || "";
-        const test_id = document.getElementById("tipo-prueba").selectedOptions[0]?.getAttribute("data-id");
-
-        for (let i = 1; i <= cableSets; i++) {
-            for (const punto of combinaciones) {
-                const resultado = document.querySelector(`[name="resultado_${i}_${punto}"]`)?.value || "";
-                const observaciones = document.querySelector(`[name="observaciones_${i}_${punto}"]`)?.value || "";
-                const imagenInput = document.querySelector(`[name="imagen_${i}_${punto}"]`);
-                const imagen = imagenInput?.files[0];
-
-                datos.push({
-                    cable_set: i,
-                    punto_prueba: punto,
-                    referencia_valor: referenciaComun,
-                    resultado_valor: resultado,
-                    unidad: unidad,
-                    observaciones: observaciones
-                });
-
-                imagenes.push(imagen || new File([], ""));
-            }
-        }
-
-        const formData = new FormData();
-        formData.append("proyecto_id", proyecto_id);
-        formData.append("ubicacion_1", ubicacion_1);
-        formData.append("numero_ubicacion_1", numero_ubicacion_1);
-        formData.append("ubicacion_2", ubicacion_2);
-        formData.append("numero_ubicacion_2", numero_ubicacion_2);
-        formData.append("tipo_equipo", tipo_equipo);
-        formData.append("numero_tipo_equipo", numero_tipo_equipo);
-        formData.append("sub_equipo", sub_equipo);
-        formData.append("numero_sub_equipo", numero_sub_equipo);
-        formData.append("test_id", test_id);
-        formData.append("cable_sets", cableSets);
-        formData.append("tipo_alimentacion", tipo_alimentacion);
-        formData.append("terminal", terminal);
-        formData.append("datos", JSON.stringify(datos));
-        imagenes.forEach(img => formData.append("imagenes", img));
-
-        const response = await fetch("/formulario/guardar", {
-            method: "POST",
-            body: formData
-        });
-
-        const res = await response.json().catch(() => null);
-        if (response.ok && res?.mensaje) {
-            alert(res.mensaje);
-        } else {
-            alert(res?.detail || "Error al guardar el formulario.");
-        }
-    });
 }
 
 window.initFormularioContactResistance = initFormularioContactResistance;
