@@ -1,37 +1,37 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional, List
 from datetime import datetime
 
-# Resultado individual
 class ResultadoMegadoBase(BaseModel):
-    punto_prueba: str
-    referencia_valor: Optional[str]
-    resultado_valor: Optional[str]
-    aprobado: bool
-    imagen_url: Optional[str] = None
+    punto: str
+    resultado_valor: Optional[float]
+    unidad: str
+    aprobado: str
+    observaciones: Optional[str] = None
+    imagen: Optional[str] = None
 
 class ResultadoMegadoCreate(ResultadoMegadoBase):
     pass
 
-class ResultadoMegadoOut(ResultadoMegadoBase):
+class ResultadoMegado(ResultadoMegadoBase):
     id: int
+    test_id: int
 
     class Config:
         orm_mode = True
 
-# Test principal
-class TestMegadoCreate(BaseModel):
+class TestMegadoBase(BaseModel):
     equipo_id: int
     usuario_id: int
-    observaciones: Optional[str] = None
+    test_id: int
+    fecha: Optional[datetime] = None
+
+class TestMegadoCreate(TestMegadoBase):
     resultados: List[ResultadoMegadoCreate]
 
-class TestMegadoOut(BaseModel):
+class TestMegado(TestMegadoBase):
     id: int
-    equipo_id: int
-    usuario_id: int
-    fecha: datetime
-    observaciones: Optional[str]
-    resultados: List[ResultadoMegadoOut]
-class Config:
-        from_attributes = True  # Reemplaza cualquier 'orm_mode = True'
+    resultados: List[ResultadoMegado]
+
+    class Config:
+        orm_mode = True
