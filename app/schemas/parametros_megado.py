@@ -8,7 +8,6 @@ class ParametrosMegadoBase(BaseModel):
     logica: str           # Ej: "mayor_que", "menor_que", "igual"
     referencia: float
     unidad: str
-    tiempo_aplicado: Optional[int]
 
 class ParametrosMegadoCreate(ParametrosMegadoBase):
     proyecto_id: int
