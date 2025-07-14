@@ -95,14 +95,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         unidadLabel.style.display = unidades.length > 0 ? "block" : "none";
     }
 
-    proyectoSelect.addEventListener("change", async () => {
-        await cargarTestsPorProyecto(proyectoSelect.value);
-    });
-
-    tipoPruebaSelect.addEventListener("change", loadScript);
-    tipoAlimentacionSelect.addEventListener("change", loadScript);
-    cableSetsInput.addEventListener("input", loadScript);
-
     async function cargarProyectos() {
         try {
             const res = await fetch("/proyectos/");
@@ -126,6 +118,14 @@ document.addEventListener("DOMContentLoaded", async function () {
             proyectoSelect.innerHTML = `<option value="">Error cargando proyectos</option>`;
         }
     }
+
+    proyectoSelect.addEventListener("change", async () => {
+        await cargarTestsPorProyecto(proyectoSelect.value);
+    });
+
+    tipoPruebaSelect.addEventListener("change", loadScript);
+    tipoAlimentacionSelect.addEventListener("change", loadScript);
+    cableSetsInput.addEventListener("input", loadScript);
 
     await cargarProyectos();
 
