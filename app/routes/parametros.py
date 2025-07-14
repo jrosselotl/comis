@@ -2,17 +2,19 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 
-from app.models.parametros_continuidad import ParametroContinuidad
-from app.models.parametros_megado import ParametroMegado
-from app.models.parametros_contact_resistance import ParametroContactResistance
-from app.models.parametros_torque import ParametroTorque
-
-from app.schemas.parametros import (
+from app.schemas.parametros_continuidad import (
     ParametroContinuidadCreate, ParametroContinuidadUpdate,
-    ParametroMegadoCreate, ParametroMegadoUpdate,
-    ParametroContactResistanceCreate, ParametroContactResistanceUpdate,
-    ParametroTorqueCreate, ParametroTorqueUpdate
 )
+from app.schemas.parametros_megado import (
+    ParametroMegadoCreate, ParametroMegadoUpdate,
+)
+from app.schemas.parametros_contact_resistance import (
+    ParametroContactResistanceCreate, ParametroContactResistanceUpdate,
+)
+from app.schemas.parametros_torque import (
+    ParametroTorqueCreate, ParametroTorqueUpdate,
+)
+
 
 router = APIRouter(prefix="/parametros", tags=["Parametros"])
 
