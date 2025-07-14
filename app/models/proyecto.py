@@ -1,19 +1,19 @@
-from sqlalchemy import Column, Integer, String, DateTime
-from datetime import datetime
-from app.database import Base
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-from app.models.proyecto_tipo_test import ProyectoTipoTest
+from app.database import Base
 
 class Proyecto(Base):
     __tablename__ = "proyectos"
 
     id = Column(Integer, primary_key=True, index=True)
-    nombre = Column(String, nullable=False)
-    descripcion = Column(String)
-    fecha_creacion = Column(DateTime, default=datetime.utcnow)
-
-    # Relación con equipos
-    equipos = relationship("Equipo", back_populates="proyecto")
+    nombre = Column(String, unique=True, nullable=False)
     
-    # ✅ Relación con tipos de test
-    tipos_test = relationship("ProyectoTipoTest", back_populates="proyecto")
+    # Rutas de logos
+    logo_cliente = Column(String, nullable=True)
+    logo_subcontrata = Column(String, nullable=True)
+
+    # Relaciones con parámetros técnicos por tipo de prueba
+    parametros_continuidad = relationship("ParametrosContinuidad", back_populates="proyecto")
+    parametros_megado = relationship("ParametrosMegado", back_populates="proyecto")
+    parametros_contact_resistance = relationship("ParametrosContactResistance", back_populates="proyecto")
+    parametros_torque = relationship("ParametrosTorque", back_populates="proyecto")
