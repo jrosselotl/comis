@@ -1,14 +1,15 @@
-from sqlalchemy import Column, Integer, Float, String
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 class ParametrosMegado(Base):
     __tablename__ = "parametros_megado"
 
     id = Column(Integer, primary_key=True, index=True)
-    proyecto_id = Column(Integer, nullable=False)
-    codigo_equipo = Column(String, nullable=False)
-    valor_minimo = Column(Float, nullable=False)
-    valor_maximo = Column(Float, nullable=False)
+    proyecto_id = Column(Integer, ForeignKey("proyectos.id"))
+    logica = Column(String, nullable=False)  # Ej: 'mayor_igual'
+    referencia = Column(String, nullable=False)
+    voltaje = Column(String, nullable=True)
     unidad = Column(String, nullable=False)
-    voltaje_requerido = Column(Float, nullable=False)
-    observaciones = Column(String)
+
+    proyecto = relationship("Proyecto", back_populates="parametros_megado")
