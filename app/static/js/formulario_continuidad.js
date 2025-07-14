@@ -30,7 +30,7 @@ function initFormularioContinuidad(tipoAlimentacion) {
             const tabla = document.createElement("table");
             tabla.classList.add("tabla-prueba");
             tabla.innerHTML = `
-                <caption>Contact Resistance - Cable Set ${i}</caption>
+                <caption>Continuidad - Cable Set ${i}</caption>
                 <tr>
                     <th>Punto</th>
                     <th>Resultado</th>
