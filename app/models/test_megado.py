@@ -24,7 +24,6 @@ class ResultadoMegado(Base):
     test_id = Column(Integer, ForeignKey("test_megado.id"))
     punto = Column(String, nullable=False)
     resultado_valor = Column(Float, nullable=True)
-    tiempo_aplicado = Column(Float, nullable=True)
     unidad = Column(String, nullable=False)
     aprobado = Column(String, nullable=False)
     observaciones = Column(String, nullable=True)
