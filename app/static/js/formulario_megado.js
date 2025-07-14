@@ -21,12 +21,28 @@ function initFormularioMegado(tipoAlimentacion) {
 
     const combinaciones = generarCombinaciones(conductores);
 
-    function generarCampos() {
+    async function obtenerParametroMegado(proyectoId, tipoEquipo) {
+        const res = await fetch(`/parametros/megado/listar?proyecto_id=${proyectoId}&tipo_equipo=${tipoEquipo}`);
+        if (!res.ok) {
+            console.error("No se pudieron obtener los parámetros de megado");
+            return null;
+        }
+        const parametros = await res.json();
+        return parametros.length > 0 ? parametros[0] : null;
+    }
+
+    async function generarCampos() {
         const cantidad = parseInt(cableSetInput.value) || 0;
         const referenciaComun = referenciaComunInput.value;
         const unidad = unidadSelect.value;
+        const proyectoId = document.getElementById("proyecto_id").value;
+        const tipoEquipo = document.getElementById("tipo_equipo").value;
+
         contenedorResultados.innerHTML = "";
         bloqueResultados.style.display = cantidad > 0 ? "block" : "none";
+
+        const parametros = await obtenerParametroMegado(proyectoId, tipoEquipo);
+        const tiempoDuracion = parametros?.duracion || "";
 
         for (let i = 1; i <= cantidad; i++) {
             const tabla = document.createElement("table");
@@ -61,7 +77,7 @@ function initFormularioMegado(tipoAlimentacion) {
                         </div>
                     </td>
                     <td><input name="unidad_${i}_${punto}" type="text" value="${unidad}" readonly /></td>
-                    <td><input name="${idTiempo}" type="number" /></td>
+                    <td><input name="${idTiempo}" type="number" value="${tiempoDuracion}" readonly /></td>
                     <td><input name="observaciones_${i}_${punto}" type="text" /></td>
                     <td><input name="aprobado_${i}_${punto}" type="checkbox" disabled /></td>
                     <td>
