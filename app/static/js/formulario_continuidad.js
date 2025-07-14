@@ -116,4 +116,4 @@ function initFormularioContactResistance(tipoAlimentacion) {
     generarCampos();
 }
 
-window.initFormularioContactResistance = initFormularioContactResistance;
+window.initFormularioContinuidad = initFormularioContinuidad;
