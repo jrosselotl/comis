@@ -1,4 +1,4 @@
-function initFormularioContactResistance(tipoAlimentacion) {
+function initFormularioContinuidad(tipoAlimentacion) {
     const cableSetInput = document.getElementById("cable_sets");
     const referenciaComunInput = document.getElementById("referencia-comun");
     const contenedorResultados = document.getElementById("contenedor-resultados");
