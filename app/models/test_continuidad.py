@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Float, Text
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
 from sqlalchemy.orm import relationship
 from app.database import Base
 from datetime import datetime
@@ -7,28 +7,27 @@ class TestContinuidad(Base):
     __tablename__ = "test_continuidad"
 
     id = Column(Integer, primary_key=True, index=True)
-    proyecto_id = Column(Integer, ForeignKey("proyectos.id"), nullable=False)
-    equipo_id = Column(Integer, ForeignKey("equipos.id"), nullable=False)
-    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+    equipo_id = Column(Integer, ForeignKey("equipos.id"))
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
+    test_id = Column(Integer, ForeignKey("tests.id"))
     fecha = Column(DateTime, default=datetime.utcnow)
 
-    equipo = relationship("Equipo", back_populates="tests_continuidad")
+    resultados = relationship("ResultadoContinuidad", back_populates="test")
+    equipo = relationship("Equipo")
     usuario = relationship("Usuario", back_populates="tests_continuidad")
-    resultados = relationship("ResultadoContinuidad", back_populates="test", cascade="all, delete-orphan")
-
+    test_ref = relationship("Test")
 
 class ResultadoContinuidad(Base):
-    __tablename__ = "resultado_continuidad"
+    __tablename__ = "resultados_continuidad"
 
     id = Column(Integer, primary_key=True, index=True)
-    test_id = Column(Integer, ForeignKey("test_continuidad.id", ondelete="CASCADE"), nullable=False)  # ← FALTABA ESTA LÍNEA
-    cable_set = Column(Integer, nullable=False)
-    punto_prueba = Column(String(100), nullable=False)
-    referencia_valor = Column(Float, nullable=True)
+    test_id = Column(Integer, ForeignKey("test_continuidad.id"))
+    punto = Column(String, nullable=False)
     resultado_valor = Column(Float, nullable=True)
-    aprobado = Column(Boolean, default=False)
-    observaciones = Column(Text, nullable=True)
-    imagen_url = Column(String(255), nullable=True)
-    tipo_alimentacion = Column(String(50), nullable=True)
+    unidad = Column(String, nullable=False)
+    aprobado = Column(String, nullable=False)
+    observaciones = Column(String, nullable=True)
+    imagen = Column(String, nullable=True)
 
     test = relationship("TestContinuidad", back_populates="resultados")
+
