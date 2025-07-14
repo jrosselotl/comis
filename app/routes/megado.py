@@ -10,6 +10,7 @@ from app.models.tests import Test
 from app.models.equipo import Equipo
 from app.utils.pdf_generator import generar_pdf_test
 from app.utils.correo import enviar_correo_con_pdf
+from app.utils.correo import obtener_correos_admins
 
 router = APIRouter(prefix="/megado", tags=["Test Megado"])
 
@@ -138,13 +139,13 @@ async def guardar_test_megado(
     output_pdf_path = f"output/megado_{nombre_equipo}.pdf"
     os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
     generar_pdf_test(test_data, resultados_pdf, output_path=output_pdf_path)
-
+    
     correos_destino = obtener_correos_admins(db, proyecto_id)
     
     enviar_correo_con_pdf(
         destinatarios=correos_destino,
-        asunto=f"Megado - {nombre_equipo}",
-        cuerpo=f"Informe de megado para el equipo {nombre_equipo}",
+        asunto=f"{tipo_prueba.capitalize()} - {nombre_equipo}",
+        cuerpo=f"Informe de {tipo_prueba} para el equipo {nombre_equipo}",
         archivo_pdf=output_pdf_path
     )
 
