@@ -69,18 +69,20 @@ document.addEventListener("DOMContentLoaded", async function () {
             .map(p => p.charAt(0).toUpperCase() + p.slice(1))
             .join("")}`;
         const initFunction = window[initFunctionName];
-        if (typeof initFunction === "function") {
+
+        const cableSetInput = document.getElementById("cable_sets");
+
+        if (typeof initFunction === "function" && cableSetInput) {
             initFunction(tipoAlimentacion);
 
-            // 🟢 Forzar generación de campos si ya hay cable sets definidos
-            const cableSetInput = document.getElementById("cable_sets");
-            if (cableSetInput && cableSetInput.value) {
+            // Esperar otro ciclo más para asegurar que DOM esté renderizado antes de disparar input
+            setTimeout(() => {
                 cableSetInput.dispatchEvent(new Event("input"));
-            }
+            }, 10);
         } else {
-            console.error(`Función ${initFunctionName} no encontrada.`);
+            console.error(`Función ${initFunctionName} no encontrada o cable_sets no disponible.`);
         }
-    }, 50); // ligera espera para asegurar que el DOM esté listo
+    }, 50);
 };
 
         document.body.appendChild(currentScript);
