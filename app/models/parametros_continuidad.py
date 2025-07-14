@@ -1,14 +1,15 @@
-from sqlalchemy import Column, Integer, Float, String
+from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy.orm import relationship
 from app.database import Base
 
-class ParametrosContinuidad(Base):
+class ParametroContinuidad(Base):
     __tablename__ = "parametros_continuidad"
 
     id = Column(Integer, primary_key=True, index=True)
-    proyecto_id = Column(Integer, nullable=False)
-    codigo_equipo = Column(String, nullable=False)
-    valor_minimo = Column(Float, nullable=False)
-    valor_maximo = Column(Float, nullable=False)
+    proyecto_id = Column(Integer, ForeignKey("proyectos.id"), nullable=False)
+    tipo_equipo = Column(String, nullable=False)
+    logica = Column(String, nullable=False)  # Ej: "<", "<=", ">", ">=", "=="
+    referencia = Column(Float, nullable=False)
     unidad = Column(String, nullable=False)
-    voltaje_requerido = Column(Float, nullable=False)
-    observaciones = Column(String)
+
+    proyecto = relationship("Proyecto", back_populates="parametros_continuidad")
