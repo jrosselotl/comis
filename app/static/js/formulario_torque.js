@@ -4,6 +4,11 @@ function initFormularioTorque(tipoAlimentacion) {
     const bloqueResultados = document.getElementById("bloque-resultados");
     const unidadSelect = document.getElementById("unidad");
 
+    if (!cableSetInput || !contenedorResultados || !bloqueResultados || !unidadSelect) {
+        console.error("Formulario Torque: elementos requeridos no encontrados.");
+        return;
+    }
+
     const conductores = tipoAlimentacion === "monofasica"
         ? ["L", "N", "PE"]
         : ["L1", "L2", "L3", "N", "PE"];
@@ -54,7 +59,7 @@ function initFormularioTorque(tipoAlimentacion) {
                     </td>
                     <td><input name="${idComprobacion}" id="${idComprobacion}" type="text" /></td>
                     <td><input name="unidad_${i}_${punto}" type="text" value="${unidad}" readonly /></td>
-                    <td><input id="${idAprobado}" name="${idAprobado}" type="checkbox" disabled /></td>
+                    <td><input id="${idAprobado}" name="aprobado_${i}_${punto}" type="checkbox" disabled /></td>
                     <td><input name="observaciones_${i}_${punto}" type="text" /></td>
                     <td>
                         <label class="camera-label">
@@ -72,36 +77,29 @@ function initFormularioTorque(tipoAlimentacion) {
 
                 if (botonNA && inputNominal && checkboxAprobado) {
                     botonNA.addEventListener("click", () => {
-                        if (inputNominal.disabled) {
-                            inputNominal.disabled = false;
-                            inputNominal.value = "";
-                            botonNA.classList.remove("activo");
-                        } else {
-                            inputNominal.disabled = true;
-                            inputNominal.value = "N/A";
-                            botonNA.classList.add("activo");
-                            checkboxAprobado.checked = true;
-                            checkboxAprobado.classList.add("verde");
-                        }
+                        const isDisabled = inputNominal.disabled;
+                        inputNominal.disabled = !isDisabled;
+                        inputNominal.value = isDisabled ? "" : "N/A";
+                        botonNA.classList.toggle("activo", !isDisabled);
+                        checkboxAprobado.checked = !isDisabled;
+                        checkboxAprobado.classList.toggle("verde", !isDisabled);
                     });
                 }
 
                 const actualizarAprobado = () => {
-                    if (checkboxAprobado && inputNominal && inputComprobacion) {
-                        const aprobado = validarAprobado(inputNominal.value, inputComprobacion.value);
-                        checkboxAprobado.checked = aprobado;
-                        checkboxAprobado.classList.toggle("verde", aprobado);
-                    }
+                    const aprobado = validarAprobado(inputNominal.value, inputComprobacion.value);
+                    checkboxAprobado.checked = aprobado;
+                    checkboxAprobado.classList.toggle("verde", aprobado);
                 };
 
-                inputNominal.addEventListener("input", actualizarAprobado);
+                inputNominal?.addEventListener("input", actualizarAprobado);
                 inputComprobacion?.addEventListener("input", actualizarAprobado);
 
                 const label = fila.querySelector("label");
                 const inputFile = label.querySelector("input[type='file']");
                 const textoAdjunto = label.querySelector(".adjunto-texto");
 
-                inputFile.addEventListener("change", () => {
+                inputFile?.addEventListener("change", () => {
                     textoAdjunto.textContent = inputFile.files.length > 0 ? "📎 Archivo adjunto" : "";
                 });
             });
