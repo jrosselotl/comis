@@ -63,27 +63,28 @@ document.addEventListener("DOMContentLoaded", async function () {
         currentScript = document.createElement("script");
         currentScript.src = scriptMap[tipo];
         currentScript.onload = () => {
-    setTimeout(() => {
-        const initFunctionName = `initFormulario${tipo
-            .split("_")
-            .map(p => p.charAt(0).toUpperCase() + p.slice(1))
-            .join("")}`;
-        const initFunction = window[initFunctionName];
-
-        const cableSetInput = document.getElementById("cable_sets");
-
-        if (typeof initFunction === "function" && cableSetInput) {
-            initFunction(tipoAlimentacion);
-
-            // Esperar otro ciclo más para asegurar que DOM esté renderizado antes de disparar input
             setTimeout(() => {
-                cableSetInput.dispatchEvent(new Event("input"));
-            }, 10);
-        } else {
-            console.error(`Función ${initFunctionName} no encontrada o cable_sets no disponible.`);
-        }
-    }, 50);
-};
+                const initFunctionName = `initFormulario${tipo
+                    .split("_")
+                    .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+                    .join("")}`;
+                const initFunction = window[initFunctionName];
+
+                const cableSetInput = document.getElementById("cable_sets");
+
+                if (typeof initFunction === "function" && cableSetInput) {
+                    initFunction(tipoAlimentacion);
+
+                    setTimeout(() => {
+                        if (document.body.contains(cableSetInput)) {
+                            cableSetInput.dispatchEvent(new Event("input"));
+                        }
+                    }, 10);
+                } else {
+                    console.error(`Función ${initFunctionName} no encontrada o cable_sets no disponible.`);
+                }
+            }, 50);
+        };
 
         document.body.appendChild(currentScript);
         document.getElementById("bloque-caracteristicas").style.display = "block";
