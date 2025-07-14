@@ -1,19 +1,25 @@
 from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
 
 class ParametrosMegadoBase(BaseModel):
-    proyecto_id: int
-    codigo_equipo: str
-    logica: str
+    cable_set: int
+    punto: str
+    logica: str           # Ej: "mayor_que", "menor_que", "igual"
     referencia: float
     unidad: str
-    voltaje_requerido: float
-    observaciones: str | None = None
+    tiempo_aplicado: Optional[int]
 
 class ParametrosMegadoCreate(ParametrosMegadoBase):
+    proyecto_id: int
+
+class ParametrosMegadoUpdate(ParametrosMegadoBase):
     pass
 
-class ParametrosMegadoOut(ParametrosMegadoBase):
+class ParametrosMegado(ParametrosMegadoBase):
     id: int
+    proyecto_id: int
+    fecha_creacion: datetime
 
     class Config:
         orm_mode = True
