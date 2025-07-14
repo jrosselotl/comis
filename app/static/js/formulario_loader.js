@@ -55,21 +55,26 @@ document.addEventListener("DOMContentLoaded", async function () {
             return;
         }
 
-        if (currentScript) currentScript.remove();
+        if (currentScript) {
+            currentScript.remove();
+            currentScript = null;
+        }
 
         currentScript = document.createElement("script");
         currentScript.src = scriptMap[tipo];
         currentScript.onload = () => {
-            const initFunctionName = `initFormulario${tipo
-                .split("_")
-                .map(p => p.charAt(0).toUpperCase() + p.slice(1))
-                .join("")}`;
-            const initFunction = window[initFunctionName];
-            if (typeof initFunction === "function") {
-                initFunction(tipoAlimentacion);
-            } else {
-                console.error(`Función ${initFunctionName} no encontrada.`);
-            }
+            setTimeout(() => {
+                const initFunctionName = `initFormulario${tipo
+                    .split("_")
+                    .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+                    .join("")}`;
+                const initFunction = window[initFunctionName];
+                if (typeof initFunction === "function") {
+                    initFunction(tipoAlimentacion);
+                } else {
+                    console.error(`Función ${initFunctionName} no encontrada.`);
+                }
+            }, 0);
         };
         document.body.appendChild(currentScript);
         document.getElementById("bloque-caracteristicas").style.display = "block";
