@@ -1,6 +1,4 @@
-# app/models/test_megado.py
-
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Float, Text
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
 from sqlalchemy.orm import relationship
 from app.database import Base
 from datetime import datetime
@@ -9,28 +7,27 @@ class TestMegado(Base):
     __tablename__ = "test_megado"
 
     id = Column(Integer, primary_key=True, index=True)
-    proyecto_id = Column(Integer, ForeignKey("proyectos.id"), nullable=False)
-    equipo_id = Column(Integer, ForeignKey("equipos.id"), nullable=False)
-    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+    equipo_id = Column(Integer, ForeignKey("equipos.id"))
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
+    test_id = Column(Integer, ForeignKey("tests.id"))
     fecha = Column(DateTime, default=datetime.utcnow)
-    equipo = relationship("Equipo", back_populates="tests_megado")
-    usuario = relationship("Usuario", back_populates="tests_megado")
-    resultados = relationship("ResultadoMegado", back_populates="test", cascade="all, delete-orphan", foreign_keys="ResultadoMegado.test_id")
 
+    resultados = relationship("ResultadoMegado", back_populates="test")
+    equipo = relationship("Equipo")
+    usuario = relationship("Usuario", back_populates="tests_megado")
+    test_ref = relationship("Test")
 
 class ResultadoMegado(Base):
-    __tablename__ = "resultado_megado"
+    __tablename__ = "resultados_megado"
 
     id = Column(Integer, primary_key=True, index=True)
-    test_id = Column(Integer, ForeignKey("test_megado.id", ondelete="CASCADE"), nullable=False)
-    cable_set = Column(Integer, nullable=False)
-    punto_prueba = Column(String(100), nullable=False)
-    referencia_valor = Column(Float, nullable=True)
+    test_id = Column(Integer, ForeignKey("test_megado.id"))
+    punto = Column(String, nullable=False)
     resultado_valor = Column(Float, nullable=True)
     tiempo_aplicado = Column(Float, nullable=True)
-    aprobado = Column(Boolean, default=False)
-    observaciones = Column(Text, nullable=True)
-    imagen_url = Column(String(255), nullable=True)
-    tipo_alimentacion = Column(String(50), nullable=True)  # ← nuevo campo agregado
+    unidad = Column(String, nullable=False)
+    aprobado = Column(String, nullable=False)
+    observaciones = Column(String, nullable=True)
+    imagen = Column(String, nullable=True)
 
     test = relationship("TestMegado", back_populates="resultados")
