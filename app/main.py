@@ -17,6 +17,7 @@ from app.models.usuario import Usuario
 from app.routes.auth import router as auth_router
 from app.routes.formulario import router as formulario_router
 from app.routes import parametros
+from app.routes import proyectos
 
 
 app = FastAPI()
