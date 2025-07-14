@@ -12,7 +12,7 @@ function initFormularioTorque(tipoAlimentacion) {
         const n = parseFloat(nominal);
         const c = parseFloat(comprobacion);
         if (isNaN(n) || isNaN(c)) return false;
-        const tolerancia = 0.1 * n;
+        const tolerancia = 0.2 * n;
         return c >= n - tolerancia && c <= n + tolerancia;
     }
 
