@@ -12,7 +12,7 @@ function initFormularioTorque(tipoAlimentacion) {
         const n = parseFloat(nominal);
         const c = parseFloat(comprobacion);
         if (isNaN(n) || isNaN(c)) return false;
-        const tolerancia = 0.2 * n;
+        const tolerancia = 0.1 * n;
         return c >= n - tolerancia && c <= n + tolerancia;
     }
 
@@ -29,8 +29,8 @@ function initFormularioTorque(tipoAlimentacion) {
                 <caption>Torque - Cable Set ${i}</caption>
                 <tr>
                     <th>Punto</th>
-                    <th>Valor Nominal</th>
-                    <th>Valor Comprobación / N/A</th>
+                    <th>Valor Nominal / N.A.</th>
+                    <th>Valor Comprobación</th>
                     <th>Unidad</th>
                     <th>¿Aprobado?</th>
                     <th>Observaciones</th>
@@ -46,13 +46,13 @@ function initFormularioTorque(tipoAlimentacion) {
                 const fila = document.createElement("tr");
                 fila.innerHTML = `
                     <td>${punto}</td>
-                    <td><input name="${idNominal}" type="text" /></td>
                     <td>
                         <div class="resultado-combinado">
                             <button type="button" class="na-btn" id="${idNA}">N/A</button>
-                            <input type="text" name="${idComprobacion}" id="${idComprobacion}" />
+                            <input type="text" name="${idNominal}" id="${idNominal}" />
                         </div>
                     </td>
+                    <td><input name="${idComprobacion}" id="${idComprobacion}" type="text" /></td>
                     <td><input name="unidad_${i}_${punto}" type="text" value="${unidad}" readonly /></td>
                     <td><input id="${idAprobado}" name="${idAprobado}" type="checkbox" disabled /></td>
                     <td><input name="observaciones_${i}_${punto}" type="text" /></td>
@@ -65,20 +65,20 @@ function initFormularioTorque(tipoAlimentacion) {
                 `;
                 tabla.appendChild(fila);
 
-                const inputNominal = fila.querySelector(`input[name="${idNominal}"]`);
+                const inputNominal = fila.querySelector(`#${idNominal}`);
                 const inputComprobacion = fila.querySelector(`#${idComprobacion}`);
                 const botonNA = fila.querySelector(`#${idNA}`);
                 const checkboxAprobado = fila.querySelector(`#${idAprobado}`);
 
-                if (botonNA && inputComprobacion && checkboxAprobado) {
+                if (botonNA && inputNominal && checkboxAprobado) {
                     botonNA.addEventListener("click", () => {
-                        if (inputComprobacion.disabled) {
-                            inputComprobacion.disabled = false;
-                            inputComprobacion.value = "";
+                        if (inputNominal.disabled) {
+                            inputNominal.disabled = false;
+                            inputNominal.value = "";
                             botonNA.classList.remove("activo");
                         } else {
-                            inputComprobacion.disabled = true;
-                            inputComprobacion.value = "N/A";
+                            inputNominal.disabled = true;
+                            inputNominal.value = "N/A";
                             botonNA.classList.add("activo");
                             checkboxAprobado.checked = true;
                             checkboxAprobado.classList.add("verde");
