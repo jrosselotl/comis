@@ -144,9 +144,8 @@ async def guardar_test_megado(
     
     enviar_correo_con_pdf(
         destinatarios=correos_destino,
-        asunto=f"{tipo_prueba.capitalize()} - {nombre_equipo}",
-        cuerpo=f"Informe de {tipo_prueba} para el equipo {nombre_equipo}",
+        asunto=f"Megado - {nombre_equipo}",
+        cuerpo=f"Informe de megado para el equipo {nombre_equipo}",
         archivo_pdf=output_pdf_path
     )
-
     return {"mensaje": "Prueba de megado guardada correctamente"}
