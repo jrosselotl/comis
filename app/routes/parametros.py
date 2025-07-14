@@ -2,6 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 
+from app.models.parametros_continuidad import ParametroContinuidad
+from app.models.parametros_megado import ParametroMegado
+from app.models.parametros_contact_resistance import ParametroContactResistance
+from app.models.parametros_torque import ParametroTorque
+
 from app.schemas.parametros_continuidad import (
     ParametroContinuidadCreate, ParametroContinuidadUpdate,
 )
@@ -14,7 +19,6 @@ from app.schemas.parametros_contact_resistance import (
 from app.schemas.parametros_torque import (
     ParametroTorqueCreate, ParametroTorqueUpdate,
 )
-
 
 router = APIRouter(prefix="/parametros", tags=["Parametros"])
 
