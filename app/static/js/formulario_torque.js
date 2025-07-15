@@ -2,25 +2,20 @@ function initFormularioTorque(tipoAlimentacion) {
     const cableSetInput = document.getElementById("cable_sets");
     const contenedorResultados = document.getElementById("contenedor-resultados");
     const bloqueResultados = document.getElementById("bloque-resultados");
+    const unidadSelect = document.getElementById("unidad"); // ✅ Usamos el select global del paso 3
 
+    // ✅ Cargar automáticamente las unidades según el test
+    cargarUnidadesPorTest("torque");
+
+    // ✅ Torque usa cada conductor unitario (no combinaciones)
     const conductores = tipoAlimentacion === "monofasica"
         ? ["L", "N", "PE"]
         : ["L1", "L2", "L3", "N", "PE"];
 
-    function generarCombinaciones(lista) {
-        const combos = [];
-        for (let i = 0; i < lista.length; i++) {
-            for (let j = i + 1; j < lista.length; j++) {
-                combos.push(`${lista[i]}-${lista[j]}`);
-            }
-        }
-        return combos;
-    }
-
-    const combinaciones = generarCombinaciones(conductores);
-
     function generarCampos() {
         const cantidad = parseInt(cableSetInput.value) || 0;
+        const unidad = unidadSelect.value;
+
         contenedorResultados.innerHTML = "";
         bloqueResultados.style.display = cantidad > 0 ? "block" : "none";
 
@@ -31,7 +26,7 @@ function initFormularioTorque(tipoAlimentacion) {
             tabla.innerHTML = `
                 <caption>Torque - Cable Set ${i}</caption>
                 <tr>
-                    <th>Punto</th>
+                    <th>Conductor</th>
                     <th>Valor Nominal</th>
                     <th>Valor Comprobación</th>
                     <th>Unidad</th>
@@ -40,19 +35,23 @@ function initFormularioTorque(tipoAlimentacion) {
                     <th>Imagen</th>
                 </tr>`;
 
-            combinaciones.forEach((punto) => {
+            conductores.forEach((conductor) => {
                 const fila = document.createElement("tr");
+                const idNominal = `nominal_${i}_${conductor}`;
+                const idComprobacion = `comprobacion_${i}_${conductor}`;
+                const idAprobado = `aprobado_${i}_${conductor}`;
+
                 fila.innerHTML = `
-                    <td>${punto}</td>
-                    <td><input name="nominal_${i}_${punto}" type="text" /></td>
-                    <td><input name="comprobacion_${i}_${punto}" type="text" /></td>
-                    <td><input name="unidad_${i}_${punto}" type="text" /></td>
-                    <td><input name="aprobado_${i}_${punto}" type="checkbox" /></td>
-                    <td><input name="observaciones_${i}_${punto}" type="text" /></td>
+                    <td>${conductor}</td>
+                    <td><input name="${idNominal}" type="text" /></td>
+                    <td><input name="${idComprobacion}" type="text" /></td>
+                    <td><input name="unidad_${i}_${conductor}" type="text" value="${unidad}" readonly /></td>
+                    <td><input name="${idAprobado}" type="checkbox" disabled /></td>
+                    <td><input name="observaciones_${i}_${conductor}" type="text" /></td>
                     <td>
                         <label class="camera-label">
                             📷 <span class="adjunto-texto"></span>
-                            <input type="file" accept="image/*" name="imagen_${i}_${punto}" style="display:none;" />
+                            <input type="file" accept="image/*" name="imagen_${i}_${conductor}" style="display:none;" />
                         </label>
                     </td>
                 `;
@@ -70,14 +69,10 @@ function initFormularioTorque(tipoAlimentacion) {
             contenedorResultados.appendChild(tabla);
         }
     }
-function obtenerUnidadSeleccionada() {
-    const select = document.getElementById("unidad-general");
-    return select ? select.value : "";
-}
 
-// Cuando generes cada fila de resultado:
-fila.querySelector(".unidad-celda").textContent = obtenerUnidadSeleccionada();
     cableSetInput.addEventListener("input", generarCampos);
+    unidadSelect.addEventListener("change", generarCampos);
+
     generarCampos();
 
     document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
@@ -87,8 +82,9 @@ fila.querySelector(".unidad-celda").textContent = obtenerUnidadSeleccionada();
         e.preventDefault();
 
         const cableSets = parseInt(cableSetInput.value);
-        if (!cableSets) {
-            alert("Debe ingresar Cable Sets.");
+        const unidad = unidadSelect.value;
+        if (!cableSets || !unidad) {
+            alert("Debe ingresar Cable Sets y seleccionar unidad.");
             return;
         }
 
@@ -108,18 +104,17 @@ fila.querySelector(".unidad-celda").textContent = obtenerUnidadSeleccionada();
         const terminal = document.getElementById("terminal")?.value || "";
 
         for (let i = 1; i <= cableSets; i++) {
-            for (const punto of combinaciones) {
-                const nominal = document.querySelector(`[name="nominal_${i}_${punto}"]`)?.value || "";
-                const comprobacion = document.querySelector(`[name="comprobacion_${i}_${punto}"]`)?.value || "";
-                const unidad = document.querySelector(`[name="unidad_${i}_${punto}"]`)?.value || "";
-                const aprobado = document.querySelector(`[name="aprobado_${i}_${punto}"]`)?.checked || false;
-                const observaciones = document.querySelector(`[name="observaciones_${i}_${punto}"]`)?.value || "";
-                const imagenInput = document.querySelector(`[name="imagen_${i}_${punto}"]`);
+            for (const conductor of conductores) {
+                const nominal = document.querySelector(`[name="nominal_${i}_${conductor}"]`)?.value || "";
+                const comprobacion = document.querySelector(`[name="comprobacion_${i}_${conductor}"]`)?.value || "";
+                const aprobado = document.querySelector(`[name="aprobado_${i}_${conductor}"]`)?.checked || false;
+                const observaciones = document.querySelector(`[name="observaciones_${i}_${conductor}"]`)?.value || "";
+                const imagenInput = document.querySelector(`[name="imagen_${i}_${conductor}"]`);
                 const imagen = imagenInput?.files[0];
 
                 datos.push({
                     cable_set: i,
-                    punto_prueba: punto,
+                    punto_prueba: conductor,
                     valor_nominal: nominal,
                     valor_comprobacion: comprobacion,
                     unidad: unidad,
