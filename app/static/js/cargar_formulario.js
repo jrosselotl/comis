@@ -58,9 +58,29 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("label-ubicacion_2").style.display = val === "COLO" ? "block" : "none";
   });
 
-  document.getElementById("tipo_equipo").addEventListener("change", (e) => {
-    const val = e.target.value;
-    document.getElementById("label-sub_equipo").style.display = val === "PDU" || val === "MSB" ? "block" : "none";
+  document.getElementById("tipo_test").addEventListener("change", async function () {
+      const tipo = this.value;
+      const unidadSelect = document.getElementById("unidad-general");
+  
+      if (!tipo) {
+          unidadSelect.innerHTML = "";
+          return;
+      }
+  
+      try {
+          const resp = await fetch(`/tests/unidades?tipo_test=${tipo}`);
+          const data = await resp.json();
+  
+          unidadSelect.innerHTML = "";
+          data.unidades.forEach(u => {
+              const option = document.createElement("option");
+              option.value = u;
+              option.textContent = u;
+              unidadSelect.appendChild(option);
+          });
+      } catch (error) {
+          console.error("Error cargando unidades:", error);
+      }
   });
 
   cargarProyectosYTipos();
