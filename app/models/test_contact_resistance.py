@@ -14,9 +14,9 @@ class TestContactResistance(Base):
     usuario_id = Column(Integer, ForeignKey("usuarios.id"))
 
     resultados = relationship("ResultadoContactResistance", back_populates="test")
-    proyecto = relationship("Proyecto", back_populates="contact_resistance")
-    equipo = relationship("Equipo", back_populates="contact_resistance")
-    usuario = relationship("Usuario", back_populates="contact_resistance")
+    proyecto = relationship("Proyecto", back_populates="test_contact_resistance")
+    equipo = relationship("Equipo", back_populates="test_contact_resistance")
+    usuario = relationship("Usuario", back_populates="test_contact_resistance")
 
 
 class ResultadoContactResistance(Base):
