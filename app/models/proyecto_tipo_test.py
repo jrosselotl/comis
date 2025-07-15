@@ -14,5 +14,5 @@ class ProyectoTipoTest(Base):
     )
 
     # ✅ Relaciones necesarias
-    proyecto = relationship("Proyecto", back_populates="tipos_test")
+    proyecto = relationship("Proyecto", back_populates="tipo_test")
     test = relationship("Test")  # (opcional si quieres acceder a test.nombre directamente)
