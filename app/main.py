@@ -77,8 +77,8 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 # Incluir rutas
 from app.routes import (
     auth, usuarios, proyectos, equipos, tests,
-    continuidad, megado, test_pdf, formulario,
-    test_contact_resistance, test_torque, parametros
+    continuidad, megado, formulario,
+    contact_resistance, torque, parametros
 )
 
 app.include_router(auth.router)
@@ -88,9 +88,8 @@ app.include_router(equipos.router)
 app.include_router(tests.router)
 app.include_router(continuidad.router)
 app.include_router(megado.router)
-app.include_router(test_contact_resistance.router)
-app.include_router(test_torque.router)
-app.include_router(test_pdf.router)
+app.include_router(contact_resistance.router)
+app.include_router(torque.router)
 app.include_router(formulario.router)
 app.include_router(parametros.router)
 
