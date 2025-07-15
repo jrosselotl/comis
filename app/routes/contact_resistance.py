@@ -1,18 +1,18 @@
-# app/routes/contact_resistance.py
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.test_contact_resistance import TestContactResistance, ResultadoContactResistance
 from app.models.test import Test
 from app.models.equipo import Equipo
-from app.utils.pdf_generator import generar_pdf_test
-from app.utils.correo import enviar_correo_con_pdf, obtener_correos_admins
 from app.models.parametros_contact_resistance import ParametroContactResistance
 from app.models.proyecto import Proyecto
+from app.utils.pdf_generator import generar_pdf_test
+from app.utils.correo import enviar_correo_con_pdf, obtener_correos_admins
 import os, shutil, json
 from datetime import datetime
 
 router = APIRouter(prefix="/formulario/contact_resistance", tags=["Formulario Contact Resistance"])
+
 UPLOAD_DIR = "static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -36,10 +36,12 @@ async def guardar_test_contact_resistance(
     db: Session = Depends(get_db)
 ):
     datos_parsed = json.loads(datos)
-    usuario_id = 1  # 🔹 Cambiar luego por usuario autenticado
+    usuario_id = 1  # Ajustar si luego se integra autenticación real
 
+    # Generar código de equipo
     codigo_equipo = f"{ubicacion_1}-{tipo_equipo}-{sub_equipo or 'GEN'}{numero_sub_equipo or ''}".upper()
 
+    # Verificar o crear equipo
     equipo = db.query(Equipo).filter_by(codigo=codigo_equipo).first()
     if not equipo:
         equipo = Equipo(
@@ -52,11 +54,13 @@ async def guardar_test_contact_resistance(
         db.commit()
         db.refresh(equipo)
 
+    # Crear test general
     test = Test(tipo_prueba=tipo_prueba, equipo_id=equipo.id)
     db.add(test)
     db.commit()
     db.refresh(test)
 
+    # Crear test contact resistance
     test_contact = TestContactResistance(
         equipo_id=equipo.id,
         usuario_id=usuario_id,
@@ -67,19 +71,27 @@ async def guardar_test_contact_resistance(
     db.refresh(test_contact)
 
     imagenes_info = []
+    resultados_pdf = []
+
     for i, r in enumerate(datos_parsed):
         filename = f"{codigo_equipo}_{r['punto_prueba']}_{i}.png"
         filepath = os.path.join(UPLOAD_DIR, filename)
         with open(filepath, "wb") as buffer:
             shutil.copyfileobj(imagenes[i].file, buffer)
-        imagenes_info.append({"path": filepath, "punto_prueba": r["punto_prueba"], "cable_set": r.get("cable_set")})
 
+        imagenes_info.append({
+            "cable_set": r.get("cable_set"),
+            "punto_prueba": r["punto_prueba"],
+            "path": filepath
+        })
+
+        # Obtener parámetros
         parametro = db.query(ParametroContactResistance).filter_by(
             proyecto_id=proyecto_id,
-            codigo_equipo=codigo_equipo,
-            test_id=test.id
+            codigo_equipo=codigo_equipo
         ).first()
 
+        # Lógica de aprobado
         aprobado = "SI"
         if not r['resultado_valor'] or r['resultado_valor'] == "N/A":
             aprobado = "SI"
@@ -94,28 +106,38 @@ async def guardar_test_contact_resistance(
                     aprobado = "SI" if res > ref else "NO"
                 elif logica == "igual":
                     aprobado = "SI" if res == ref else "NO"
-                elif logica == "menor_igual":
-                    aprobado = "SI" if res <= ref else "NO"
-                elif logica == "mayor_igual":
-                    aprobado = "SI" if res >= ref else "NO"
                 else:
                     aprobado = "NO"
             except:
                 aprobado = "NO"
 
+        # Guardar resultado
         resultado = ResultadoContactResistance(
             test_id=test_contact.id,
-            punto_prueba=r['punto_prueba'],
-            resultado_valor=r['resultado_valor'] if r['resultado_valor'] != "N/A" else None,
-            unidad=r['unidad'],
+            cable_set=r.get("cable_set"),
+            punto_prueba=r["punto_prueba"],
+            referencia_valor=parametro.referencia if parametro else "-",
+            resultado_valor=r["resultado_valor"] if r["resultado_valor"] != "N/A" else None,
+            unidad=r["unidad"],
             aprobado=aprobado,
-            observaciones=r.get('observaciones'),
+            observaciones=r.get("observaciones"),
             imagen=filepath
         )
         db.add(resultado)
 
+        resultados_pdf.append({
+            "cable_set": r.get("cable_set"),
+            "punto_prueba": r["punto_prueba"],
+            "referencia_valor": parametro.referencia if parametro else "-",
+            "resultado_valor": r["resultado_valor"],
+            "unidad": r["unidad"],
+            "aprobado": aprobado,
+            "observaciones": r.get("observaciones", "")
+        })
+
     db.commit()
 
+    # Datos para PDF
     proyecto = db.query(Proyecto).filter_by(id=proyecto_id).first()
     detalles_equipo = {
         "Proyecto": proyecto.nombre,
@@ -125,34 +147,23 @@ async def guardar_test_contact_resistance(
         "Subequipo": f"{sub_equipo} Nº{numero_sub_equipo}" if sub_equipo else "-",
         "Tipo de Alimentación": tipo_alimentacion
     }
+
     test_data = {
         "equipo_id": codigo_equipo,
         "tipo_prueba": tipo_prueba,
         "fecha": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-        "observaciones": "",
         "detalles_equipo": detalles_equipo,
         "imagenes": imagenes_info,
         "logo_cliente": f"logo_cliente_{proyecto.nombre}.png",
         "logo_subcontrata": f"logo_subcontrata_{proyecto.nombre}.png",
         "nombre_usuario": "Usuario Test"
     }
-    resultados_pdf = [
-        {
-            "punto_prueba": r["punto_prueba"],
-            "referencia_valor": parametro.referencia if parametro else "-",
-            "resultado_valor": r["resultado_valor"],
-            "unidad": r["unidad"],
-            "aprobado": aprobado,
-            "observaciones": r.get("observaciones", ""),
-            "cable_set": r.get("cable_set")
-        }
-        for r in datos_parsed
-    ]
 
     output_pdf_path = f"output/{tipo_prueba}_{codigo_equipo}.pdf"
     os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
     generar_pdf_test(test_data, resultados_pdf, output_path=output_pdf_path)
 
+    # Enviar correo
     correos_destino = obtener_correos_admins(db, proyecto_id)
     enviar_correo_con_pdf(
         destinatarios=correos_destino,
