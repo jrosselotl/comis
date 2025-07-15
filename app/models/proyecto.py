@@ -8,17 +8,18 @@ class Proyecto(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, unique=True, nullable=False)
 
-    # Relación con Equipo
+    # Relación con equipos
     equipos = relationship("Equipo", back_populates="proyecto")
+
+    # Relación con usuarios asignados a proyectos
     usuarios_asociados = relationship("UsuarioProyecto", back_populates="proyecto")
-    
-    # Rutas de logos
+
+    # Logos
     logo_cliente = Column(String, nullable=True)
     logo_subcontrata = Column(String, nullable=True)
 
-    # Relaciones con parámetros técnicos por tipo de prueba
-    parametros_continuidad = relationship("ParametroContinuidad", back_populates="proyecto")
-    parametros_megado = relationship("ParametroMegado", back_populates="proyecto")
-    parametros_contact_resistance = relationship("ParametroContactResistance", back_populates="proyecto")
-    parametros_torque = relationship("ParametroTorque", back_populates="proyecto")
-
+    # ✅ Relaciones con tests (coinciden con los modelos de test)
+    tests_continuidad = relationship("TestContinuidad", back_populates="proyecto")
+    tests_megado = relationship("TestMegado", back_populates="proyecto")
+    tests_contact_resistance = relationship("TestContactResistance", back_populates="proyecto")
+    tests_torque = relationship("TestTorque", back_populates="proyecto")
