@@ -31,13 +31,6 @@ def obtener_tests_proyecto(proyecto_id: int, db: Session = Depends(get_db)):
     if not proyecto:
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
 
-    relaciones = db.query(ProyectoTipoTest).filter_by(proyecto_id=proyecto_id).all()
-    lista_tests = []
-    for rel in relaciones:
-        test = db.query(Test).filter_by(id=rel.test_id).first()
-        if test:
-            lista_tests.append({"id": test.id, "nombre": test.nombre})
-    return lista_tests
 @router.get("/listar")
 def alias_listar_proyectos(db: Session = Depends(get_db)):
     return listar_proyectos(db)
