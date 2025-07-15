@@ -7,6 +7,9 @@ class Proyecto(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, unique=True, nullable=False)
+
+    # Relación con Equipo
+    equipos = relationship("Equipo", back_populates="proyecto")
     
     # Rutas de logos
     logo_cliente = Column(String, nullable=True)
