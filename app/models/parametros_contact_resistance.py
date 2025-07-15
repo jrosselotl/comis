@@ -1,15 +1,16 @@
-from sqlalchemy import Column, Integer, Float, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 from app.database import Base
 
-class ParametrosContactResistance(Base):
+class ParametroContactResistance(Base):
     __tablename__ = "parametros_contact_resistance"
 
     id = Column(Integer, primary_key=True, index=True)
-    proyecto_id = Column(Integer, ForeignKey("proyectos.id"), nullable=False)
-    codigo_equipo = Column(String, nullable=False)
+    proyecto_id = Column(Integer, ForeignKey("proyectos.id"))
     test_id = Column(Integer, ForeignKey("tests.id"), nullable=False)
-    logica = Column(String(10), nullable=False)  # Ej: =, <, <=, >, >=
-    referencia = Column(Float, nullable=False)
-    unidad = Column(String(50), nullable=False)
-    voltaje_requerido = Column(Float, nullable=False)
-    observaciones = Column(String)
+    codigo_equipo = Column(String, nullable=False)
+    logica = Column(String, nullable=False)  # Ej: 'menor_igual', 'igual'
+    referencia = Column(String, nullable=False)
+    unidad = Column(String, nullable=False)  # Ej: 'mΩ', 'Ω'
+
+    proyecto = relationship("Proyecto", back_populates="parametros_contact_resistance")
