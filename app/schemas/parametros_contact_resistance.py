@@ -1,19 +1,16 @@
 from pydantic import BaseModel
+from typing import Optional
 
-class ParametrosContactResistanceBase(BaseModel):
-    proyecto_id: int
-    codigo_equipo: str
+class ParametroContactResistanceBase(BaseModel):
     logica: str
-    referencia: float
+    referencia: str
     unidad: str
-    voltaje_requerido: float
-    observaciones: str | None = None
+    proyecto_id: int
 
-class ParametrosContactResistanceCreate(ParametrosContactResistanceBase):
+class ParametroContactResistanceCreate(ParametroContactResistanceBase):
     pass
 
-class ParametrosContactResistanceOut(ParametrosContactResistanceBase):
-    id: int
-
-    class Config:
-        orm_mode = True
+class ParametroContactResistanceUpdate(BaseModel):
+    logica: Optional[str]
+    referencia: Optional[str]
+    unidad: Optional[str]
