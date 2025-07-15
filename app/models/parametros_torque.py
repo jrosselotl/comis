@@ -7,8 +7,6 @@ class ParametroTorque(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     proyecto_id = Column(Integer, ForeignKey("proyectos.id"))
-    test_id = Column(Integer, ForeignKey("tests.id"), nullable=False)
-    codigo_equipo = Column(String, nullable=False)
     valor_nominal = Column(String, nullable=False)
     valor_comprobacion = Column(String, nullable=False)
     unidad = Column(String, nullable=False)  # Ej: 'Nm'
