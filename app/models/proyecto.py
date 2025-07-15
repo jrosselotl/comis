@@ -10,7 +10,7 @@ class Proyecto(Base):
 
     # Relación con Equipo
     equipos = relationship("Equipo", back_populates="proyecto")
-
+    tipo_test = relationship("TipoTest", back_populates="proyecto")
     usuarios_asociados = relationship("UsuarioProyecto", back_populates="proyecto")
     
     # Rutas de logos
