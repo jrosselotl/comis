@@ -179,5 +179,11 @@ function initFormularioContactResistance(tipoAlimentacion) {
         }
     });
 }
+function obtenerUnidadSeleccionada() {
+    const select = document.getElementById("unidad-general");
+    return select ? select.value : "";
+}
 
+// Cuando generes cada fila de resultado:
+fila.querySelector(".unidad-celda").textContent = obtenerUnidadSeleccionada();
 window.initFormularioContactResistance = initFormularioContactResistance;
