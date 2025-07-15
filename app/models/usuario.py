@@ -4,6 +4,7 @@ from app.database import Base
 from datetime import datetime
 import enum
 
+
 class RolUsuario(str, enum.Enum):
     admin = "admin"
     tecnico = "tecnico"
@@ -23,4 +24,5 @@ class Usuario(Base):
     tests_megado = relationship("TestMegado", back_populates="usuario")
     tests_contact_resistance = relationship("TestContactResistance", back_populates="usuario")
     tests_torque = relationship("TestTorque", back_populates="usuario")
-
+    
+proyectos_asociados = relationship("UsuarioProyecto", back_populates="usuario")
