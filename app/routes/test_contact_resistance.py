@@ -1,76 +1,164 @@
-from fastapi import APIRouter, Depends, HTTPException
+# app/routes/contact_resistance.py
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
-from datetime import datetime
-
 from app.database import get_db
 from app.models.test_contact_resistance import TestContactResistance, ResultadoContactResistance
+from app.models.test import Test
 from app.models.equipo import Equipo
-from app.schemas.test_contact_resistance import (
-    TestContactResistanceCreate,
-    TestContactResistance as TestContactResistanceSchema
-)
+from app.utils.pdf_generator import generar_pdf_test
+from app.utils.correo import enviar_correo_con_pdf, obtener_correos_admins
+from app.models.parametros_contact_resistance import ParametroContactResistance
+from app.models.proyecto import Proyecto
+import os, shutil, json
+from datetime import datetime
 
-router = APIRouter(prefix="/contact_resistance", tags=["Contact Resistance"])
+router = APIRouter(prefix="/formulario/contact_resistance", tags=["Formulario Contact Resistance"])
+UPLOAD_DIR = "static/uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-@router.post("/crear", response_model=TestContactResistanceSchema)
-def crear_test_contact_resistance(test_data: TestContactResistanceCreate, db: Session = Depends(get_db)):
-    # ✅ Verificar que el equipo existe
-    equipo = db.query(Equipo).filter_by(id=test_data.equipo_id).first()
+@router.post("/guardar")
+async def guardar_test_contact_resistance(
+    proyecto_id: int = Form(...),
+    ubicacion_1: str = Form(...),
+    numero_ubicacion_1: str = Form(...),
+    ubicacion_2: str = Form(None),
+    numero_ubicacion_2: str = Form(None),
+    tipo_equipo: str = Form(...),
+    numero_tipo_equipo: str = Form(...),
+    sub_equipo: str = Form(None),
+    numero_sub_equipo: str = Form(None),
+    tipo_prueba: str = Form(...),
+    cable_sets: int = Form(...),
+    tipo_alimentacion: str = Form(...),
+    terminal: str = Form(None),
+    datos: str = Form(...),
+    imagenes: list[UploadFile] = File(...),
+    db: Session = Depends(get_db)
+):
+    datos_parsed = json.loads(datos)
+    usuario_id = 1  # 🔹 Cambiar luego por usuario autenticado
+
+    codigo_equipo = f"{ubicacion_1}-{tipo_equipo}-{sub_equipo or 'GEN'}{numero_sub_equipo or ''}".upper()
+
+    equipo = db.query(Equipo).filter_by(codigo=codigo_equipo).first()
     if not equipo:
-        raise HTTPException(status_code=404, detail="Equipo no encontrado")
-
-    # ✅ Crear el test
-    nuevo_test = TestContactResistance(
-        test_id=test_data.test_id,
-        proyecto_id=test_data.proyecto_id,
-        equipo_id=test_data.equipo_id,
-        usuario_id=test_data.usuario_id,
-        tipo_alimentacion=test_data.tipo_alimentacion,
-        terminal=test_data.terminal,
-        fecha=datetime.utcnow()
-    )
-    db.add(nuevo_test)
-    db.commit()
-    db.refresh(nuevo_test)
-
-    # ✅ Guardar los resultados asociados
-    for resultado in test_data.resultados:
-        nuevo_resultado = ResultadoContactResistance(
-            test_id=nuevo_test.id,
-            cable_set=resultado.cable_set,
-            punto_prueba=resultado.punto_prueba,
-            referencia_valor=resultado.referencia_valor,
-            resultado_valor=resultado.resultado_valor,
-            unidad=resultado.unidad,
-            aprobado=resultado.aprobado,
-            observaciones=resultado.observaciones,
-            imagen=resultado.imagen  # (asegúrate que en schemas esté como 'imagen')
+        equipo = Equipo(
+            codigo=codigo_equipo,
+            tipo=tipo_equipo,
+            sub_equipo=sub_equipo,
+            proyecto_id=proyecto_id
         )
-        db.add(nuevo_resultado)
+        db.add(equipo)
+        db.commit()
+        db.refresh(equipo)
+
+    test = Test(tipo_prueba=tipo_prueba, equipo_id=equipo.id)
+    db.add(test)
+    db.commit()
+    db.refresh(test)
+
+    test_contact = TestContactResistance(
+        equipo_id=equipo.id,
+        usuario_id=usuario_id,
+        test_id=test.id
+    )
+    db.add(test_contact)
+    db.commit()
+    db.refresh(test_contact)
+
+    imagenes_info = []
+    for i, r in enumerate(datos_parsed):
+        filename = f"{codigo_equipo}_{r['punto_prueba']}_{i}.png"
+        filepath = os.path.join(UPLOAD_DIR, filename)
+        with open(filepath, "wb") as buffer:
+            shutil.copyfileobj(imagenes[i].file, buffer)
+        imagenes_info.append({"path": filepath, "punto_prueba": r["punto_prueba"], "cable_set": r.get("cable_set")})
+
+        parametro = db.query(ParametroContactResistance).filter_by(
+            proyecto_id=proyecto_id,
+            codigo_equipo=codigo_equipo,
+            test_id=test.id
+        ).first()
+
+        aprobado = "SI"
+        if not r['resultado_valor'] or r['resultado_valor'] == "N/A":
+            aprobado = "SI"
+        elif parametro:
+            try:
+                ref = float(parametro.referencia)
+                res = float(r['resultado_valor'])
+                logica = parametro.logica
+                if logica == "menor":
+                    aprobado = "SI" if res < ref else "NO"
+                elif logica == "mayor":
+                    aprobado = "SI" if res > ref else "NO"
+                elif logica == "igual":
+                    aprobado = "SI" if res == ref else "NO"
+                elif logica == "menor_igual":
+                    aprobado = "SI" if res <= ref else "NO"
+                elif logica == "mayor_igual":
+                    aprobado = "SI" if res >= ref else "NO"
+                else:
+                    aprobado = "NO"
+            except:
+                aprobado = "NO"
+
+        resultado = ResultadoContactResistance(
+            test_id=test_contact.id,
+            punto_prueba=r['punto_prueba'],
+            resultado_valor=r['resultado_valor'] if r['resultado_valor'] != "N/A" else None,
+            unidad=r['unidad'],
+            aprobado=aprobado,
+            observaciones=r.get('observaciones'),
+            imagen=filepath
+        )
+        db.add(resultado)
 
     db.commit()
-    db.refresh(nuevo_test)
-    return nuevo_test
 
+    proyecto = db.query(Proyecto).filter_by(id=proyecto_id).first()
+    detalles_equipo = {
+        "Proyecto": proyecto.nombre,
+        "Ubicación Principal": f"{ubicacion_1} Nº{numero_ubicacion_1}",
+        "Ubicación Secundaria": f"{ubicacion_2} Nº{numero_ubicacion_2}" if ubicacion_2 else "-",
+        "Tipo de Equipo": f"{tipo_equipo} Nº{numero_tipo_equipo}",
+        "Subequipo": f"{sub_equipo} Nº{numero_sub_equipo}" if sub_equipo else "-",
+        "Tipo de Alimentación": tipo_alimentacion
+    }
+    test_data = {
+        "equipo_id": codigo_equipo,
+        "tipo_prueba": tipo_prueba,
+        "fecha": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+        "observaciones": "",
+        "detalles_equipo": detalles_equipo,
+        "imagenes": imagenes_info,
+        "logo_cliente": f"logo_cliente_{proyecto.nombre}.png",
+        "logo_subcontrata": f"logo_subcontrata_{proyecto.nombre}.png",
+        "nombre_usuario": "Usuario Test"
+    }
+    resultados_pdf = [
+        {
+            "punto_prueba": r["punto_prueba"],
+            "referencia_valor": parametro.referencia if parametro else "-",
+            "resultado_valor": r["resultado_valor"],
+            "unidad": r["unidad"],
+            "aprobado": aprobado,
+            "observaciones": r.get("observaciones", ""),
+            "cable_set": r.get("cable_set")
+        }
+        for r in datos_parsed
+    ]
 
-@router.get("/listar")
-def listar_tests(db: Session = Depends(get_db)):
-    return db.query(TestContactResistance).all()
+    output_pdf_path = f"output/{tipo_prueba}_{codigo_equipo}.pdf"
+    os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
+    generar_pdf_test(test_data, resultados_pdf, output_path=output_pdf_path)
 
+    correos_destino = obtener_correos_admins(db, proyecto_id)
+    enviar_correo_con_pdf(
+        destinatarios=correos_destino,
+        asunto=f"{tipo_prueba.capitalize()} - {codigo_equipo}",
+        cuerpo=f"Informe de {tipo_prueba} para el equipo {codigo_equipo}",
+        archivo_pdf=output_pdf_path
+    )
 
-@router.get("/{test_id}")
-def obtener_test(test_id: int, db: Session = Depends(get_db)):
-    test = db.query(TestContactResistance).filter(TestContactResistance.id == test_id).first()
-    if not test:
-        raise HTTPException(status_code=404, detail="Test no encontrado")
-    return test
-
-
-@router.delete("/{test_id}/eliminar")
-def eliminar_test(test_id: int, db: Session = Depends(get_db)):
-    test = db.query(TestContactResistance).filter(TestContactResistance.id == test_id).first()
-    if not test:
-        raise HTTPException(status_code=404, detail="Test no encontrado")
-    db.delete(test)
-    db.commit()
-    return {"mensaje": "Test eliminado correctamente"}
+    return {"mensaje": "Formulario y resultados guardados correctamente"}
