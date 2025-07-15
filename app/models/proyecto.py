@@ -10,6 +10,8 @@ class Proyecto(Base):
 
     # Relación con Equipo
     equipos = relationship("Equipo", back_populates="proyecto")
+
+    usuarios_asociados = relationship("UsuarioProyecto", back_populates="proyecto")
     
     # Rutas de logos
     logo_cliente = Column(String, nullable=True)
@@ -21,4 +23,3 @@ class Proyecto(Base):
     parametros_contact_resistance = relationship("ParametroContactResistance", back_populates="proyecto")
     parametros_torque = relationship("ParametroTorque", back_populates="proyecto")
 
-usuarios_asociados = relationship("UsuarioProyecto", back_populates="proyecto")
