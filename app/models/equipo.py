@@ -43,7 +43,6 @@ class Equipo(Base):
     fecha_creacion = Column(DateTime, default=datetime.utcnow)
 
     proyecto = relationship("Proyecto", back_populates="equipos")
-    tests = relationship("Test", back_populates="equipo")
     tests_continuidad = relationship("TestContinuidad", back_populates="equipo")
     tests_megado = relationship("TestMegado", back_populates="equipo")
     tests_contact_resistance = relationship("TestContactResistance", back_populates="equipo")
