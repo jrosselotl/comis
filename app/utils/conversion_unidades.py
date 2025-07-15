@@ -32,6 +32,14 @@ UNIDADES_CONVERSION = {
     }
 }
 
+def obtener_unidades_por_test(tipo_test: str):
+    unidades = {
+        "continuidad": ["Ω", "mΩ"],
+        "megado": ["kΩ", "MΩ", "GΩ"],
+        "contact_resistance": ["Ω", "mΩ","µΩ"],
+        "torque": ["Nm", "kgf·cm", "lbf·in"]
+    }
+    return unidades.get(tipo_test, [])
 
 def convertir(valor: float, de: str, a: str, categoria: str) -> float:
     """
