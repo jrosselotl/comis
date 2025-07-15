@@ -16,8 +16,7 @@ class TestContinuidad(Base):
     resultados = relationship("ResultadoContinuidad", back_populates="test")
     equipo = relationship("Equipo")
     usuario = relationship("Usuario", back_populates="tests_continuidad")
-    test_ref = relationship("Test")
-    proyecto = relationship("Proyecto", back_populates="tests_continuidad")  # ✅ NUEVO
+    proyecto = relationship("Proyecto", back_populates="tests_continuidad")
 
 class ResultadoContinuidad(Base):
     __tablename__ = "resultados_continuidad"
