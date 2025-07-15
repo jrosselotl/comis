@@ -9,8 +9,8 @@ class TestContinuidad(Base):
     id = Column(Integer, primary_key=True, index=True)
     equipo_id = Column(Integer, ForeignKey("equipos.id"))
     usuario_id = Column(Integer, ForeignKey("usuarios.id"))
+    proyecto_id = Column(Integer, ForeignKey("proyectos.id"))
     test_id = Column(Integer, ForeignKey("tests.id"))
-    proyecto_id = Column(Integer, ForeignKey("proyectos.id"))  # ✅ NUEVO
     fecha = Column(DateTime, default=datetime.utcnow)
 
     resultados = relationship("ResultadoContinuidad", back_populates="test")
