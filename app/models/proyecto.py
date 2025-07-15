@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Stringhttps://github.com/jrosselotl/comis/tree/main
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 from app.database import Base
 
