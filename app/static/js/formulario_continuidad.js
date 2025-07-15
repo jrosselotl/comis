@@ -3,7 +3,10 @@ function initFormularioContinuidad(tipoAlimentacion) {
     const referenciaComunInput = document.getElementById("referencia-comun");
     const contenedorResultados = document.getElementById("contenedor-resultados");
     const bloqueResultados = document.getElementById("bloque-resultados");
-    const unidadSelect = document.getElementById("unidad-select");
+    const unidadSelect = document.getElementById("unidad"); // ✅ Ahora usamos el select definido en el HTML
+
+    // ✅ Cargar automáticamente las unidades desde unidades_por_test.js
+    cargarUnidadesPorTest("continuidad");
 
     const conductores = tipoAlimentacion === "monofasica"
         ? ["L", "N", "PE"]
@@ -25,6 +28,7 @@ function initFormularioContinuidad(tipoAlimentacion) {
         const cantidad = parseInt(cableSetInput.value) || 0;
         const referenciaComun = referenciaComunInput.value;
         const unidad = unidadSelect.value;
+
         contenedorResultados.innerHTML = "";
         bloqueResultados.style.display = cantidad > 0 ? "block" : "none";
 
@@ -103,16 +107,12 @@ function initFormularioContinuidad(tipoAlimentacion) {
             contenedorResultados.appendChild(tabla);
         }
     }
-function obtenerUnidadSeleccionada() {
-    const select = document.getElementById("unidad-general");
-    return select ? select.value : "";
-}
 
-// Cuando generes cada fila de resultado:
-fila.querySelector(".unidad-celda").textContent = obtenerUnidadSeleccionada();
+    // ✅ Eventos
     cableSetInput.addEventListener("input", generarCampos);
     referenciaComunInput.addEventListener("input", generarCampos);
     unidadSelect.addEventListener("change", generarCampos);
+
     generarCampos();
 
     document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
