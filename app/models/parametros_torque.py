@@ -1,14 +1,16 @@
-from sqlalchemy import Column, Integer, Float, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 from app.database import Base
 
-class ParametrosTorque(Base):
+class ParametroTorque(Base):
     __tablename__ = "parametros_torque"
 
     id = Column(Integer, primary_key=True, index=True)
-    proyecto_id = Column(Integer, ForeignKey("proyectos.id"), nullable=False)
-    codigo_equipo = Column(String, nullable=False)
+    proyecto_id = Column(Integer, ForeignKey("proyectos.id"))
     test_id = Column(Integer, ForeignKey("tests.id"), nullable=False)
-    valor_nominal = Column(Float, nullable=False)
-    valor_comprobacion = Column(Float, nullable=False)
-    unidad = Column(String(50), nullable=False)
-    observaciones = Column(String)
+    codigo_equipo = Column(String, nullable=False)
+    valor_nominal = Column(String, nullable=False)
+    valor_comprobacion = Column(String, nullable=False)
+    unidad = Column(String, nullable=False)  # Ej: 'Nm'
+
+    proyecto = relationship("Proyecto", back_populates="parametros_torque")
