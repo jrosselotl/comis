@@ -7,12 +7,7 @@ class ParametroMegado(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     proyecto_id = Column(Integer, ForeignKey("proyectos.id"))
-    test_id = Column(Integer, ForeignKey("tests.id"), nullable=False)
-    codigo_equipo = Column(String, nullable=False)
-    logica = Column(String, nullable=False)  # Ej: 'mayor_igual', 'igual'
+    logica = Column(String, nullable=False)
     referencia = Column(String, nullable=False)
-    unidad = Column(String, nullable=False)  # Ej: 'MΩ'
-    voltaje = Column(String, nullable=True)
-    duracion = Column(String, nullable=True)  # Tiempo de prueba recomendado
 
     proyecto = relationship("Proyecto", back_populates="parametros_megado")
