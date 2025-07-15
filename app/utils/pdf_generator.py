@@ -1,201 +1,87 @@
-function initFormularioMegado(tipoAlimentacion) {
-    const cableSetInput = document.getElementById("cable_sets");
-    const referenciaComunInput = document.getElementById("referencia-comun");
-    const contenedorResultados = document.getElementById("contenedor-resultados");
-    const bloqueResultados = document.getElementById("bloque-resultados");
-    const unidadSelect = document.getElementById("unidad-select");
+from fpdf import FPDF
+import os
+from datetime import datetime
 
-    const conductores = tipoAlimentacion === "monofasica"
-        ? ["L", "N", "PE"]
-        : ["L1", "L2", "L3", "N", "PE"];
+class PDF(FPDF):
+    def header(self):
+        if hasattr(self, 'logo_cliente') and self.logo_cliente and os.path.exists(self.logo_cliente):
+            self.image(self.logo_cliente, 10, 8, 33)
+        if hasattr(self, 'logo_subcontrata') and self.logo_subcontrata and os.path.exists(self.logo_subcontrata):
+            self.image(self.logo_subcontrata, 165, 8, 33)
+        self.set_font('Arial', 'B', 12)
+        self.cell(0, 10, 'Informe Técnico de Prueba', ln=True, align='C')
+        self.ln(10)
 
-    function generarCombinaciones(lista) {
-        const combos = [];
-        for (let i = 0; i < lista.length; i++) {
-            for (let j = i + 1; j < lista.length; j++) {
-                combos.push(`${lista[i]}-${lista[j]}`);
-            }
-        }
-        return combos;
-    }
+    def footer(self):
+        self.set_y(-15)
+        self.set_font('Arial', 'I', 8)
+        self.cell(0, 10, f'Página {self.page_no()}', align='C')
 
-    const combinaciones = generarCombinaciones(conductores);
 
-    async function obtenerParametroMegado(proyectoId, tipoEquipo) {
-        const res = await fetch(`/parametros/megado/listar?proyecto_id=${proyectoId}&tipo_equipo=${tipoEquipo}`);
-        if (!res.ok) {
-            console.error("No se pudieron obtener los parámetros de megado");
-            return null;
-        }
-        const parametros = await res.json();
-        return parametros.length > 0 ? parametros[0] : null;
-    }
+def generar_pdf_test(test_data, resultados_pdf, output_path):
+    pdf = PDF()
+    pdf.logo_cliente = f"static/img/logos/{test_data.get('logo_cliente', '')}"
+    pdf.logo_subcontrata = f"static/img/logos/{test_data.get('logo_subcontrata', '')}"
+    pdf.add_page()
 
-    async function generarCampos() {
-        const cantidad = parseInt(cableSetInput.value) || 0;
-        const referenciaComun = referenciaComunInput.value;
-        const unidad = unidadSelect.value;
-        const proyectoId = document.getElementById("proyecto_id").value;
-        const tipoEquipo = document.getElementById("tipo_equipo").value;
+    # Título
+    pdf.set_font('Arial', 'B', 14)
+    pdf.cell(0, 10,
+             f"{test_data['detalles_equipo'].get('Tipo de Equipo', '')} - {test_data.get('tipo_prueba', '').capitalize()}",
+             ln=True, align='C')
+    pdf.ln(10)
 
-        contenedorResultados.innerHTML = "";
-        bloqueResultados.style.display = cantidad > 0 ? "block" : "none";
+    # Datos del equipo
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(0, 10, 'Datos del Equipo:', ln=True)
+    pdf.set_font('Arial', '', 11)
+    for clave, valor in test_data['detalles_equipo'].items():
+        pdf.cell(60, 8, f"{clave}", border=1)
+        pdf.cell(0, 8, f"{valor}", border=1, ln=True)
+    pdf.ln(10)
 
-        const parametros = await obtenerParametroMegado(proyectoId, tipoEquipo);
-        const tiempoDuracion = parametros?.duracion || "";
+    # Resultados
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(0, 10, 'Resultados:', ln=True)
+    pdf.set_font('Arial', 'B', 10)
 
-        for (let i = 1; i <= cantidad; i++) {
-            const tabla = document.createElement("table");
-            tabla.classList.add("tabla-prueba");
+    headers = ['Cable Set', 'Punto', 'Referencia', 'Resultado', 'Unidad', 'Aprobado', 'Observaciones']
+    col_widths = [20, 25, 25, 25, 20, 20, 50]
+    for i, header in enumerate(headers):
+        pdf.cell(col_widths[i], 8, header, border=1, align='C')
+    pdf.ln()
 
-            tabla.innerHTML = `
-                <caption>Megado - Cable Set ${i}</caption>
-                <tr>
-                    <th>Punto</th>
-                    <th>Referencia</th>
-                    <th>Resultado / N/A</th>
-                    <th>Unidad</th>
-                    <th>Tiempo (s)</th>
-                    <th>Observaciones</th>
-                    <th>¿Aprobado?</th>
-                    <th>Imagen</th>
-                </tr>`;
+    pdf.set_font('Arial', '', 10)
+    for r in resultados_pdf:
+        fila = [
+            str(r.get('cable_set', '')),
+            r.get('punto_prueba', ''),
+            r.get('referencia_valor', ''),
+            str(r.get('resultado_valor', '')),
+            r.get('unidad', ''),
+            "✔" if r.get('aprobado') in (True, "True", "✔") else "✘",
+            r.get('observaciones', '')
+        ]
+        for i, valor in enumerate(fila):
+            pdf.cell(col_widths[i], 8, valor, border=1)
+        pdf.ln()
 
-            combinaciones.forEach((punto) => {
-                const fila = document.createElement("tr");
-                const idResultado = `resultado_${i}_${punto}`;
-                const idNA = `na_${i}_${punto}`;
-                const idTiempo = `tiempo_${i}_${punto}`;
+        # Imágenes asociadas
+        imagenes = test_data.get("imagenes", [])
+        for imagen in imagenes:
+            if imagen.get("cable_set") == r.get("cable_set") and imagen.get("punto_prueba") == r.get("punto_prueba"):
+                if os.path.exists(imagen["path"]):
+                    try:
+                        pdf.image(imagen["path"], x=pdf.get_x(), y=pdf.get_y(), w=50)
+                        pdf.ln(30)
+                    except Exception as e:
+                        pdf.set_font('Arial', 'I', 8)
+                        pdf.cell(0, 10, f"[Error al mostrar imagen: {e}]", ln=True)
 
-                fila.innerHTML = `
-                    <td>${punto}</td>
-                    <td>${referenciaComun} ${unidad}</td>
-                    <td>
-                        <div class="resultado-combinado">
-                            <button type="button" class="na-btn" id="${idNA}">N/A</button>
-                            <input type="text" name="${idResultado}" id="${idResultado}" />
-                        </div>
-                    </td>
-                    <td><input name="unidad_${i}_${punto}" type="text" value="${unidad}" readonly /></td>
-                    <td><input name="${idTiempo}" type="number" value="${tiempoDuracion}" readonly /></td>
-                    <td><input name="observaciones_${i}_${punto}" type="text" /></td>
-                    <td><input name="aprobado_${i}_${punto}" type="checkbox" disabled /></td>
-                    <td>
-                        <label class="camera-label">
-                            📷 <span class="adjunto-texto"></span>
-                            <input type="file" accept="image/*" name="imagen_${i}_${punto}" style="display:none;" />
-                        </label>
-                    </td>
-                `;
+    pdf.ln(10)
+    pdf.set_font('Arial', 'I', 10)
+    pdf.cell(0, 10, f"Realizado por: {test_data.get('nombre_usuario', 'Desconocido')}", ln=True)
+    pdf.cell(0, 10, f"Fecha: {test_data.get('fecha', datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))}", ln=True)
 
-                tabla.appendChild(fila);
-
-                const inputResultado = fila.querySelector(`#${idResultado}`);
-                const botonNA = fila.querySelector(`#${idNA}`);
-                botonNA.addEventListener("click", () => {
-                    inputResultado.disabled = !inputResultado.disabled;
-                    inputResultado.value = inputResultado.disabled ? "N/A" : "";
-                    botonNA.classList.toggle("activo");
-                });
-
-                const label = fila.querySelector("label");
-                const inputFile = label.querySelector("input[type='file']");
-                const textoAdjunto = label.querySelector(".adjunto-texto");
-                inputFile.addEventListener("change", () => {
-                    textoAdjunto.textContent = inputFile.files.length ? "📎 Archivo adjunto" : "";
-                });
-            });
-
-            contenedorResultados.appendChild(tabla);
-        }
-    }
-
-    cableSetInput.addEventListener("input", generarCampos);
-    referenciaComunInput.addEventListener("input", generarCampos);
-    unidadSelect.addEventListener("change", generarCampos);
-    generarCampos();
-
-    document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
-        const tipo = document.getElementById("tipo-prueba")?.value;
-        if (tipo !== "megado") return;
-
-        e.preventDefault();
-
-        const cableSets = parseInt(cableSetInput.value);
-        const unidad = unidadSelect.value;
-        const referenciaComun = referenciaComunInput.value;
-
-        if (!cableSets || !unidad || !referenciaComun) {
-            alert("Debe ingresar Cable Sets, unidad de medida y valor de referencia.");
-            return;
-        }
-
-        const datos = [];
-        const imagenes = [];
-
-        const proyecto_id = document.getElementById("proyecto_id").value;
-        const ubicacion_1 = document.getElementById("ubicacion_1").value;
-        const numero_ubicacion_1 = document.getElementById("numero_ubicacion_1").value;
-        const ubicacion_2 = document.getElementById("ubicacion_2")?.value || "";
-        const numero_ubicacion_2 = document.getElementById("numero_ubicacion_2")?.value || "";
-        const tipo_equipo = document.getElementById("tipo_equipo").value;
-        const numero_tipo_equipo = document.getElementById("numero_tipo_equipo").value;
-        const sub_equipo = document.getElementById("sub_equipo")?.value || "";
-        const numero_sub_equipo = document.getElementById("numero_sub_equipo")?.value || "";
-        const tipo_alimentacion = document.getElementById("tipo_alimentacion")?.value;
-        const terminal = document.getElementById("terminal")?.value || "";
-
-        for (let i = 1; i <= cableSets; i++) {
-            for (const punto of combinaciones) {
-                const resultado = document.querySelector(`[name="resultado_${i}_${punto}"]`)?.value || "";
-                const observaciones = document.querySelector(`[name="observaciones_${i}_${punto}"]`)?.value || "";
-                const tiempo = document.querySelector(`[name="tiempo_${i}_${punto}"]`)?.value || "";
-                const imagenInput = document.querySelector(`[name="imagen_${i}_${punto}"]`);
-                const imagen = imagenInput?.files[0];
-
-                datos.push({
-                    cable_set: i,
-                    punto_prueba: punto,
-                    referencia_valor: referenciaComun,
-                    resultado_valor: resultado,
-                    unidad: unidad,
-                    tiempo_aplicado: tiempo,
-                    observaciones: observaciones
-                });
-
-                imagenes.push(imagen || new File([], ""));
-            }
-        }
-
-        const formData = new FormData();
-        formData.append("proyecto_id", proyecto_id);
-        formData.append("ubicacion_1", ubicacion_1);
-        formData.append("numero_ubicacion_1", numero_ubicacion_1);
-        formData.append("ubicacion_2", ubicacion_2);
-        formData.append("numero_ubicacion_2", numero_ubicacion_2);
-        formData.append("tipo_equipo", tipo_equipo);
-        formData.append("numero_tipo_equipo", numero_tipo_equipo);
-        formData.append("sub_equipo", sub_equipo);
-        formData.append("numero_sub_equipo", numero_sub_equipo);
-        formData.append("tipo_prueba", "megado");
-        formData.append("cable_sets", cableSets);
-        formData.append("tipo_alimentacion", tipo_alimentacion);
-        formData.append("terminal", terminal);
-        formData.append("datos", JSON.stringify(datos));
-        imagenes.forEach(img => formData.append("imagenes", img));
-
-        const response = await fetch("/formulario/guardar", {
-            method: "POST",
-            body: formData
-        });
-
-        const res = await response.json().catch(() => null);
-        if (response.ok && res?.mensaje) {
-            alert(res.mensaje);
-        } else {
-            alert(res?.detail || "Error al guardar el formulario.");
-        }
-    });
-}
-
-window.initFormularioMegado = initFormularioMegado;
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    pdf.output(output_path)
