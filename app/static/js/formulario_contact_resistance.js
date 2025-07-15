@@ -92,7 +92,13 @@ function initFormularioContactResistance(tipoAlimentacion) {
             contenedorResultados.appendChild(tabla);
         }
     }
+function obtenerUnidadSeleccionada() {
+    const select = document.getElementById("unidad-general");
+    return select ? select.value : "";
+}
 
+// Cuando generes cada fila de resultado:
+fila.querySelector(".unidad-celda").textContent = obtenerUnidadSeleccionada();
     cableSetInput.addEventListener("input", generarCampos);
     referenciaComunInput.addEventListener("input", generarCampos);
     generarCampos();
@@ -179,11 +185,5 @@ function initFormularioContactResistance(tipoAlimentacion) {
         }
     });
 }
-function obtenerUnidadSeleccionada() {
-    const select = document.getElementById("unidad-general");
-    return select ? select.value : "";
-}
 
-// Cuando generes cada fila de resultado:
-fila.querySelector(".unidad-celda").textContent = obtenerUnidadSeleccionada();
 window.initFormularioContactResistance = initFormularioContactResistance;
