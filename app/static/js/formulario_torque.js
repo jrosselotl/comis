@@ -70,7 +70,13 @@ function initFormularioTorque(tipoAlimentacion) {
             contenedorResultados.appendChild(tabla);
         }
     }
+function obtenerUnidadSeleccionada() {
+    const select = document.getElementById("unidad-general");
+    return select ? select.value : "";
+}
 
+// Cuando generes cada fila de resultado:
+fila.querySelector(".unidad-celda").textContent = obtenerUnidadSeleccionada();
     cableSetInput.addEventListener("input", generarCampos);
     generarCampos();
 
