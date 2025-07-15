@@ -92,26 +92,29 @@
       </label>
     </fieldset>
 
-    
-<!-- Paso 3: Características -->
-<fieldset id="bloque-caracteristicas" style="display:none;">
-  <legend>3. Características</legend>
+    <!-- Paso 3: Características -->
+    <fieldset id="bloque-caracteristicas" style="display:none;">
+      <legend>3. Características</legend>
 
-  <label for="cable_sets">Cable Sets:
-    <input type="number" id="cable_sets" name="cable_sets" min="1" value="1" required />
-  </label>
+      <label for="cable_sets">Cable Sets:
+        <input type="number" id="cable_sets" name="cable_sets" min="1" value="1" required />
+      </label>
 
-  <label for="referencia-comun">Referencia:
-    <input type="text" id="referencia-comun" placeholder="Ej: 0.5" />
-  </label>
+      <label for="referencia-comun">Referencia:
+        <input type="text" id="referencia-comun" placeholder="Ej: 0.5" />
+      </label>
 
-  <label id="label-unidad" style="display:none;">Unidad:
-    <select id="unidad" name="unidad">
-      <option value="">Seleccione unidad...</option>
-    </select>
-  </label>
-</fieldset>
+      <label id="label-unidad">Unidad:
+        <select id="unidad" name="unidad">
+          <option value="">Seleccione unidad...</option>
+        </select>
+      </label>
 
+      <!-- ✅ Campo de tiempo solo para Megado -->
+      <label id="campo-tiempo-aplicado" style="display:none;">Tiempo Aplicado (s):
+        <input type="number" id="tiempo_aplicado" placeholder="Ej: 60" />
+      </label>
+    </fieldset>
 
     <!-- Paso 4: Resultados -->
     <fieldset id="bloque-resultados" style="display:none;">
