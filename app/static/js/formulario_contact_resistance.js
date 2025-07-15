@@ -3,6 +3,10 @@ function initFormularioContactResistance(tipoAlimentacion) {
     const referenciaComunInput = document.getElementById("referencia-comun");
     const contenedorResultados = document.getElementById("contenedor-resultados");
     const bloqueResultados = document.getElementById("bloque-resultados");
+    const unidadSelect = document.getElementById("unidad"); // ✅ usamos el mismo select global
+
+    // ✅ Cargar automáticamente las unidades según el test
+    cargarUnidadesPorTest("contact_resistance");
 
     const conductores = tipoAlimentacion === "monofasica"
         ? ["L", "N", "PE"]
@@ -23,6 +27,8 @@ function initFormularioContactResistance(tipoAlimentacion) {
     function generarCampos() {
         const cantidad = parseInt(cableSetInput.value) || 0;
         const referenciaComun = referenciaComunInput.value;
+        const unidad = unidadSelect.value;
+
         contenedorResultados.innerHTML = "";
         bloqueResultados.style.display = cantidad > 0 ? "block" : "none";
 
@@ -35,7 +41,8 @@ function initFormularioContactResistance(tipoAlimentacion) {
                 <tr>
                     <th>Punto</th>
                     <th>Referencia</th>
-                    <th>Resultado</th>
+                    <th>Resultado / N/A</th>
+                    <th>Unidad</th>
                     <th>¿Aprobado?</th>
                     <th>Observaciones</th>
                     <th>Imagen</th>
@@ -43,11 +50,20 @@ function initFormularioContactResistance(tipoAlimentacion) {
 
             combinaciones.forEach((punto) => {
                 const fila = document.createElement("tr");
+                const idResultado = `resultado_${i}_${punto}`;
+                const idNA = `na_${i}_${punto}`;
+
                 fila.innerHTML = `
                     <td>${punto}</td>
-                    <td><input name="referencia_${i}_${punto}" type="text" value="${referenciaComun}" readonly /></td>
-                    <td><input name="resultado_${i}_${punto}" type="text" /></td>
-                    <td><input name="aprobado_${i}_${punto}" type="checkbox" /></td>
+                    <td>${referenciaComun} ${unidad}</td>
+                    <td>
+                        <div class="resultado-combinado">
+                            <button type="button" class="na-btn" id="${idNA}">N/A</button>
+                            <input type="text" name="${idResultado}" id="${idResultado}" />
+                        </div>
+                    </td>
+                    <td><input name="unidad_${i}_${punto}" type="text" value="${unidad}" readonly /></td>
+                    <td><input name="aprobado_${i}_${punto}" type="checkbox" disabled /></td>
                     <td><input name="observaciones_${i}_${punto}" type="text" /></td>
                     <td>
                         <label class="camera-label">
@@ -58,49 +74,30 @@ function initFormularioContactResistance(tipoAlimentacion) {
                 `;
                 tabla.appendChild(fila);
 
+                const inputResultado = fila.querySelector(`#${idResultado}`);
+                const botonNA = fila.querySelector(`#${idNA}`);
+                botonNA.addEventListener("click", () => {
+                    inputResultado.disabled = !inputResultado.disabled;
+                    inputResultado.value = inputResultado.disabled ? "N/A" : "";
+                    botonNA.classList.toggle("activo");
+                });
+
                 const label = fila.querySelector("label");
                 const inputFile = label.querySelector("input[type='file']");
                 const textoAdjunto = label.querySelector(".adjunto-texto");
-                const resultadoInput = fila.querySelector(`input[name="resultado_${i}_${punto}"]`);
-
-                inputFile.addEventListener("change", async (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        textoAdjunto.textContent = "📎 Archivo adjunto";
-
-                        const reader = new FileReader();
-                        /*reader.onload = async () => {
-                            try {
-                                const { data: { text } } = await Tesseract.recognize(reader.result, 'eng');
-                                const match = text.match(/[\d]+(?:[\.,]\d+)?\s?(?:kV|KV|\u03a9|ohm|M\u03a9|G\u03a9|V|mA|A)?/);
-                                if (match) {
-                                    resultadoInput.value = match[0].replace(",", ".").trim();
-                                } else {
-                                    resultadoInput.value = text.trim();
-                                }
-                            } catch (err) {
-                                console.error("Error OCR:", err);
-                            }
-                        };
-                        reader.readAsDataURL(file);*/
-                    } else {
-                        textoAdjunto.textContent = "";
-                    }
+                inputFile.addEventListener("change", () => {
+                    textoAdjunto.textContent = inputFile.files.length ? "📎 Archivo adjunto" : "";
                 });
             });
 
             contenedorResultados.appendChild(tabla);
         }
     }
-function obtenerUnidadSeleccionada() {
-    const select = document.getElementById("unidad-general");
-    return select ? select.value : "";
-}
 
-// Cuando generes cada fila de resultado:
-fila.querySelector(".unidad-celda").textContent = obtenerUnidadSeleccionada();
     cableSetInput.addEventListener("input", generarCampos);
     referenciaComunInput.addEventListener("input", generarCampos);
+    unidadSelect.addEventListener("change", generarCampos);
+
     generarCampos();
 
     document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
@@ -110,19 +107,18 @@ fila.querySelector(".unidad-celda").textContent = obtenerUnidadSeleccionada();
         e.preventDefault();
 
         const cableSets = parseInt(cableSetInput.value);
+        const unidad = unidadSelect.value;
         const referenciaComun = referenciaComunInput.value;
 
-        if (!cableSets || !referenciaComun) {
-            alert("Debe ingresar Cable Sets y un Valor de Referencia.");
+        if (!cableSets || !unidad || !referenciaComun) {
+            alert("Debe ingresar Cable Sets, unidad de medida y valor de referencia.");
             return;
         }
 
         const datos = [];
         const imagenes = [];
 
-        const proyectoSelect = document.getElementById("proyecto_id");
-        const proyecto_id = proyectoSelect.value;
-
+        const proyecto_id = document.getElementById("proyecto_id").value;
         const ubicacion_1 = document.getElementById("ubicacion_1").value;
         const numero_ubicacion_1 = document.getElementById("numero_ubicacion_1").value;
         const ubicacion_2 = document.getElementById("ubicacion_2")?.value || "";
@@ -137,7 +133,6 @@ fila.querySelector(".unidad-celda").textContent = obtenerUnidadSeleccionada();
         for (let i = 1; i <= cableSets; i++) {
             for (const punto of combinaciones) {
                 const resultado = document.querySelector(`[name="resultado_${i}_${punto}"]`)?.value || "";
-                const aprobado = document.querySelector(`[name="aprobado_${i}_${punto}"]`)?.checked || false;
                 const observaciones = document.querySelector(`[name="observaciones_${i}_${punto}"]`)?.value || "";
                 const imagenInput = document.querySelector(`[name="imagen_${i}_${punto}"]`);
                 const imagen = imagenInput?.files[0];
@@ -147,7 +142,7 @@ fila.querySelector(".unidad-celda").textContent = obtenerUnidadSeleccionada();
                     punto_prueba: punto,
                     referencia_valor: referenciaComun,
                     resultado_valor: resultado,
-                    aprobado: aprobado,
+                    unidad: unidad,
                     observaciones: observaciones
                 });
 
