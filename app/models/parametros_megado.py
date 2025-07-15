@@ -9,5 +9,5 @@ class ParametroMegado(Base):
     proyecto_id = Column(Integer, ForeignKey("proyectos.id"))
     logica = Column(String, nullable=False)
     referencia = Column(String, nullable=False)
-
+    unidad = Column(String, nullable=False)
     proyecto = relationship("Proyecto", back_populates="parametros_megado")
