@@ -1,18 +1,21 @@
 from pydantic import BaseModel
+from typing import Optional
 
-class ParametrosTorqueBase(BaseModel):
+class ParametroTorqueBase(BaseModel):
     proyecto_id: int
+    test_id: int
     codigo_equipo: str
-    valor_nominal: float
-    valor_comprobacion: float
+    valor_nominal: str
+    valor_comprobacion: str
     unidad: str
-    observaciones: str | None = None
 
-class ParametrosTorqueCreate(ParametrosTorqueBase):
+class ParametroTorqueCreate(ParametroTorqueBase):
     pass
 
-class ParametrosTorqueOut(ParametrosTorqueBase):
-    id: int
-
-    class Config:
-        orm_mode = True
+class ParametroTorqueUpdate(BaseModel):
+    proyecto_id: Optional[int]
+    test_id: Optional[int]
+    codigo_equipo: Optional[str]
+    valor_nominal: Optional[str]
+    valor_comprobacion: Optional[str]
+    unidad: Optional[str]
