@@ -10,14 +10,12 @@ class TestContactResistance(Base):
     proyecto_id = Column(Integer, ForeignKey("proyectos.id"))
     equipo_id = Column(Integer, ForeignKey("equipos.id"))
     tipo_alimentacion = Column(String, nullable=False)
-    terminal = Column(String, nullable=True)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"))
 
     resultados = relationship("ResultadoContactResistance", back_populates="test")
-    proyecto = relationship("Proyecto", back_populates="test_contact_resistance")
-    equipo = relationship("Equipo", back_populates="test_contact_resistance")
-    usuario = relationship("Usuario", back_populates="test_contact_resistance")
-
+    proyecto = relationship("Proyecto", back_populates="tests_contact_resistance")
+    equipo = relationship("Equipo", back_populates="tests_contact_resistance")
+    usuario = relationship("Usuario", back_populates="tests_contact_resistance")
 
 class ResultadoContactResistance(Base):
     __tablename__ = "resultados_contact_resistance"
