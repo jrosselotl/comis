@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.schemas.test import TestCreate, TestOut
 from app.models.test import Test
 from app.database import get_db
+from app.utils.conversion_unidades import obtener_unidades_por_test
 
 router = APIRouter(prefix="/tests", tags=["Tipos de Test"])
 
@@ -27,3 +28,7 @@ def listar_tests(db: Session = Depends(get_db)):
 @router.get("/listar", response_model=list[TestOut])
 def alias_listar_tests(db: Session = Depends(get_db)):
     return listar_tests(db)
+
+@router.get("/unidades")
+def listar_unidades(tipo_test: str = Query(...)):
+    return {"unidades": obtener_unidades_por_test(tipo_test)}
