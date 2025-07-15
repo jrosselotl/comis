@@ -36,10 +36,12 @@ async def guardar_test_continuidad(
     db: Session = Depends(get_db)
 ):
     datos_parsed = json.loads(datos)
-    usuario_id = 1
+    usuario_id = 1  # 🔹 Cambiar luego por usuario autenticado
 
+    # ✅ Generar código único del equipo
     codigo_equipo = f"{ubicacion_1}-{tipo_equipo}-{sub_equipo or 'GEN'}{numero_sub_equipo or ''}".upper()
 
+    # ✅ Verificar o crear el equipo
     equipo = db.query(Equipo).filter_by(codigo=codigo_equipo).first()
     if not equipo:
         equipo = Equipo(
@@ -52,11 +54,13 @@ async def guardar_test_continuidad(
         db.commit()
         db.refresh(equipo)
 
+    # ✅ Crear registro en tabla general de tests
     test = Test(tipo_prueba=tipo_prueba, equipo_id=equipo.id)
     db.add(test)
     db.commit()
     db.refresh(test)
 
+    # ✅ Crear test específico de continuidad
     test_cont = TestContinuidad(
         equipo_id=equipo.id,
         usuario_id=usuario_id,
@@ -66,21 +70,23 @@ async def guardar_test_continuidad(
     db.commit()
     db.refresh(test_cont)
 
+    # ✅ Guardar resultados
     imagenes_info = []
     for i, r in enumerate(datos_parsed):
         filename = f"{codigo_equipo}_{r['punto_prueba']}_{i}.png"
         filepath = os.path.join(UPLOAD_DIR, filename)
         with open(filepath, "wb") as buffer:
             shutil.copyfileobj(imagenes[i].file, buffer)
+        imagenes_info.append({"path": filepath, "punto_prueba": r["punto_prueba"], "cable_set": r.get("cable_set")})
 
-        imagenes_info.append(filepath)
-
+        # ✅ Obtener parámetros del admin (filtrado correcto)
         parametro = db.query(ParametroContinuidad).filter_by(
             proyecto_id=proyecto_id,
-            tipo_equipo=tipo_equipo,
-            punto=r['punto_prueba']
+            codigo_equipo=codigo_equipo,
+            test_id=test.id
         ).first()
 
+        # ✅ Validación automática
         aprobado = "SI"
         if not r['resultado_valor'] or r['resultado_valor'] == "N/A":
             aprobado = "SI"
@@ -95,11 +101,16 @@ async def guardar_test_continuidad(
                     aprobado = "SI" if res > ref else "NO"
                 elif logica == "igual":
                     aprobado = "SI" if res == ref else "NO"
+                elif logica == "menor_igual":
+                    aprobado = "SI" if res <= ref else "NO"
+                elif logica == "mayor_igual":
+                    aprobado = "SI" if res >= ref else "NO"
                 else:
                     aprobado = "NO"
             except:
                 aprobado = "NO"
 
+        # ✅ Guardar resultado en DB
         resultado = ResultadoContinuidad(
             test_id=test_cont.id,
             punto=r['punto_prueba'],
@@ -113,8 +124,8 @@ async def guardar_test_continuidad(
 
     db.commit()
 
+    # ✅ Generar PDF
     proyecto = db.query(Proyecto).filter_by(id=proyecto_id).first()
-    nombre_equipo = codigo_equipo
     detalles_equipo = {
         "Proyecto": proyecto.nombre,
         "Ubicación Principal": f"{ubicacion_1} Nº{numero_ubicacion_1}",
@@ -123,9 +134,8 @@ async def guardar_test_continuidad(
         "Subequipo": f"{sub_equipo} Nº{numero_sub_equipo}" if sub_equipo else "-",
         "Tipo de Alimentación": tipo_alimentacion
     }
-
     test_data = {
-        "equipo_id": nombre_equipo,
+        "equipo_id": codigo_equipo,
         "tipo_prueba": tipo_prueba,
         "fecha": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
         "observaciones": "",
@@ -135,7 +145,6 @@ async def guardar_test_continuidad(
         "logo_subcontrata": f"logo_subcontrata_{proyecto.nombre}.png",
         "nombre_usuario": "Usuario Test"
     }
-
     resultados_pdf = [
         {
             "punto_prueba": r["punto_prueba"],
@@ -149,15 +158,16 @@ async def guardar_test_continuidad(
         for r in datos_parsed
     ]
 
-    output_pdf_path = f"output/{tipo_prueba}_{nombre_equipo}.pdf"
+    output_pdf_path = f"output/{tipo_prueba}_{codigo_equipo}.pdf"
     os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
     generar_pdf_test(test_data, resultados_pdf, output_path=output_pdf_path)
 
+    # ✅ Enviar correo
     correos_destino = obtener_correos_admins(db, proyecto_id)
     enviar_correo_con_pdf(
         destinatarios=correos_destino,
-        asunto=f"{tipo_prueba.capitalize()} - {nombre_equipo}",
-        cuerpo=f"Informe de {tipo_prueba} para el equipo {nombre_equipo}",
+        asunto=f"{tipo_prueba.capitalize()} - {codigo_equipo}",
+        cuerpo=f"Informe de {tipo_prueba} para el equipo {codigo_equipo}",
         archivo_pdf=output_pdf_path
     )
 
