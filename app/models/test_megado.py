@@ -10,12 +10,14 @@ class TestMegado(Base):
     equipo_id = Column(Integer, ForeignKey("equipos.id"))
     usuario_id = Column(Integer, ForeignKey("usuarios.id"))
     test_id = Column(Integer, ForeignKey("tests.id"))
+    proyecto_id = Column(Integer, ForeignKey("proyectos.id"))  # ✅ NUEVO
     fecha = Column(DateTime, default=datetime.utcnow)
 
     resultados = relationship("ResultadoMegado", back_populates="test")
     equipo = relationship("Equipo")
     usuario = relationship("Usuario", back_populates="tests_megado")
     test_ref = relationship("Test")
+    proyecto = relationship("Proyecto", back_populates="tests_megado")  # ✅ NUEVO
 
 class ResultadoMegado(Base):
     __tablename__ = "resultados_megado"
