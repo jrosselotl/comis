@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const tipoPruebaSelect = document.getElementById("tipo-prueba");
   const unidadSelect = document.getElementById("unidad");
   const referenciaInput = document.getElementById("referencia-comun");
-  const tiempoField = document.getElementById("campo-tiempo-aplicado");
   const caracteristicas = document.getElementById("bloque-caracteristicas");
   const resultados = document.getElementById("bloque-resultados");
   const tipoAlimentacionSelect = document.getElementById("tipo_alimentacion");
@@ -70,7 +69,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Limpiar campos comunes
     referenciaInput.value = "";
     actualizarUnidadesPorTest(tipo);
-    tiempoField.style.display = tipo === "megado" ? "block" : "none";
 
     // Cargar el formulario dinámico según el test
     if (tipo === "continuidad") {
