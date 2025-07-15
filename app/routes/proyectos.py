@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.schemas.proyecto import ProyectoCreate, ProyectoOut
 from app.models.proyecto import Proyecto
-from app.models.proyecto_tipo_test import ProyectoTipoTest
 from app.models.test import Test
 from app.database import get_db
 
