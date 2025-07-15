@@ -17,3 +17,5 @@ class Proyecto(Base):
     parametros_megado = relationship("ParametrosMegado", back_populates="proyecto")
     parametros_contact_resistance = relationship("ParametrosContactResistance", back_populates="proyecto")
     parametros_torque = relationship("ParametrosTorque", back_populates="proyecto")
+
+usuarios_asociados = relationship("UsuarioProyecto", back_populates="proyecto")
