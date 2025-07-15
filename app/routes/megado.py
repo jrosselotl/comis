@@ -1,150 +1,165 @@
+# app/routes/megado.py
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
-import os, shutil, json
-from datetime import datetime
 from app.database import get_db
 from app.models.test_megado import TestMegado, ResultadoMegado
-from app.models.parametros_megado import ParametrosMegado
-from app.models.tests import Test
+from app.models.test import Test
 from app.models.equipo import Equipo
 from app.utils.pdf_generator import generar_pdf_test
-from app.utils.correo import enviar_correo_con_pdf
+from app.utils.correo import enviar_correo_con_pdf, obtener_correos_admins
+from app.models.parametros_megado import ParametroMegado
+from app.models.proyecto import Proyecto
+import os, shutil, json
+from datetime import datetime
 
-router = APIRouter(prefix="/megado", tags=["Test Megado"])
-
+router = APIRouter(prefix="/formulario/megado", tags=["Formulario Megado"])
 UPLOAD_DIR = "static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-def evaluar_aprobado(logica: str, referencia: float, valor: float) -> str:
-    if valor is None:
-        return "No"
-    try:
-        if logica == "mayor_que":
-            return "Sí" if valor > referencia else "No"
-        elif logica == "menor_que":
-            return "Sí" if valor < referencia else "No"
-        elif logica == "igual":
-            return "Sí" if valor == referencia else "No"
-    except:
-        return "No"
-    return "No"
 
 @router.post("/guardar")
 async def guardar_test_megado(
     proyecto_id: int = Form(...),
-    equipo_id: int = Form(...),
-    usuario_id: int = Form(...),
+    ubicacion_1: str = Form(...),
+    numero_ubicacion_1: str = Form(...),
+    ubicacion_2: str = Form(None),
+    numero_ubicacion_2: str = Form(None),
+    tipo_equipo: str = Form(...),
+    numero_tipo_equipo: str = Form(...),
+    sub_equipo: str = Form(None),
+    numero_sub_equipo: str = Form(None),
+    tipo_prueba: str = Form(...),
+    cable_sets: int = Form(...),
+    tipo_alimentacion: str = Form(...),
+    terminal: str = Form(None),
     datos: str = Form(...),
-    imagenes: List[UploadFile] = File(...),
+    imagenes: list[UploadFile] = File(...),
     db: Session = Depends(get_db)
 ):
     datos_parsed = json.loads(datos)
-    equipo = db.query(Equipo).filter_by(id=equipo_id).first()
+    usuario_id = 1  # 🔹 Cambiar luego por usuario autenticado
+
+    codigo_equipo = f"{ubicacion_1}-{tipo_equipo}-{sub_equipo or 'GEN'}{numero_sub_equipo or ''}".upper()
+
+    equipo = db.query(Equipo).filter_by(codigo=codigo_equipo).first()
     if not equipo:
-        raise HTTPException(status_code=404, detail="Equipo no encontrado")
+        equipo = Equipo(
+            codigo=codigo_equipo,
+            tipo=tipo_equipo,
+            sub_equipo=sub_equipo,
+            proyecto_id=proyecto_id
+        )
+        db.add(equipo)
+        db.commit()
+        db.refresh(equipo)
 
-    nuevo_test = Test(usuario_id=usuario_id, proyecto_id=proyecto_id, tipo_prueba="megado")
-    db.add(nuevo_test)
+    test = Test(tipo_prueba=tipo_prueba, equipo_id=equipo.id)
+    db.add(test)
     db.commit()
-    db.refresh(nuevo_test)
+    db.refresh(test)
 
-    test_megado = TestMegado(equipo_id=equipo_id, usuario_id=usuario_id, test_id=nuevo_test.id)
-    db.add(test_megado)
+    test_meg = TestMegado(
+        equipo_id=equipo.id,
+        usuario_id=usuario_id,
+        test_id=test.id
+    )
+    db.add(test_meg)
     db.commit()
-    db.refresh(test_megado)
+    db.refresh(test_meg)
 
-    parametros = db.query(ParametrosMegado).filter_by(proyecto_id=proyecto_id).all()
     imagenes_info = []
-    index = 0
+    for i, r in enumerate(datos_parsed):
+        filename = f"{codigo_equipo}_{r['punto_prueba']}_{i}.png"
+        filepath = os.path.join(UPLOAD_DIR, filename)
+        with open(filepath, "wb") as buffer:
+            shutil.copyfileobj(imagenes[i].file, buffer)
+        imagenes_info.append({"path": filepath, "punto_prueba": r["punto_prueba"], "cable_set": r.get("cable_set")})
 
-    for dato in datos_parsed:
-        punto = dato["punto_prueba"]
-        cable_set = dato.get("cable_set", 0)
-        valor = dato.get("resultado_valor")
-        unidad = dato.get("unidad", "")
-        observaciones = dato.get("observaciones", "")
+        parametro = db.query(ParametroMegado).filter_by(
+            proyecto_id=proyecto_id,
+            codigo_equipo=codigo_equipo,
+            test_id=test.id
+        ).first()
 
-        param = next((p for p in parametros if p.punto == punto and p.cable_set == cable_set), None)
-        if not param:
-            aprobado = "No"
-        else:
-            aprobado = evaluar_aprobado(param.logica, param.referencia, valor)
-
-        nombre_archivo = None
-        if imagenes and index < len(imagenes):
-            imagen = imagenes[index]
-            if imagen.filename:
-                nombre_archivo = f"{datetime.utcnow().timestamp()}_{imagen.filename}"
-                ruta_archivo = os.path.join(UPLOAD_DIR, nombre_archivo)
-                with open(ruta_archivo, "wb") as f:
-                    shutil.copyfileobj(imagen.file, f)
-                imagenes_info.append(nombre_archivo)
-            else:
-                imagenes_info.append("")
-            index += 1
-        else:
-            imagenes_info.append("")
+        aprobado = "SI"
+        if not r['resultado_valor'] or r['resultado_valor'] == "N/A":
+            aprobado = "SI"
+        elif parametro:
+            try:
+                ref = float(parametro.referencia)
+                res = float(r['resultado_valor'])
+                logica = parametro.logica
+                if logica == "menor":
+                    aprobado = "SI" if res < ref else "NO"
+                elif logica == "mayor":
+                    aprobado = "SI" if res > ref else "NO"
+                elif logica == "igual":
+                    aprobado = "SI" if res == ref else "NO"
+                elif logica == "menor_igual":
+                    aprobado = "SI" if res <= ref else "NO"
+                elif logica == "mayor_igual":
+                    aprobado = "SI" if res >= ref else "NO"
+                else:
+                    aprobado = "NO"
+            except:
+                aprobado = "NO"
 
         resultado = ResultadoMegado(
-            test_id=test_megado.id,
-            punto=punto,
-            resultado_valor=valor,
-            unidad=unidad,
+            test_id=test_meg.id,
+            punto=r['punto_prueba'],
+            resultado_valor=r['resultado_valor'] if r['resultado_valor'] != "N/A" else None,
+            unidad=r['unidad'],
+            tiempo_aplicado=parametro.duracion if parametro else None,  # 🔹 Ahora el técnico NO ingresa tiempo
             aprobado=aprobado,
-            observaciones=observaciones,
-            imagen=nombre_archivo
+            observaciones=r.get('observaciones'),
+            imagen=filepath
         )
         db.add(resultado)
 
     db.commit()
 
-    # PDF
-    proyecto = equipo.proyecto
-    nombre_equipo = equipo.codigo
+    proyecto = db.query(Proyecto).filter_by(id=proyecto_id).first()
     detalles_equipo = {
         "Proyecto": proyecto.nombre,
-        "Ubicación Principal": equipo.ubicacion_1,
-        "Ubicación Secundaria": equipo.ubicacion_2 or "-",
-        "Tipo de Equipo": equipo.tipo_equipo,
-        "Subequipo": equipo.sub_equipo or "-",
-        "Tipo de Alimentación": equipo.tipo_alimentacion
+        "Ubicación Principal": f"{ubicacion_1} Nº{numero_ubicacion_1}",
+        "Ubicación Secundaria": f"{ubicacion_2} Nº{numero_ubicacion_2}" if ubicacion_2 else "-",
+        "Tipo de Equipo": f"{tipo_equipo} Nº{numero_tipo_equipo}",
+        "Subequipo": f"{sub_equipo} Nº{numero_sub_equipo}" if sub_equipo else "-",
+        "Tipo de Alimentación": tipo_alimentacion
     }
-
     test_data = {
-        "tipo_prueba": "megado",
-        "equipo_id": nombre_equipo,
+        "equipo_id": codigo_equipo,
+        "tipo_prueba": tipo_prueba,
         "fecha": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+        "observaciones": "",
         "detalles_equipo": detalles_equipo,
         "imagenes": imagenes_info,
-        "nombre_usuario": equipo.usuario.nombre if equipo.usuario else "Desconocido",
         "logo_cliente": f"logo_cliente_{proyecto.nombre}.png",
-        "logo_subcontrata": f"logo_subcontrata_{proyecto.nombre}.png"
+        "logo_subcontrata": f"logo_subcontrata_{proyecto.nombre}.png",
+        "nombre_usuario": "Usuario Test"
     }
-
     resultados_pdf = [
         {
             "punto_prueba": r["punto_prueba"],
-            "referencia_valor": param.referencia if param else "-",
+            "referencia_valor": parametro.referencia if parametro else "-",
             "resultado_valor": r["resultado_valor"],
-            "aprobado": evaluar_aprobado(param.logica, param.referencia, r["resultado_valor"]) if param else "No",
+            "unidad": r["unidad"],
+            "aprobado": aprobado,
             "observaciones": r.get("observaciones", ""),
-            "cable_set": r.get("cable_set", "")
+            "cable_set": r.get("cable_set")
         }
         for r in datos_parsed
-        for param in parametros if param.punto == r["punto_prueba"] and param.cable_set == r.get("cable_set")
     ]
 
-    output_pdf_path = f"output/megado_{nombre_equipo}.pdf"
+    output_pdf_path = f"output/{tipo_prueba}_{codigo_equipo}.pdf"
     os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
     generar_pdf_test(test_data, resultados_pdf, output_path=output_pdf_path)
 
-correos_destino = obtener_correos_admins(db, proyecto_id)
+    correos_destino = obtener_correos_admins(db, proyecto_id)
+    enviar_correo_con_pdf(
+        destinatarios=correos_destino,
+        asunto=f"{tipo_prueba.capitalize()} - {codigo_equipo}",
+        cuerpo=f"Informe de {tipo_prueba} para el equipo {codigo_equipo}",
+        archivo_pdf=output_pdf_path
+    )
 
-enviar_correo_con_pdf(
-    destinatarios=correos_destino,
-    asunto=f"Megado - {nombre_equipo}",
-    cuerpo=f"Informe de megado para el equipo {nombre_equipo}",
-    archivo_pdf=output_pdf_path
-)
-    return {"mensaje": "Prueba de megado guardada correctamente"}
+    return {"mensaje": "Formulario y resultados guardados correctamente"}
