@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const tipoPruebaSelect = document.getElementById("tipo-prueba");
-  const unidadSelect = document.getElementById("unidad");
+  const unidadSelect = document.getElementById("unidad"); // ✅ select del Paso 3
   const referenciaInput = document.getElementById("referencia-comun");
   const tiempoField = document.getElementById("campo-tiempo-aplicado");
   const caracteristicas = document.getElementById("bloque-caracteristicas");
@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const proyectoSelect = document.getElementById("proyecto_id");
     proyectoSelect.innerHTML = "<option value=''>Seleccione...</option>";
-    proyectos.forEach(p => {
+    proyectos.forEach((p) => {
       const opt = document.createElement("option");
       opt.value = p.id;
       opt.textContent = p.nombre;
@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     tipoPruebaSelect.innerHTML = "<option value=''>Seleccione prueba...</option>";
-    tipos.forEach(t => {
+    tipos.forEach((t) => {
       const opt = document.createElement("option");
       opt.value = t.nombre;
       opt.textContent = t.nombre.charAt(0).toUpperCase() + t.nombre.slice(1);
@@ -38,15 +38,29 @@ document.addEventListener("DOMContentLoaded", () => {
     caracteristicas.style.display = tipo ? "block" : "none";
     resultados.style.display = "none";
 
+    // ✅ Cargar las unidades dinámicamente según el tipo de test
     unidadSelect.innerHTML = "<option value=''>Seleccione unidad...</option>";
+    if (tipo && window.UNIDADES_POR_TEST?.[tipo]) {
+      window.UNIDADES_POR_TEST[tipo].forEach((u) => {
+        const opt = document.createElement("option");
+        opt.value = u;
+        opt.textContent = u;
+        unidadSelect.appendChild(opt);
+      });
+    }
+
     referenciaInput.value = "";
     tiempoField.style.display = tipo === "megado" ? "block" : "none";
 
-    // Mostrar u ocultar scripts según tipo de prueba
-    if (tipo === "continuidad") initFormularioContinuidad(tipoAlimentacionSelect.value);
-    if (tipo === "megado") initFormularioMegado(tipoAlimentacionSelect.value);
-    if (tipo === "contact_resistance") initFormularioContactResistance(tipoAlimentacionSelect.value);
-    if (tipo === "torque") initFormularioTorque(tipoAlimentacionSelect.value);
+    // ✅ Inicializar el formulario correcto según el tipo de prueba
+    if (tipo === "continuidad")
+      initFormularioContinuidad(tipoAlimentacionSelect.value);
+    if (tipo === "megado")
+      initFormularioMegado(tipoAlimentacionSelect.value);
+    if (tipo === "contact_resistance")
+      initFormularioContactResistance(tipoAlimentacionSelect.value);
+    if (tipo === "torque")
+      initFormularioTorque(tipoAlimentacionSelect.value);
   });
 
   tipoAlimentacionSelect.addEventListener("change", () => {
@@ -55,33 +69,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("ubicacion_1").addEventListener("change", (e) => {
     const val = e.target.value;
-    document.getElementById("label-ubicacion_2").style.display = val === "COLO" ? "block" : "none";
+    document.getElementById("label-ubicacion_2").style.display =
+      val === "COLO" ? "block" : "none";
   });
 
-  document.getElementById("tipo_test").addEventListener("change", async function () {
-      const tipo = this.value;
-      const unidadSelect = document.getElementById("unidad-general");
-  
-      if (!tipo) {
-          unidadSelect.innerHTML = "";
-          return;
-      }
-  
-      try {
-          const resp = await fetch(`/tests/unidades?tipo_test=${tipo}`);
-          const data = await resp.json();
-  
-          unidadSelect.innerHTML = "";
-          data.unidades.forEach(u => {
-              const option = document.createElement("option");
-              option.value = u;
-              option.textContent = u;
-              unidadSelect.appendChild(option);
-          });
-      } catch (error) {
-          console.error("Error cargando unidades:", error);
-      }
-  });
-
+  // ✅ Cargamos al inicio
   cargarProyectosYTipos();
 });
