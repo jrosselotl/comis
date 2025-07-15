@@ -22,3 +22,8 @@ def crear_test(test: TestCreate, db: Session = Depends(get_db)):
 @router.get("/", response_model=list[TestOut])
 def listar_tests(db: Session = Depends(get_db)):
     return db.query(Test).all()
+
+# Alias para listar (mantiene compatibilidad con el JS)
+@router.get("/listar", response_model=list[TestOut])
+def alias_listar_tests(db: Session = Depends(get_db)):
+    return listar_tests(db)
