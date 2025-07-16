@@ -1,120 +1,123 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Panel de Proyecto - Parámetros</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración</title>
+  <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <div style="display: flex;">
-        <!-- Sidebar -->
-        <aside style="width: 220px; background-color: #f4f4f4; padding: 1rem; height: 100vh;">
-            <h3>Panel Proyecto</h3>
-            <ul>
-                <li>
-                    Parámetros Técnicos
-                    <ul>
-                        <li><a href="#" onclick="mostrarSeccion('parametros_asignar')">Asignar</a></li>
-                        <li><a href="#" onclick="mostrarSeccion('parametros_ver')">Ver Parámetros</a></li>
-                    </ul>
-                </li>
-                <li><a href="/logout">Cerrar sesión</a></li>
-            </ul>
-        </aside>
+  <div style="background:#333; color:white; padding:10px; display:flex; justify-content:space-between;">
+    <h1>Panel de Administración - Parámetros Técnicos</h1>
+    <a href="/logout" style="background:red; color:white; padding:5px 10px; border-radius:5px; text-decoration:none;">Cerrar sesión</a>
+  </div>
 
-        <!-- Contenido -->
-        <main style="flex-grow: 1; padding: 2rem;">
-            <!-- Asignar Parámetros -->
-            <section id="parametros_asignar" style="display: block;">
-                <h2>Asignar Parámetros Técnicos</h2>
-                <form id="parametros-form">
-                    <label for="test">Tipo de Test:</label>
-                    <select id="test" name="test">
-                        <option value="continuidad">Continuidad</option>
-                        <option value="megado">Megado</option>
-                    </select>
+  <!-- Crear o editar parámetros -->
+  <section style="margin:20px;">
+    <h2>Crear / Editar Parámetros</h2>
+    <form id="form-parametros">
+      <label>Proyecto:
+        <select id="proyecto_id" name="proyecto_id" required></select>
+      </label>
 
-                    <label for="ubicacion_1">Ubicación 1:</label>
-                    <select name="ubicacion_1" id="ubicacion_1">
-                        <option value="">Seleccione</option>
-                          <option value="COLO">COLO</option>
-                          <option value="WTP">WTP</option>
-                          <option value="ADMIN">ADMIN</option>
-                    </select>
+      <label>Tipo de prueba:
+        <select id="tipo_test" name="tipo_test" required>
+          <option value="">Seleccione...</option>
+        </select>
+      </label>
 
-                    <label for="ubicacion_2">Ubicación 2:</label>
-                    <select name="ubicacion_2" id="ubicacion_2">
-                        <option value="CE">CE</option>
-                    </select>
+      <label>Ubicación 1:
+        <select id="ubicacion_1" name="ubicacion_1" required>
+          <option value="">Seleccione</option>
+          <option value="COLO">COLO</option>
+          <option value="WTP">WTP</option>
+          <option value="ADMIN">ADMIN</option>
+        </select>
+        <input type="number" id="numero_ubicacion_1" name="numero_ubicacion_1" placeholder="Nº" required />
+      </label>
 
-                    <label for="tipo_equipo">Tipo de Equipo:</label>
-                    <select name="tipo_equipo" id="tipo_equipo">
-                          <option value="">Seleccione</option>
-                          <option value="MSB">MSB</option>
-                          <option value="PDU">PDU</option>
-                          <option value="LBP">LBP</option>
-                          <option value="ADP">ADP</option>
-                          <option value="PNL">PNL</option>
-                          <option value="NLP">NLP</option>
-                          <option value="ATS">ATS</option>
-                    </select>
+      <div id="label-ubicacion_2" style="display:none;">
+        <label>Ubicación 2:
+          <select id="ubicacion_2" name="ubicacion_2">
+            <option value="">Seleccione</option>
+            <option value="CE">CE</option>
+          </select>
+          <input type="number" id="numero_ubicacion_2" name="numero_ubicacion_2" placeholder="Nº" />
+        </label>
+      </div>
 
-                    <label for="sub_equipo">Sub Equipo:</label>
-                    <select name="sub_equipo" id="sub_equipo">
-                        <option value="FCB">FCB</option>
-                        <option value="MCB">MCB</option>
-                    </select>
+      <label>Tipo de equipo:
+        <select id="tipo_equipo" name="tipo_equipo" required>
+          <option value="">Seleccione</option>
+          <option value="MSB">MSB</option>
+          <option value="PDU">PDU</option>
+          <option value="LBP">LBP</option>
+          <option value="ADP">ADP</option>
+          <option value="PNL">PNL</option>
+          <option value="NLP">NLP</option>
+          <option value="ATS">ATS</option>
+        </select>
+        <input type="number" id="numero_tipo_equipo" name="numero_tipo_equipo" placeholder="Nº" required />
+      </label>
 
-                    <label for="valor_minimo">Valor mínimo:</label>
-                    <input type="number" step="any" name="valor_minimo" id="valor_minimo">
+      <div id="label-sub_equipo" style="display:none;">
+        <label>Sub-equipo:
+          <select id="sub_equipo" name="sub_equipo">
+            <option value="">Seleccione</option>
+            <option value="BSW">BSW</option>
+            <option value="FCB">FCB</option>
+          </select>
+          <input type="number" id="numero_sub_equipo" name="numero_sub_equipo" placeholder="Nº" />
+        </label>
+      </div>
 
-                    <label for="valor_maximo">Valor máximo:</label>
-                    <input type="number" step="any" name="valor_maximo" id="valor_maximo">
+      <label>Referencia:
+        <input type="text" id="referencia" name="referencia" placeholder="Ej: 0.5" required />
+      </label>
 
-                    <label for="unidad">Unidad:</label>
-                    <input type="text" name="unidad" id="unidad">
+      <label>Lógica:
+        <select id="logica" name="logica" required>
+          <option value="">Seleccione...</option>
+          <option value=">">Mayor que</option>
+          <option value="<">Menor que</option>
+          <option value=">=">Mayor o igual</option>
+          <option value="<=">Menor o igual</option>
+          <option value="=">Igual</option>
+        </select>
+      </label>
 
-                    <label for="voltaje_requerido">Voltaje requerido:</label>
-                    <input type="number" step="any" name="voltaje_requerido" id="voltaje_requerido">
+      <label>Unidad:
+        <select id="unidad" name="unidad" required></select>
+      </label>
 
-                    <label for="observaciones">Observaciones:</label>
-                    <textarea name="observaciones" id="observaciones"></textarea>
+      <input type="hidden" id="parametro_id" value="" />
+      <button type="submit">Guardar</button>
+    </form>
+  </section>
 
-                    <button type="submit">Guardar Parámetro</button>
-                </form>
-            </section>
+  <!-- Listado de parámetros -->
+  <section style="margin:20px;">
+    <h2>Listado de Parámetros</h2>
+    <table border="1" cellpadding="5" style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Proyecto</th>
+          <th>Tipo Test</th>
+          <th>Ubicación</th>
+          <th>Equipo</th>
+          <th>Sub-equipo</th>
+          <th>Referencia</th>
+          <th>Lógica</th>
+          <th>Unidad</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-parametros"></tbody>
+    </table>
+  </section>
 
-            <!-- Ver Parámetros -->
-            <section id="parametros_ver" style="display: none;">
-                <h2>Parámetros Existentes</h2>
-                <table border="1" id="tabla-parametros">
-                    <thead>
-                        <tr>
-                            <th>Ubicación 1</th>
-                            <th>Ubicación 2</th>
-                            <th>Tipo</th>
-                            <th>Sub</th>
-                            <th>Valor Min</th>
-                            <th>Valor Max</th>
-                            <th>Unidad</th>
-                            <th>Voltaje</th>
-                            <th>Observaciones</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </section>
-        </main>
-    </div>
-
-    <script>
-        function mostrarSeccion(id) {
-            document.getElementById("parametros_asignar").style.display = "none";
-            document.getElementById("parametros_ver").style.display = "none";
-            document.getElementById(id).style.display = "block";
-        }
-    </script>
-    <script src="/static/js/admin_panel.js"></script>
+  <script src="/static/js/unidades_por_test.js"></script>
+  <script src="/static/js/admin_panel.js"></script>
 </body>
 </html>
