@@ -1,88 +1,214 @@
-document.addEventListener("DOMContentLoaded", async function () {
-    const form = document.getElementById("parametros-form");
-    const tabla = document.querySelector("#tabla-parametros tbody");
-    const testSelect = document.getElementById("test");
+// static/js/admin_panel.js
 
-    // Listar al cargar
-    await cargarParametros();
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("form-parametros");
+    const tabla = document.getElementById("tabla-parametros");
 
-    form.addEventListener("submit", async function (e) {
+    const proyectoSelect = document.getElementById("proyecto_id");
+    const tipoTestSelect = document.getElementById("tipo_test");
+    const unidadSelect = document.getElementById("unidad");
+
+    const ubicacion1 = document.getElementById("ubicacion_1");
+    const ubicacion2Label = document.getElementById("label-ubicacion_2");
+    const subEquipoLabel = document.getElementById("label-sub_equipo");
+
+    const parametroIdInput = document.getElementById("parametro_id");
+
+    // ✅ Cargar proyectos y tipos de test
+    async function cargarProyectosYTipos() {
+        try {
+            const [proyectosRes, testsRes] = await Promise.all([
+                fetch("/proyectos/listar"),
+                fetch("/tests/listar")
+            ]);
+
+            const proyectos = await proyectosRes.json();
+            const tests = await testsRes.json();
+
+            proyectoSelect.innerHTML = "<option value=''>Seleccione...</option>";
+            proyectos.forEach(p => {
+                const opt = document.createElement("option");
+                opt.value = p.id;
+                opt.textContent = p.nombre;
+                proyectoSelect.appendChild(opt);
+            });
+
+            tipoTestSelect.innerHTML = "<option value=''>Seleccione...</option>";
+            tests.forEach(t => {
+                const opt = document.createElement("option");
+                opt.value = t.nombre;
+                opt.textContent = t.nombre.charAt(0).toUpperCase() + t.nombre.slice(1);
+                tipoTestSelect.appendChild(opt);
+            });
+        } catch (error) {
+            console.error("Error cargando proyectos y tipos:", error);
+        }
+    }
+
+    // ✅ Cargar unidades según el tipo de test
+    function actualizarUnidades(test) {
+        unidadSelect.innerHTML = "<option value=''>Seleccione unidad...</option>";
+        if (window.UNIDADES_POR_TEST && window.UNIDADES_POR_TEST[test]) {
+            window.UNIDADES_POR_TEST[test].forEach(u => {
+                const opt = document.createElement("option");
+                opt.value = u;
+                opt.textContent = u;
+                unidadSelect.appendChild(opt);
+            });
+        }
+    }
+
+    // ✅ Mostrar u ocultar campos condicionales
+    ubicacion1.addEventListener("change", () => {
+        ubicacion2Label.style.display = ubicacion1.value === "COLO" ? "block" : "none";
+    });
+
+    document.getElementById("tipo_equipo").addEventListener("change", (e) => {
+        const valor = e.target.value;
+        subEquipoLabel.style.display = ["PDU", "MSB"].includes(valor) ? "block" : "none";
+    });
+
+    tipoTestSelect.addEventListener("change", () => {
+        actualizarUnidades(tipoTestSelect.value);
+    });
+
+    // ✅ Guardar o actualizar parámetro
+    form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const datos = Object.fromEntries(new FormData(form).entries());
 
-        const endpoint = `/parametros/${datos.test}/crear`;
-        const body = {
-            proyecto_id: 1,
-            codigo_equipo: `${datos.ubicacion_1}-${datos.ubicacion_2}-${datos.tipo_equipo}-${datos.sub_equipo}`,
-            valor_minimo: parseFloat(datos.valor_minimo),
-            valor_maximo: parseFloat(datos.valor_maximo),
-            unidad: datos.unidad,
-            voltaje_requerido: parseFloat(datos.voltaje_requerido),
-            observaciones: datos.observaciones
+        const id = parametroIdInput.value;
+        const data = {
+            proyecto_id: parseInt(proyectoSelect.value),
+            test_id: tipoTestSelect.value,
+            ubicacion_1: ubicacion1.value,
+            numero_ubicacion_1: document.getElementById("numero_ubicacion_1").value,
+            ubicacion_2: document.getElementById("ubicacion_2").value || null,
+            numero_ubicacion_2: document.getElementById("numero_ubicacion_2").value || null,
+            tipo_equipo: document.getElementById("tipo_equipo").value,
+            numero_tipo_equipo: document.getElementById("numero_tipo_equipo").value,
+            sub_equipo: document.getElementById("sub_equipo").value || null,
+            numero_sub_equipo: document.getElementById("numero_sub_equipo").value || null,
+            referencia: document.getElementById("referencia").value,
+            logica: document.getElementById("logica").value,
+            unidad: unidadSelect.value
         };
 
         try {
-            const res = await fetch(endpoint, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body)
-            });
-            if (!res.ok) throw new Error("Error al guardar");
+            const url = id ? `/parametros/${tipoTestSelect.value}/${id}/editar` : `/parametros/${tipoTestSelect.value}/crear`;
+            const method = id ? "PUT" : "POST";
 
-            await cargarParametros();
-            form.reset();
-        } catch (err) {
-            alert(err.message);
+            const resp = await fetch(url, {
+                method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            const res = await resp.json();
+            if (resp.ok) {
+                alert(res.mensaje || "Parámetro guardado");
+                form.reset();
+                parametroIdInput.value = "";
+                cargarParametros();
+            } else {
+                alert(res.detail || "Error al guardar");
+            }
+        } catch (error) {
+            console.error("Error guardando parámetro:", error);
         }
     });
 
+    // ✅ Listar parámetros
     async function cargarParametros() {
-        const tipo_test = testSelect.value;
-        const res = await fetch(`/parametros/${tipo_test}/listar`);
-        const datos = await res.json();
         tabla.innerHTML = "";
-        datos.forEach(p => agregarFila(p, tipo_test));
+        const tipo = tipoTestSelect.value;
+        if (!tipo) return;
+
+        try {
+            const resp = await fetch(`/parametros/${tipo}/listar`);
+            const datos = await resp.json();
+
+            datos.forEach(p => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${p.id}</td>
+                    <td>${p.proyecto_nombre || "-"}</td>
+                    <td>${p.test_nombre || "-"}</td>
+                    <td>${p.ubicacion_1} ${p.numero_ubicacion_1} ${p.ubicacion_2 || ""} ${p.numero_ubicacion_2 || ""}</td>
+                    <td>${p.tipo_equipo} ${p.numero_tipo_equipo}</td>
+                    <td>${p.sub_equipo || ""} ${p.numero_sub_equipo || ""}</td>
+                    <td>${p.referencia}</td>
+                    <td>${p.logica}</td>
+                    <td>${p.unidad}</td>
+                    <td>
+                        <button class="editar" data-id="${p.id}">Editar</button>
+                        <button class="eliminar" data-id="${p.id}">Eliminar</button>
+                    </td>
+                `;
+                tabla.appendChild(tr);
+            });
+
+            // Eventos editar y eliminar
+            document.querySelectorAll(".editar").forEach(btn => {
+                btn.addEventListener("click", () => editarParametro(btn.dataset.id));
+            });
+            document.querySelectorAll(".eliminar").forEach(btn => {
+                btn.addEventListener("click", () => eliminarParametro(btn.dataset.id));
+            });
+        } catch (error) {
+            console.error("Error cargando parámetros:", error);
+        }
     }
 
-    function agregarFila(p, tipo_test) {
-        const fila = document.createElement("tr");
-        const [u1, u2, tipo, sub] = p.codigo_equipo.split("-");
-        fila.innerHTML = `
-            <td>${u1}</td>
-            <td>${u2}</td>
-            <td>${tipo}</td>
-            <td>${sub}</td>
-            <td>${p.valor_minimo}</td>
-            <td>${p.valor_maximo}</td>
-            <td>${p.unidad}</td>
-            <td>${p.voltaje_requerido}</td>
-            <td>${p.observaciones}</td>
-            <td>
-                <button onclick="editarParametro(${p.id}, '${tipo_test}')">Editar</button>
-                <button onclick="eliminarParametro(${p.id}, '${tipo_test}')">Eliminar</button>
-            </td>
-        `;
-        tabla.appendChild(fila);
+    // ✅ Editar parámetro
+    async function editarParametro(id) {
+        try {
+            const tipo = tipoTestSelect.value;
+            const resp = await fetch(`/parametros/${tipo}/listar`);
+            const datos = await resp.json();
+            const p = datos.find(x => x.id == id);
+
+            if (!p) return alert("No se encontró el parámetro");
+
+            parametroIdInput.value = p.id;
+            proyectoSelect.value = p.proyecto_id;
+            tipoTestSelect.value = p.test_nombre;
+            actualizarUnidades(tipoTestSelect.value);
+            ubicacion1.value = p.ubicacion_1;
+            document.getElementById("numero_ubicacion_1").value = p.numero_ubicacion_1;
+            document.getElementById("ubicacion_2").value = p.ubicacion_2 || "";
+            document.getElementById("numero_ubicacion_2").value = p.numero_ubicacion_2 || "";
+            document.getElementById("tipo_equipo").value = p.tipo_equipo;
+            document.getElementById("numero_tipo_equipo").value = p.numero_tipo_equipo;
+            document.getElementById("sub_equipo").value = p.sub_equipo || "";
+            document.getElementById("numero_sub_equipo").value = p.numero_sub_equipo || "";
+            document.getElementById("referencia").value = p.referencia;
+            document.getElementById("logica").value = p.logica;
+            unidadSelect.value = p.unidad;
+        } catch (error) {
+            console.error("Error editando parámetro:", error);
+        }
     }
 
-    window.editarParametro = async function (id, tipo_test) {
-        const nuevo_valor = prompt("Nueva observación:");
-        if (!nuevo_valor) return;
+    // ✅ Eliminar parámetro
+    async function eliminarParametro(id) {
+        if (!confirm("¿Eliminar este parámetro?")) return;
 
-        await fetch(`/parametros/${tipo_test}/${id}/editar`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ observaciones: nuevo_valor })
-        });
+        try {
+            const tipo = tipoTestSelect.value;
+            const resp = await fetch(`/parametros/${tipo}/${id}/eliminar`, { method: "DELETE" });
+            if (resp.ok) {
+                alert("Eliminado correctamente");
+                cargarParametros();
+            } else {
+                alert("Error al eliminar");
+            }
+        } catch (error) {
+            console.error("Error eliminando parámetro:", error);
+        }
+    }
 
-        await cargarParametros();
-    };
+    tipoTestSelect.addEventListener("change", cargarParametros);
 
-    window.eliminarParametro = async function (id, tipo_test) {
-        if (!confirm("¿Eliminar parámetro?")) return;
-        await fetch(`/parametros/${tipo_test}/${id}/eliminar`, { method: "DELETE" });
-        await cargarParametros();
-    };
-
-    testSelect.addEventListener("change", cargarParametros);
+    // Inicializar
+    cargarProyectosYTipos();
 });
