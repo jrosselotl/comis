@@ -3,10 +3,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models.parametros_continuidad import ParametrosContinuidad
-from app.models.parametros_megado import ParametrosMegado
-from app.models.parametros_contact_resistance import ParametrosContactResistance
-from app.models.parametros_torque import ParametrosTorque
+from app.models.parametros_continuidad import ParametroContinuidad
+from app.models.parametros_megado import ParametroMegado
+from app.models.parametros_contact_resistance import ParametroContactResistance
+from app.models.parametros_torque import ParametroTorque
 from app.models.proyecto import Proyecto
 from app.models.test import Test
 
@@ -14,10 +14,10 @@ router = APIRouter(prefix="/parametros", tags=["Parámetros Técnicos"])
 
 # Diccionario para asociar modelos con tipos de test
 PARAM_MODELS = {
-    "continuidad": ParametrosContinuidad,
-    "megado": ParametrosMegado,
-    "contact_resistance": ParametrosContactResistance,
-    "torque": ParametrosTorque
+    "continuidad": ParametroContinuidad,
+    "megado": ParametroMegado,
+    "contact_resistance": ParametroContactResistance,
+    "torque": ParametroTorque
 }
 
 # ✅ Crear parámetro
