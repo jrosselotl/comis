@@ -12,87 +12,103 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ✅ Mostrar solo una sección
   function mostrarSeccion(seccion) {
-    [sectionDashboard, sectionMyTests, sectionNewTest].forEach((s) => {
-      s.classList.add("hidden");
-    });
+    [sectionDashboard, sectionMyTests, sectionNewTest].forEach((s) =>
+      s.classList.add("hidden")
+    );
     seccion.classList.remove("hidden");
   }
 
-  // ✅ Cargar gráfico (por ahora datos mock)
-  function cargarGrafico() {
+  // ✅ Cargar gráfico dinámico desde backend
+  async function cargarGrafico() {
     if (!graficoCanvas) return;
 
-    // Datos falsos por ahora, luego llamaremos al backend /tests/estadisticas
-    const tipos = ["Continuidad", "Megado", "Contact Resistance", "Torque"];
-    const cantidades = [5, 3, 7, 2];
+    try {
+      const res = await fetch("/test_realizados/estadisticas_usuario/1"); // Usuario logueado (mock id=1)
+      const datos = await res.json();
 
-    new Chart(graficoCanvas, {
-      type: "bar",
-      data: {
-        labels: tipos,
-        datasets: [
-          {
-            label: "Tests realizados",
-            data: cantidades,
-            backgroundColor: ["#3498db", "#9b59b6", "#e67e22", "#27ae60"],
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false },
+      const tipos = Object.keys(datos);
+      const cantidades = Object.values(datos);
+
+      new Chart(graficoCanvas, {
+        type: "bar",
+        data: {
+          labels: tipos,
+          datasets: [
+            {
+              label: "Tests realizados",
+              data: cantidades,
+              backgroundColor: ["#3498db", "#9b59b6", "#e67e22", "#27ae60"],
+            },
+          ],
         },
-      },
-    });
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+        },
+      });
+    } catch (error) {
+      console.error("Error cargando estadísticas:", error);
+    }
   }
 
-  // ✅ Cargar My Tests (por ahora datos mock)
-  function cargarMyTests() {
-    tablaMyTests.innerHTML = ""; // limpiar tabla
+  // ✅ Cargar My Tests dinámico desde backend
+  async function cargarMyTests() {
+    tablaMyTests.innerHTML = "";
+    try {
+      const res = await fetch("/test_realizados/listar_usuario/1"); // Usuario logueado (mock id=1)
+      const tests = await res.json();
 
-    // Datos de ejemplo, luego lo haremos dinámico desde /tests/listar_usuario
-    const tests = [
-      { id: 1, tipo: "continuidad", equipo: "COLO1-PDU01", fecha: "2025-07-18", estado: "Incompleto" },
-      { id: 2, tipo: "megado", equipo: "COLO1-MSB01", fecha: "2025-07-17", estado: "Completo" },
-      { id: 3, tipo: "torque", equipo: "WTP2-LBP01", fecha: "2025-07-15", estado: "Enviado" },
-    ];
-
-    tests.forEach((t) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${t.id}</td>
-        <td>${t.tipo}</td>
-        <td>${t.equipo}</td>
-        <td>${t.fecha}</td>
-        <td>${t.estado}</td>
-        <td>
-          ${t.estado === "Incompleto" ? `<button class="btn btn-continuar" data-id="${t.id}">Continuar</button>` : ""}
-          ${t.estado === "Completo" ? `<button class="btn btn-enviar" data-id="${t.id}">Enviar</button>` : ""}
-        </td>
-      `;
-      tablaMyTests.appendChild(tr);
-    });
-
-    // ✅ Eventos para botones
-    document.querySelectorAll(".btn-continuar").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        const id = e.target.dataset.id;
-        alert(`Cargar formulario para continuar test ID ${id}...`);
-        // Aquí se debería cargar el formulario con los datos existentes
-        mostrarSeccion(sectionNewTest);
+      tests.forEach((t) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${t.id}</td>
+          <td>${t.tipo_prueba}</td>
+          <td>${t.equipo}</td>
+          <td>${new Date(t.fecha).toLocaleDateString()}</td>
+          <td>${t.estado}</td>
+          <td>
+            ${
+              t.estado === "Incompleto"
+                ? `<button class="btn btn-continuar" data-id="${t.id}">Continuar</button>`
+                : ""
+            }
+            ${
+              t.estado === "Completo"
+                ? `<button class="btn btn-enviar" data-id="${t.id}">Enviar</button>`
+                : ""
+            }
+          </td>
+        `;
+        tablaMyTests.appendChild(tr);
       });
-    });
 
-    document.querySelectorAll(".btn-enviar").forEach((btn) => {
-      btn.addEventListener("click", async (e) => {
-        const id = e.target.dataset.id;
-        if (confirm(`¿Deseas enviar el PDF por correo para el test ID ${id}?`)) {
-          alert(`(Mock) Enviando PDF para test ID ${id}...`);
-          // Luego haremos fetch(`/tests/enviar_pdf/${id}`, { method: "POST" })
-        }
+      // ✅ Eventos para botones
+      document.querySelectorAll(".btn-continuar").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          const id = e.target.dataset.id;
+          alert(`Cargar formulario para continuar test ID ${id}...`);
+          // TODO: Cargar datos en el formulario según test_id
+          mostrarSeccion(sectionNewTest);
+        });
       });
-    });
+
+      document.querySelectorAll(".btn-enviar").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          const id = e.target.dataset.id;
+          if (
+            confirm(`¿Deseas enviar el PDF por correo para el test ID ${id}?`)
+          ) {
+            const resp = await fetch(`/test_realizados/enviar_pdf/${id}`, {
+              method: "POST",
+            });
+            const data = await resp.json();
+            alert(data.mensaje || "PDF enviado correctamente.");
+          }
+        });
+      });
+    } catch (error) {
+      console.error("Error cargando mis tests:", error);
+    }
   }
 
   // ✅ Eventos Sidebar
