@@ -26,7 +26,6 @@ class ResultadoContinuidad(Base):
     punto = Column(String, nullable=False)
     resultado_valor = Column(Float, nullable=True)
     unidad = Column(String, nullable=False)
-    aprobado = Column(String, nullable=False)
     observaciones = Column(String, nullable=True)
     imagen = Column(String, nullable=True)
 
