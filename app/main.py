@@ -94,7 +94,6 @@ app.include_router(megado.router)
 app.include_router(contact_resistance.router)
 app.include_router(torque.router)
 app.include_router(formulario.router)
-app.include_router(parametros.router)
 app.include_router(test_realizados.router)  # ✅ My Tests y Dashboard
 app.include_router(ubicaciones.router)      # ✅ Dropdown ubicaciones dinámicas
 app.include_router(tipo_equipos.router)     # ✅ Dropdown equipos dinámicos
