@@ -3,128 +3,231 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Formulario de Pruebas</title>
+  <title>Panel de Pruebas Eléctricas</title>
   <link rel="stylesheet" href="/static/css/style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+    }
+    .sidebar {
+      width: 220px;
+      background-color: #2c3e50;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding-top: 20px;
+    }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .sidebar button {
+      background: none;
+      border: none;
+      color: white;
+      padding: 15px;
+      text-align: left;
+      width: 100%;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .sidebar button:hover {
+      background-color: #34495e;
+    }
+    .content {
+      flex: 1;
+      padding: 20px;
+      background-color: #f4f6f7;
+      overflow-y: auto;
+    }
+    .hidden {
+      display: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: white;
+    }
+    table th, table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    table th {
+      background-color: #eaecee;
+    }
+    .btn {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .btn-continuar {
+      background-color: #3498db;
+      color: white;
+    }
+    .btn-enviar {
+      background-color: #27ae60;
+      color: white;
+    }
+  </style>
 </head>
 <body>
-  <div style="display: flex; justify-content: space-between; align-items: center; background-color: #d9534f; padding: 10px; color: white;">
-    <h1 style="margin: 0;">Formulario de Pruebas Eléctricas</h1>
-    <a href="/logout" style="padding: 8px 12px; background: #c9302c; color: white; text-decoration: none; border-radius: 5px;">Cerrar Sesión</a>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Panel</h2>
+    <button id="btn-dashboard">📊 Dashboard</button>
+    <button id="btn-mytests">📂 My Tests</button>
+    <button id="btn-newtest">➕ New Test</button>
+    <a href="/logout" style="margin-top: auto; text-align: center; color: white; text-decoration: none; padding: 10px; display: block; background:#c0392b;">Cerrar Sesión</a>
   </div>
 
-  <form id="formulario-pruebas" enctype="multipart/form-data">
-    <!-- Paso 1: Datos del equipo -->
-    <fieldset>
-      <legend>1. Datos del Equipo</legend>
+  <!-- Contenido principal -->
+  <div class="content">
 
-      <label>Proyecto:
-        <select id="proyecto_id" name="proyecto_id" required></select>
-      </label>
+    <!-- Dashboard -->
+    <div id="section-dashboard">
+      <h2>Estadísticas de Pruebas</h2>
+      <canvas id="grafico-tests" width="400" height="200"></canvas>
+    </div>
 
-      <label>Ubicación Principal:
-        <div class="field-group">
-          <select id="ubicacion_1" name="ubicacion_1" required>
-            <option value="">Seleccione</option>
-            <option value="COLO">COLO</option>
-            <option value="WTP">WTP</option>
-            <option value="ADMIN">ADMIN</option>
-          </select>
-          <input type="number" id="numero_ubicacion_1" name="numero_ubicacion_1" placeholder="Nº" required />
-        </div>
-      </label>
+    <!-- My Tests -->
+    <div id="section-mytests" class="hidden">
+      <h2>Mis Tests</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Tipo</th>
+            <th>Equipo</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-mytests"></tbody>
+      </table>
+    </div>
 
-      <div id="label-ubicacion_2" style="display:none;">
-        <label>Ubicación secundaria:</label>
-        <div class="field-group">
-          <select id="ubicacion_2" name="ubicacion_2">
-            <option value="CE">CE</option>
-          </select>
-          <input type="number" id="numero_ubicacion_2" name="numero_ubicacion_2" placeholder="Nº" />
-        </div>
-      </div>
+    <!-- New Test (Formulario de 4 pasos) -->
+    <div id="section-newtest" class="hidden">
+      <form id="formulario-pruebas" enctype="multipart/form-data">
+        <!-- Paso 1: Datos del equipo -->
+        <fieldset>
+          <legend>1. Datos del Equipo</legend>
 
-      <label>Tipo de equipo:
-        <div class="field-group">
-          <select id="tipo_equipo" name="tipo_equipo" required>
-            <option value="">Seleccione</option>
-            <option value="MSB">MSB</option>
-            <option value="PDU">PDU</option>
-            <option value="LBP">LBP</option>
-            <option value="ADP">ADP</option>
-            <option value="PNL">PNL</option>
-            <option value="NLP">NLP</option>
-            <option value="ATS">ATS</option>
-          </select>
-          <input type="number" id="numero_tipo_equipo" name="numero_tipo_equipo" placeholder="Nº" required />
-        </div>
-      </label>
+          <label>Proyecto:
+            <select id="proyecto_id" name="proyecto_id" required></select>
+          </label>
 
-      <label id="label-sub_equipo" style="display:none;">Sub-equipo:
-        <div class="field-group">
-          <select id="sub_equipo" name="sub_equipo">
-            <option value="">--</option>
-            <option value="BSW">BSW</option>
-            <option value="FCB">FCB</option>
-          </select>
-          <input type="number" id="numero_sub_equipo" name="numero_sub_equipo" placeholder="Nº" />
-        </div>
-      </label>
+          <label>Ubicación Principal:
+            <div class="field-group">
+              <select id="ubicacion_1" name="ubicacion_1" required>
+                <option value="">Seleccione</option>
+                <option value="COLO">COLO</option>
+                <option value="WTP">WTP</option>
+                <option value="ADMIN">ADMIN</option>
+              </select>
+              <input type="number" id="numero_ubicacion_1" name="numero_ubicacion_1" placeholder="Nº" required />
+            </div>
+          </label>
 
-      <label>Terminal:
-        <input type="text" id="terminal" name="terminal" placeholder="Nº Terminal" />
-      </label>
+          <div id="label-ubicacion_2" style="display:none;">
+            <label>Ubicación secundaria:</label>
+            <div class="field-group">
+              <select id="ubicacion_2" name="ubicacion_2">
+                <option value="CE">CE</option>
+              </select>
+              <input type="number" id="numero_ubicacion_2" name="numero_ubicacion_2" placeholder="Nº" />
+            </div>
+          </div>
 
-      <label>Tipo de alimentación:
-        <select id="tipo_alimentacion" name="tipo_alimentacion" required>
-          <option value="trifasica">Trifásica (L1, L2, L3, N, PE)</option>
-          <option value="monofasica">Monofásica (L, N, PE)</option>
-        </select>
-      </label>
-    </fieldset>
+          <label>Tipo de equipo:
+            <div class="field-group">
+              <select id="tipo_equipo" name="tipo_equipo" required>
+                <option value="">Seleccione</option>
+                <option value="MSB">MSB</option>
+                <option value="PDU">PDU</option>
+                <option value="LBP">LBP</option>
+                <option value="ADP">ADP</option>
+                <option value="PNL">PNL</option>
+                <option value="NLP">NLP</option>
+                <option value="ATS">ATS</option>
+              </select>
+              <input type="number" id="numero_tipo_equipo" name="numero_tipo_equipo" placeholder="Nº" required />
+            </div>
+          </label>
 
-    <!-- Paso 2: Tipo de prueba -->
-    <fieldset>
-      <legend>2. Tipo de prueba</legend>
-      <label>Tipo de prueba:
-        <select id="tipo-prueba" name="tipo_prueba" required>
-          <option value="">Seleccione prueba...</option>
-        </select>
-      </label>
-    </fieldset>
+          <label id="label-sub_equipo" style="display:none;">Sub-equipo:
+            <div class="field-group">
+              <select id="sub_equipo" name="sub_equipo">
+                <option value="">--</option>
+                <option value="BSW">BSW</option>
+                <option value="FCB">FCB</option>
+              </select>
+              <input type="number" id="numero_sub_equipo" name="numero_sub_equipo" placeholder="Nº" />
+            </div>
+          </label>
 
-    <!-- Paso 3: Características -->
-    <fieldset id="bloque-caracteristicas" style="display:none;">
-      <legend>3. Características</legend>
-    
-      <label for="cable_sets">Cable Sets:
-        <input type="number" id="cable_sets" name="cable_sets" min="1" value="1" required />
-      </label>
-    
-      <label id="label-unidad" style="display:none;">Unidad:
-        <select id="unidad" name="unidad">
-          <option value="">Seleccione unidad...</option>
-        </select>
-      </label>
-    
-    </fieldset>
+          <label>Terminal:
+            <input type="text" id="terminal" name="terminal" placeholder="Nº Terminal" />
+          </label>
+        </fieldset>
 
+        <!-- Paso 2: Tipo de prueba -->
+        <fieldset>
+          <legend>2. Tipo de prueba</legend>
+          <label>Tipo de prueba:
+            <select id="tipo-prueba" name="tipo_prueba" required>
+              <option value="">Seleccione prueba...</option>
+            </select>
+          </label>
+        </fieldset>
 
-    <!-- Paso 4: Resultados -->
-    <fieldset id="bloque-resultados" style="display:none;">
-      <legend>4. Resultados de la prueba</legend>
-      <div id="contenedor-resultados"></div>
-    </fieldset>
+        <!-- Paso 3: Características -->
+        <fieldset id="bloque-caracteristicas" style="display:none;">
+          <legend>3. Características</legend>
+        
+          <label for="cable_sets">Cable Sets:
+            <input type="number" id="cable_sets" name="cable_sets" min="1" value="1" required />
+          </label>
+        
+          <label>Tipo de alimentación:
+            <select id="tipo_alimentacion" name="tipo_alimentacion" required>
+              <option value="trifasica">Trifásica (L1, L2, L3, N, PE)</option>
+              <option value="monofasica">Monofásica (L, N, PE)</option>
+            </select>
+          </label>
 
-    <button type="submit">Guardar</button>
-  </form>
+          <label id="label-unidad" style="display:block;">Unidad:
+            <input type="text" id="unidad" name="unidad" placeholder="Ej: Ω, MΩ, Nm" />
+          </label>
+        </fieldset>
+
+        <!-- Paso 4: Resultados -->
+        <fieldset id="bloque-resultados" style="display:none;">
+          <legend>4. Resultados de la prueba</legend>
+          <div id="contenedor-resultados"></div>
+        </fieldset>
+
+        <button type="submit">Guardar</button>
+      </form>
+    </div>
+
+  </div>
 
   <!-- Scripts -->
-  <script src="/static/js/unidades_por_test.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/static/js/dashboard.js"></script>
   <script src="/static/js/formulario_continuidad.js"></script>
   <script src="/static/js/formulario_megado.js"></script>
   <script src="/static/js/formulario_contact_resistance.js"></script>
   <script src="/static/js/formulario_torque.js"></script>
   <script src="/static/js/cargar_formulario.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
 </body>
 </html>
