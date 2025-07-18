@@ -2,8 +2,6 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   const tipoPruebaSelect = document.getElementById("tipo-prueba");
-  const unidadSelect = document.getElementById("unidad");
-  const referenciaInput = document.getElementById("referencia-comun");
   const caracteristicas = document.getElementById("bloque-caracteristicas");
   const resultados = document.getElementById("bloque-resultados");
   const tipoAlimentacionSelect = document.getElementById("tipo_alimentacion");
@@ -41,23 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ Actualizar unidades según test
-  function actualizarUnidadesPorTest(test) {
-    unidadSelect.innerHTML = "<option value=''>Seleccione unidad...</option>";
-
-    if (window.UNIDADES_POR_TEST && window.UNIDADES_POR_TEST[test]) {
-      window.UNIDADES_POR_TEST[test].forEach((u) => {
-        const opt = document.createElement("option");
-        opt.value = u;
-        opt.textContent = u;
-        unidadSelect.appendChild(opt);
-      });
-      document.getElementById("label-unidad").style.display = "block";
-    } else {
-      document.getElementById("label-unidad").style.display = "none";
-    }
-  }
-
   // ✅ Evento al cambiar tipo de prueba
   tipoPruebaSelect.addEventListener("change", () => {
     const tipo = tipoPruebaSelect.value;
@@ -65,10 +46,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Mostrar u ocultar bloques
     caracteristicas.style.display = tipo ? "block" : "none";
     resultados.style.display = "none";
-
-    // Limpiar campos comunes
-    referenciaInput.value = "";
-    actualizarUnidadesPorTest(tipo);
 
     // Cargar el formulario dinámico según el test
     if (tipo === "continuidad") {
