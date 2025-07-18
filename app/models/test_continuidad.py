@@ -28,5 +28,6 @@ class ResultadoContinuidad(Base):
     unidad = Column(String, nullable=False)
     observaciones = Column(String, nullable=True)
     imagen = Column(String, nullable=True)
+    cable_set = Column(Integer, nullable=True)
 
     test = relationship("TestContinuidad", back_populates="resultados")
