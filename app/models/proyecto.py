@@ -20,8 +20,3 @@ class Proyecto(Base):
     tests_contact_resistance = relationship("TestContactResistance", back_populates="proyecto")
     tests_torque = relationship("TestTorque", back_populates="proyecto")
 
-    # Parámetros
-    parametros_continuidad = relationship("ParametroContinuidad", back_populates="proyecto")
-    parametros_megado = relationship("ParametroMegado", back_populates="proyecto")
-    parametros_contact_resistance = relationship("ParametroContactResistance", back_populates="proyecto")
-    parametros_torque = relationship("ParametroTorque", back_populates="proyecto")
