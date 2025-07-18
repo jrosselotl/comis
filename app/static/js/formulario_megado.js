@@ -1,12 +1,7 @@
 function initFormularioMegado(tipoAlimentacion) {
     const cableSetInput = document.getElementById("cable_sets");
-    const referenciaComunInput = document.getElementById("referencia-comun");
     const contenedorResultados = document.getElementById("contenedor-resultados");
     const bloqueResultados = document.getElementById("bloque-resultados");
-    const unidadSelect = document.getElementById("unidad"); // ✅ usamos el select correcto
-
-    // ✅ Cargar automáticamente las unidades desde unidades_por_test.js
-    cargarUnidadesPorTest("megado");
 
     const conductores = tipoAlimentacion === "monofasica"
         ? ["L", "N", "PE"]
@@ -24,28 +19,10 @@ function initFormularioMegado(tipoAlimentacion) {
 
     const combinaciones = generarCombinaciones(conductores);
 
-    async function obtenerParametroMegado(proyectoId, tipoEquipo) {
-        const res = await fetch(`/parametros/megado/listar?proyecto_id=${proyectoId}&tipo_equipo=${tipoEquipo}`);
-        if (!res.ok) {
-            console.error("No se pudieron obtener los parámetros de megado");
-            return null;
-        }
-        const parametros = await res.json();
-        return parametros.length > 0 ? parametros[0] : null;
-    }
-
-    async function generarCampos() {
+    function generarCampos() {
         const cantidad = parseInt(cableSetInput.value) || 0;
-        const referenciaComun = referenciaComunInput.value;
-        const unidad = unidadSelect.value;
-        const proyectoId = document.getElementById("proyecto_id").value;
-        const tipoEquipo = document.getElementById("tipo_equipo").value;
-
         contenedorResultados.innerHTML = "";
         bloqueResultados.style.display = cantidad > 0 ? "block" : "none";
-
-        const parametros = await obtenerParametroMegado(proyectoId, tipoEquipo);
-        const tiempoDuracion = parametros?.duracion || "";
 
         for (let i = 1; i <= cantidad; i++) {
             const tabla = document.createElement("table");
@@ -55,12 +32,10 @@ function initFormularioMegado(tipoAlimentacion) {
                 <caption>Megado - Cable Set ${i}</caption>
                 <tr>
                     <th>Punto</th>
-                    <th>Referencia</th>
                     <th>Resultado / N/A</th>
                     <th>Unidad</th>
                     <th>Tiempo (s)</th>
                     <th>Observaciones</th>
-                    <th>¿Aprobado?</th>
                     <th>Imagen</th>
                 </tr>`;
 
@@ -72,17 +47,15 @@ function initFormularioMegado(tipoAlimentacion) {
 
                 fila.innerHTML = `
                     <td>${punto}</td>
-                    <td>${referenciaComun} ${unidad}</td>
                     <td>
                         <div class="resultado-combinado">
                             <button type="button" class="na-btn" id="${idNA}">N/A</button>
                             <input type="text" name="${idResultado}" id="${idResultado}" />
                         </div>
                     </td>
-                    <td><input name="unidad_${i}_${punto}" type="text" value="${unidad}" readonly /></td>
-                    <td><input name="${idTiempo}" type="number" value="${tiempoDuracion}" readonly /></td>
+                    <td><input name="unidad_${i}_${punto}" type="text" /></td>
+                    <td><input name="${idTiempo}" type="number" /></td>
                     <td><input name="observaciones_${i}_${punto}" type="text" /></td>
-                    <td><input name="aprobado_${i}_${punto}" type="checkbox" disabled /></td>
                     <td>
                         <label class="camera-label">
                             📷 <span class="adjunto-texto"></span>
@@ -90,7 +63,6 @@ function initFormularioMegado(tipoAlimentacion) {
                         </label>
                     </td>
                 `;
-
                 tabla.appendChild(fila);
 
                 const inputResultado = fila.querySelector(`#${idResultado}`);
@@ -114,9 +86,6 @@ function initFormularioMegado(tipoAlimentacion) {
     }
 
     cableSetInput.addEventListener("input", generarCampos);
-    referenciaComunInput.addEventListener("input", generarCampos);
-    unidadSelect.addEventListener("change", generarCampos);
-
     generarCampos();
 
     document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
@@ -126,11 +95,8 @@ function initFormularioMegado(tipoAlimentacion) {
         e.preventDefault();
 
         const cableSets = parseInt(cableSetInput.value);
-        const unidad = unidadSelect.value;
-        const referenciaComun = referenciaComunInput.value;
-
-        if (!cableSets || !unidad || !referenciaComun) {
-            alert("Debe ingresar Cable Sets, unidad de medida y valor de referencia.");
+        if (!cableSets) {
+            alert("Debe ingresar la cantidad de Cable Sets.");
             return;
         }
 
@@ -152,15 +118,15 @@ function initFormularioMegado(tipoAlimentacion) {
         for (let i = 1; i <= cableSets; i++) {
             for (const punto of combinaciones) {
                 const resultado = document.querySelector(`[name="resultado_${i}_${punto}"]`)?.value || "";
-                const observaciones = document.querySelector(`[name="observaciones_${i}_${punto}"]`)?.value || "";
+                const unidad = document.querySelector(`[name="unidad_${i}_${punto}"]`)?.value || "";
                 const tiempo = document.querySelector(`[name="tiempo_${i}_${punto}"]`)?.value || "";
+                const observaciones = document.querySelector(`[name="observaciones_${i}_${punto}"]`)?.value || "";
                 const imagenInput = document.querySelector(`[name="imagen_${i}_${punto}"]`);
                 const imagen = imagenInput?.files[0];
 
                 datos.push({
                     cable_set: i,
                     punto_prueba: punto,
-                    referencia_valor: referenciaComun,
                     resultado_valor: resultado,
                     unidad: unidad,
                     tiempo_aplicado: tiempo,
@@ -186,9 +152,9 @@ function initFormularioMegado(tipoAlimentacion) {
         formData.append("tipo_alimentacion", tipo_alimentacion);
         formData.append("terminal", terminal);
         formData.append("datos", JSON.stringify(datos));
-        imagenes.forEach(img => formData.append("imagenes", img));
+        imagenes.forEach((img) => formData.append("imagenes", img));
 
-        const response = await fetch("/formulario/guardar", {
+        const response = await fetch("/formulario/megado/guardar", {
             method: "POST",
             body: formData
         });
