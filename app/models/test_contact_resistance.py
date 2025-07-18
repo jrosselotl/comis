@@ -27,7 +27,6 @@ class ResultadoContactResistance(Base):
     referencia_valor = Column(String, nullable=False)
     resultado_valor = Column(String, nullable=True)
     unidad = Column(String, nullable=False)
-    aprobado = Column(Boolean, default=False)
     observaciones = Column(String, nullable=True)
     imagen = Column(String, nullable=True)
 
