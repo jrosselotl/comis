@@ -176,7 +176,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     caracteristicas.style.display = tipo ? "block" : "none";
     resultados.style.display = "none";
+     // ✅ Llenar unidades dinámicamente desde el backend
+  if (tipo) {
+    try {
+      const res = await fetch(`/tests/unidades?tipo_test=${tipo}`);
+      const data = await res.json();
 
+      const unidadSelect = document.getElementById("unidad");
+      const labelUnidad = document.getElementById("label-unidad");
+      unidadSelect.innerHTML = "<option value=''>Seleccione unidad...</option>";
+
+      if (data.unidades && data.unidades.length > 0) {
+        data.unidades.forEach((u) => {
+          const opt = document.createElement("option");
+          opt.value = u;
+          opt.textContent = u;
+          unidadSelect.appendChild(opt);
+        });
+        labelUnidad.style.display = "block";
+      } else {
+        labelUnidad.style.display = "none";
+      }
+    } catch (error) {
+      console.error("Error cargando unidades:", error);
+    }
+  }
+    
     if (tipo === "continuidad") initFormularioContinuidad(tipoAlimentacionSelect.value);
     if (tipo === "megado") initFormularioMegado(tipoAlimentacionSelect.value);
     if (tipo === "contact_resistance") initFormularioContactResistance(tipoAlimentacionSelect.value);
