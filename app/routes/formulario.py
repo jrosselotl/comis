@@ -1,14 +1,20 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
+
+# Modelos de pruebas
 from app.models.test_continuidad import TestContinuidad, ResultadoContinuidad
 from app.models.test_megado import TestMegado, ResultadoMegado
-from app.models.parametros_continuidad import ParametroContinuidad
-from app.models.parametros_megado import ParametroMegado
+from app.models.test_contact_resistance import TestContactResistance, ResultadoContactResistance
+from app.models.test_torque import TestTorque, ResultadoTorque
+
+# Otros modelos
 from app.models.proyecto import Proyecto
 from app.models.usuario import Usuario
 from app.models.test import Test
 from app.models.equipo import Equipo
+
+# Utilidades
 from app.utils.pdf_generator import generar_pdf_test
 from app.utils.correo import enviar_correo_con_pdf, obtener_correos_admins
 
@@ -20,6 +26,7 @@ import json
 router = APIRouter(prefix="/formulario", tags=["Formulario"])
 UPLOAD_DIR = "static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
 
 @router.post("/guardar")
 async def guardar_formulario(
@@ -42,7 +49,7 @@ async def guardar_formulario(
 ):
     datos_parsed = json.loads(datos)
 
-    # Equipo
+    # --- EQUIPO ---
     codigo_equipo = f"{ubicacion_1}-{tipo_equipo}-{numero_tipo_equipo}"
     equipo = db.query(Equipo).filter(Equipo.codigo == codigo_equipo).first()
     if not equipo:
@@ -51,97 +58,60 @@ async def guardar_formulario(
         db.commit()
         db.refresh(equipo)
 
-    # Test general
+    # --- TEST GENERAL ---
     test_general = Test(proyecto_id=proyecto_id)
     db.add(test_general)
     db.commit()
     db.refresh(test_general)
 
-    # Imágenes
+    # --- IMÁGENES ---
     imagenes_info = []
     img_iter = iter(imagenes)
 
+    # --- FUNCIÓN GENÉRICA PARA GUARDAR RESULTADOS ---
+    def guardar_resultados(modelo_test, modelo_resultado):
+        test = modelo_test(equipo_id=equipo.id, test_id=test_general.id, usuario_id=1)
+        db.add(test)
+        db.commit()
+        db.refresh(test)
+
+        for r in datos_parsed:
+            imagen = next(img_iter, None)
+            filename = f"{datetime.utcnow().timestamp()}_{imagen.filename}" if imagen else None
+            if imagen:
+                path = os.path.join(UPLOAD_DIR, filename)
+                with open(path, "wb") as f:
+                    shutil.copyfileobj(imagen.file, f)
+                imagenes_info.append(path)
+
+            resultado = modelo_resultado(
+                test_id=test.id,
+                punto=r["punto_prueba"],
+                resultado_valor=None if r["resultado_valor"] == "N/A" else float(r["resultado_valor"]),
+                unidad=r["unidad"],
+                observaciones=r.get("observaciones", ""),
+                imagen=filename,
+                cable_set=r.get("cable_set"),
+                tiempo_aplicado=float(r.get("tiempo_aplicado", 0)) if "tiempo_aplicado" in r else None,
+                valor_nominal=float(r.get("valor_nominal", 0)) if "valor_nominal" in r else None,
+                valor_comprobacion=float(r.get("valor_comprobacion", 0)) if "valor_comprobacion" in r else None
+            )
+            db.add(resultado)
+        db.commit()
+
+    # --- SELECCIÓN DE PRUEBA ---
     if tipo_prueba == "continuidad":
-        test = TestContinuidad(equipo_id=equipo.id, test_id=test_general.id, usuario_id=1)
-        db.add(test)
-        db.commit()
-        db.refresh(test)
-
-        parametros = db.query(ParametroContinuidad).filter(ParametroContinuidad.proyecto_id == proyecto_id).all()
-        dict_param = {(p.cable_set, p.punto): p for p in parametros}
-
-        for r in datos_parsed:
-            param = dict_param.get((r["cable_set"], r["punto_prueba"]))
-            aprobado = "No"
-            if r["resultado_valor"] == "N/A":
-                aprobado = "Sí"
-            elif param:
-                if param.logica == "mayor_que" and float(r["resultado_valor"]) > float(param.referencia):
-                    aprobado = "Sí"
-                elif param.logica == "menor_que" and float(r["resultado_valor"]) < float(param.referencia):
-                    aprobado = "Sí"
-
-            imagen = next(img_iter, None)
-            filename = f"{datetime.utcnow().timestamp()}_{imagen.filename}" if imagen else None
-            if imagen:
-                path = os.path.join(UPLOAD_DIR, filename)
-                with open(path, "wb") as f:
-                    shutil.copyfileobj(imagen.file, f)
-                imagenes_info.append(path)
-
-            resultado = ResultadoContinuidad(
-                test_id=test.id,
-                punto=r["punto_prueba"],
-                resultado_valor=None if r["resultado_valor"] == "N/A" else float(r["resultado_valor"]),
-                unidad=r["unidad"],
-                aprobado=aprobado,
-                observaciones=r.get("observaciones", ""),
-                imagen=filename
-            )
-            db.add(resultado)
-        db.commit()
-
+        guardar_resultados(TestContinuidad, ResultadoContinuidad)
     elif tipo_prueba == "megado":
-        test = TestMegado(equipo_id=equipo.id, test_id=test_general.id, usuario_id=1)
-        db.add(test)
-        db.commit()
-        db.refresh(test)
+        guardar_resultados(TestMegado, ResultadoMegado)
+    elif tipo_prueba == "contact_resistance":
+        guardar_resultados(TestContactResistance, ResultadoContactResistance)
+    elif tipo_prueba == "torque":
+        guardar_resultados(TestTorque, ResultadoTorque)
+    else:
+        raise HTTPException(status_code=400, detail="Tipo de prueba no reconocido")
 
-        parametros = db.query(ParametroMegado).filter(ParametroMegado.proyecto_id == proyecto_id).all()
-        dict_param = {(p.cable_set, p.punto): p for p in parametros}
-
-        for r in datos_parsed:
-            param = dict_param.get((r["cable_set"], r["punto_prueba"]))
-            aprobado = "No"
-            if r["resultado_valor"] == "N/A":
-                aprobado = "Sí"
-            elif param:
-                if param.logica == "mayor_que" and float(r["resultado_valor"]) > float(param.referencia):
-                    aprobado = "Sí"
-                elif param.logica == "menor_que" and float(r["resultado_valor"]) < float(param.referencia):
-                    aprobado = "Sí"
-
-            imagen = next(img_iter, None)
-            filename = f"{datetime.utcnow().timestamp()}_{imagen.filename}" if imagen else None
-            if imagen:
-                path = os.path.join(UPLOAD_DIR, filename)
-                with open(path, "wb") as f:
-                    shutil.copyfileobj(imagen.file, f)
-                imagenes_info.append(path)
-
-            resultado = ResultadoMegado(
-                test_id=test.id,
-                punto=r["punto_prueba"],
-                resultado_valor=None if r["resultado_valor"] == "N/A" else float(r["resultado_valor"]),
-                unidad=r["unidad"],
-                aprobado=aprobado,
-                tiempo_aplicado=float(r.get("tiempo_aplicado", 0)),
-                observaciones=r.get("observaciones", ""),
-                imagen=filename
-            )
-            db.add(resultado)
-        db.commit()
-
+    # --- DATOS PARA PDF ---
     proyecto = db.query(Proyecto).filter(Proyecto.id == proyecto_id).first()
 
     detalles_equipo = {
@@ -158,10 +128,9 @@ async def guardar_formulario(
         "equipo_id": codigo_equipo,
         "tipo_prueba": tipo_prueba,
         "fecha": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-        "observaciones": "",
         "detalles_equipo": detalles_equipo,
         "imagenes": imagenes_info,
-        "nombre_usuario": "Técnico",  # Puedes enlazar al usuario si implementas auth
+        "nombre_usuario": "Técnico",
         "logo_cliente": f"logo_cliente_{proyecto.nombre}.png",
         "logo_subcontrata": f"logo_subcontrata_{proyecto.nombre}.png"
     }
@@ -169,20 +138,22 @@ async def guardar_formulario(
     resultados_pdf = [
         {
             "punto_prueba": r["punto_prueba"],
-            "referencia_valor": r["referencia_valor"],
             "resultado_valor": r["resultado_valor"],
             "unidad": r["unidad"],
-            "aprobado": "Sí" if r["resultado_valor"] == "N/A" else aprobado,
             "observaciones": r.get("observaciones", ""),
-            "cable_set": r.get("cable_set")
+            "cable_set": r.get("cable_set"),
+            "valor_nominal": r.get("valor_nominal", None),
+            "valor_comprobacion": r.get("valor_comprobacion", None)
         }
         for r in datos_parsed
     ]
 
+    # --- GENERAR PDF ---
     output_pdf_path = f"output/{tipo_prueba}_{codigo_equipo}.pdf"
     os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
     generar_pdf_test(test_data, resultados_pdf, output_path=output_pdf_path)
 
+    # --- ENVIAR POR CORREO ---
     correos_destino = obtener_correos_admins(db, proyecto_id)
     enviar_correo_con_pdf(
         destinatarios=correos_destino,
