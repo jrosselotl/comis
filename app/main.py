@@ -25,7 +25,6 @@ from app.routes import (
     formulario,
     contact_resistance,
     torque,
-    parametros,
     test_realizados,      # ✅ NUEVO (dashboard y my tests)
     ubicaciones,          # ✅ NUEVO (poblar dropdowns dinámicos)
     tipo_equipos          # ✅ NUEVO (poblar dropdowns dinámicos)
