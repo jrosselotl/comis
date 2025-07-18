@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const tipos = await tiposRes.json();
 
       // Llenar proyectos
-      const proyectoSelect = document.getElementById("proyecto_id");
+      const proyectoSelect = document.getElementById("proyect_id");
       proyectoSelect.innerHTML = "<option value=''>Seleccione...</option>";
       proyectos.forEach((p) => {
         const opt = document.createElement("option");
@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ✅ Cargar ubicaciones desde la BD
   async function cargarUbicaciones(proyectoId) {
     try {
-      const res = await fetch(`/ubicaciones/listar?proyecto_id=${proyectoId}`);
+      const res = await fetch(`/ubicaciones/listar?proyect_id=${proyectoId}`);
       const ubicaciones = await res.json();
 
       // Poblar ubicacion_1
