@@ -4,10 +4,10 @@ from app.database import get_db
 from app.models.test_torque import TestTorque, ResultadoTorque
 from app.models.test import Test
 from app.models.equipo import Equipo
-from app.models.parametros_torque import ParametroTorque
 from app.models.proyecto import Proyecto
 from app.utils.pdf_generator import generar_pdf_test
 from app.utils.correo import enviar_correo_con_pdf, obtener_correos_admins
+
 import os, shutil, json
 from datetime import datetime
 
@@ -36,12 +36,12 @@ async def guardar_test_torque(
     db: Session = Depends(get_db)
 ):
     datos_parsed = json.loads(datos)
-    usuario_id = 1  # Ajustar con autenticación real en el futuro
+    usuario_id = 1  # 🔹 Se integrará autenticación real en el futuro
 
-    # Generar código de equipo
+    # ✅ Generar código único del equipo
     codigo_equipo = f"{ubicacion_1}-{tipo_equipo}-{sub_equipo or 'GEN'}{numero_sub_equipo or ''}".upper()
 
-    # Verificar o crear equipo
+    # ✅ Verificar o crear equipo
     equipo = db.query(Equipo).filter_by(codigo=codigo_equipo).first()
     if not equipo:
         equipo = Equipo(
@@ -54,13 +54,13 @@ async def guardar_test_torque(
         db.commit()
         db.refresh(equipo)
 
-    # Crear test general
+    # ✅ Crear test general
     test = Test(tipo_prueba=tipo_prueba, equipo_id=equipo.id)
     db.add(test)
     db.commit()
     db.refresh(test)
 
-    # Crear test torque
+    # ✅ Crear test específico de torque
     test_torque = TestTorque(
         equipo_id=equipo.id,
         usuario_id=usuario_id,
@@ -70,49 +70,33 @@ async def guardar_test_torque(
     db.commit()
     db.refresh(test_torque)
 
+    # ✅ Guardar resultados (sin parámetros ni lógica de aprobado)
     imagenes_info = []
     resultados_pdf = []
 
     for i, r in enumerate(datos_parsed):
-        filename = f"{codigo_equipo}_{r['punto_prueba']}_{i}.png"
-        filepath = os.path.join(UPLOAD_DIR, filename)
-        with open(filepath, "wb") as buffer:
-            shutil.copyfileobj(imagenes[i].file, buffer)
+        imagen = imagenes[i] if i < len(imagenes) else None
+        filename = f"{codigo_equipo}_{r['punto_prueba']}_{i}.png" if imagen else None
+        filepath = None
 
-        imagenes_info.append({
-            "cable_set": r.get("cable_set"),
-            "punto_prueba": r["punto_prueba"],
-            "path": filepath
-        })
+        if imagen:
+            filepath = os.path.join(UPLOAD_DIR, filename)
+            with open(filepath, "wb") as buffer:
+                shutil.copyfileobj(imagen.file, buffer)
+            imagenes_info.append({
+                "cable_set": r.get("cable_set"),
+                "punto_prueba": r["punto_prueba"],
+                "path": filepath
+            })
 
-        # Obtener parámetros de torque
-        parametro = db.query(ParametroTorque).filter_by(
-            proyecto_id=proyecto_id,
-            codigo_equipo=codigo_equipo
-        ).first()
-
-        # Lógica de aprobado (validando valor de comprobación)
-        aprobado = "SI"
-        if not r['resultado_valor'] or r['resultado_valor'] == "N/A":
-            aprobado = "SI"
-        elif parametro:
-            try:
-                comprobacion = float(parametro.valor_comprobacion)
-                res = float(r['resultado_valor'])
-                aprobado = "SI" if abs(res - comprobacion) <= 0.1 * comprobacion else "NO"
-            except:
-                aprobado = "NO"
-
-        # Guardar resultado
         resultado = ResultadoTorque(
             test_id=test_torque.id,
             cable_set=r.get("cable_set"),
             punto_prueba=r["punto_prueba"],
-            valor_nominal=parametro.valor_nominal if parametro else "-",
-            valor_comprobacion=parametro.valor_comprobacion if parametro else "-",
-            resultado_valor=r["resultado_valor"] if r["resultado_valor"] != "N/A" else None,
+            valor_nominal=float(r.get("valor_nominal", 0)),
+            valor_comprobacion=float(r.get("valor_comprobacion", 0)),
+            resultado_valor=None if r["resultado_valor"] == "N/A" else float(r["resultado_valor"]),
             unidad=r["unidad"],
-            aprobado=aprobado,
             observaciones=r.get("observaciones"),
             imagen=filepath
         )
@@ -121,16 +105,16 @@ async def guardar_test_torque(
         resultados_pdf.append({
             "cable_set": r.get("cable_set"),
             "punto_prueba": r["punto_prueba"],
-            "referencia_valor": f"{parametro.valor_nominal} / {parametro.valor_comprobacion}" if parametro else "-",
+            "valor_nominal": r.get("valor_nominal", 0),
+            "valor_comprobacion": r.get("valor_comprobacion", 0),
             "resultado_valor": r["resultado_valor"],
             "unidad": r["unidad"],
-            "aprobado": aprobado,
             "observaciones": r.get("observaciones", "")
         })
 
     db.commit()
 
-    # Datos para PDF
+    # ✅ Datos para PDF
     proyecto = db.query(Proyecto).filter_by(id=proyecto_id).first()
     detalles_equipo = {
         "Proyecto": proyecto.nombre,
@@ -138,7 +122,8 @@ async def guardar_test_torque(
         "Ubicación Secundaria": f"{ubicacion_2} Nº{numero_ubicacion_2}" if ubicacion_2 else "-",
         "Tipo de Equipo": f"{tipo_equipo} Nº{numero_tipo_equipo}",
         "Subequipo": f"{sub_equipo} Nº{numero_sub_equipo}" if sub_equipo else "-",
-        "Tipo de Alimentación": tipo_alimentacion
+        "Tipo de Alimentación": tipo_alimentacion,
+        "Terminal": terminal
     }
 
     test_data = {
@@ -149,14 +134,15 @@ async def guardar_test_torque(
         "imagenes": imagenes_info,
         "logo_cliente": f"logo_cliente_{proyecto.nombre}.png",
         "logo_subcontrata": f"logo_subcontrata_{proyecto.nombre}.png",
-        "nombre_usuario": "Usuario Test"
+        "nombre_usuario": "Técnico"
     }
 
+    # ✅ Generar PDF
     output_pdf_path = f"output/{tipo_prueba}_{codigo_equipo}.pdf"
     os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
     generar_pdf_test(test_data, resultados_pdf, output_path=output_pdf_path)
 
-    # Enviar correo
+    # ✅ Enviar correo
     correos_destino = obtener_correos_admins(db, proyecto_id)
     enviar_correo_con_pdf(
         destinatarios=correos_destino,
