@@ -28,7 +28,6 @@ class ResultadoTorque(Base):
     valor_nominal = Column(Float, nullable=False)  # se copia del parametro_torque
     valor_comprobacion = Column(Float, nullable=True)  # técnico lo ingresa
     unidad = Column(String, nullable=False)
-    aprobado = Column(Boolean, default=False)
     observaciones = Column(String, nullable=True)
     imagen = Column(String, nullable=True)
 
