@@ -5,7 +5,7 @@ class Ubicacion(Base):
     __tablename__ = "ubicaciones"
 
     id = Column(Integer, primary_key=True, index=True)
-    proyecto_id = Column(Integer, ForeignKey("proyectos.id"), nullable=False)
+    proyect_id = Column(Integer, ForeignKey("proyectos.id"), nullable=False)
 
     ubicacion_1 = Column(String(50), nullable=False)
     numero_ubicacion_1 = Column(JSON, nullable=True)  # Ej: [1,2,3]
