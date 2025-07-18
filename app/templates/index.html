@@ -18,34 +18,34 @@
 
   <!-- Contenido principal -->
   <div class="content">
-    <!-- Dashboard -->
+
+    <!-- ✅ DASHBOARD -->
     <div id="section-dashboard">
       <h2>Estadísticas de Pruebas</h2>
       <canvas id="grafico-tests" width="400" height="200"></canvas>
     </div>
 
-    <!-- My Tests -->
+    <!-- ✅ MY TEST LIST -->
     <div id="section-mytests" class="hidden">
-      <h2>Mis Tests</h2>
-      <table>
+      <h2>My test list</h2>
+      <table class="tabla-tests">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Tipo</th>
-            <th>Equipo</th>
-            <th>Fecha</th>
-            <th>Estado</th>
-            <th>Acciones</th>
+            <th>Equipment asset</th>
+            <th>Test name</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Actions buttons</th>
           </tr>
         </thead>
         <tbody id="tabla-mytests"></tbody>
       </table>
     </div>
 
-    <!-- New Test -->
+    <!-- ✅ NEW TEST -->
     <div id="section-newtest" class="hidden">
       <form id="formulario-pruebas" enctype="multipart/form-data">
-        <!-- Paso 1 -->
+        <!-- Paso 1: Datos del equipo -->
         <fieldset>
           <legend>1. Datos del Equipo</legend>
 
@@ -55,12 +55,8 @@
 
           <label>Ubicación Principal:
             <div class="field-group">
-              <select id="ubicacion_1" name="ubicacion_1" required>
-                <option value="">Seleccione</option>
-              </select>
-              <select id="numero_ubicacion_1" name="numero_ubicacion_1" required>
-                <option value="">Seleccione Nº</option>
-              </select>
+              <select id="ubicacion_1" name="ubicacion_1" required></select>
+              <select id="numero_ubicacion_1" name="numero_ubicacion_1" required></select>
             </div>
           </label>
 
@@ -68,37 +64,30 @@
             <label>Ubicación secundaria:</label>
             <div class="field-group">
               <select id="ubicacion_2" name="ubicacion_2"></select>
-              <select id="numero_ubicacion_2" name="numero_ubicacion_2">
-                <option value="">Seleccione Nº</option>
-              </select>
+              <select id="numero_ubicacion_2" name="numero_ubicacion_2"></select>
             </div>
           </div>
 
           <label>Tipo de equipo:
             <div class="field-group">
               <select id="tipo_equipo" name="tipo_equipo" required></select>
-              <select id="numero_tipo_equipo" name="numero_tipo_equipo" required>
-                <option value="">Seleccione Nº</option>
-              </select>
+              <select id="numero_tipo_equipo" name="numero_tipo_equipo" required></select>
             </div>
           </label>
 
-          <div id="label-sub_equipo" style="display:none;">
-            <label>Sub-equipo:</label>
+          <label id="label-sub_equipo" style="display:none;">Sub-equipo:
             <div class="field-group">
               <select id="sub_equipo" name="sub_equipo"></select>
-              <select id="numero_sub_equipo" name="numero_sub_equipo">
-                <option value="">Seleccione Nº</option>
-              </select>
+              <select id="numero_sub_equipo" name="numero_sub_equipo"></select>
             </div>
-          </div>
+          </label>
 
           <label>Terminal:
             <input type="text" id="terminal" name="terminal" placeholder="Nº Terminal" />
           </label>
         </fieldset>
 
-        <!-- Paso 2 -->
+        <!-- Paso 2: Tipo de prueba -->
         <fieldset>
           <legend>2. Tipo de prueba</legend>
           <label>Tipo de prueba:
@@ -108,26 +97,27 @@
           </label>
         </fieldset>
 
-        <!-- Paso 3 -->
+        <!-- Paso 3: Características -->
         <fieldset id="bloque-caracteristicas" style="display:none;">
           <legend>3. Características</legend>
+
           <label for="cable_sets">Cable Sets:
             <input type="number" id="cable_sets" name="cable_sets" min="1" value="1" required />
           </label>
+
           <label>Tipo de alimentación:
             <select id="tipo_alimentacion" name="tipo_alimentacion" required>
               <option value="trifasica">Trifásica (L1, L2, L3, N, PE)</option>
               <option value="monofasica">Monofásica (L, N, PE)</option>
             </select>
           </label>
-          <label id="label-unidad" style="display:block;">Unidad:
-            <select id="unidad" name="unidad" required>
-              <option value="">Seleccione unidad...</option>
-            </select>
+
+          <label id="label-unidad">Unidad:
+            <select id="unidad" name="unidad"></select>
           </label>
         </fieldset>
 
-        <!-- Paso 4 -->
+        <!-- Paso 4: Resultados -->
         <fieldset id="bloque-resultados" style="display:none;">
           <legend>4. Resultados de la prueba</legend>
           <div id="contenedor-resultados"></div>
@@ -137,6 +127,7 @@
         <button type="button" id="btn-enviar-pdf" class="btn-enviar hidden">Enviar PDF</button>
       </form>
     </div>
+
   </div>
 
   <!-- Scripts -->
@@ -147,6 +138,5 @@
   <script src="/static/js/formulario_contact_resistance.js"></script>
   <script src="/static/js/formulario_torque.js"></script>
   <script src="/static/js/cargar_formulario.js"></script>
-  <script src="/static/js/unidades_por_test.js"></script>
 </body>
 </html>
