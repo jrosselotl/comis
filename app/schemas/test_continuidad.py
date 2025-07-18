@@ -7,7 +7,6 @@ class ResultadoContinuidadSchema(BaseModel):
     cable_set: Optional[int]
     resultado_valor: Optional[float]
     unidad: str
-    aprobado: str
     observaciones: Optional[str]
     imagen: Optional[str]
 
