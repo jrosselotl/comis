@@ -10,9 +10,9 @@ from app.models.test_torque import TestTorque, ResultadoTorque
 
 # Otros modelos
 from app.models.proyecto import Proyecto
-from app.models.usuario import Usuario
 from app.models.test import Test
 from app.models.equipo import Equipo
+from app.models.test_realizados import TestRealizado  # ✅ NUEVO
 
 # Utilidades
 from app.utils.pdf_generator import generar_pdf_test
@@ -48,6 +48,7 @@ async def guardar_formulario(
     db: Session = Depends(get_db)
 ):
     datos_parsed = json.loads(datos)
+    usuario_id = 1  # ✅ Luego será dinámico (usuario autenticado)
 
     # --- EQUIPO ---
     codigo_equipo = f"{ubicacion_1}-{tipo_equipo}-{numero_tipo_equipo}"
@@ -64,13 +65,24 @@ async def guardar_formulario(
     db.commit()
     db.refresh(test_general)
 
+    # ✅ --- REGISTRAR EN TEST_REALIZADOS ---
+    nuevo_test_realizado = TestRealizado(
+        proyecto_id=proyecto_id,
+        equipo_id=equipo.id,
+        usuario_id=usuario_id,
+        test_id=test_general.id,
+        estado="Incompleto"
+    )
+    db.add(nuevo_test_realizado)
+    db.commit()
+
     # --- IMÁGENES ---
     imagenes_info = []
     img_iter = iter(imagenes)
 
     # --- FUNCIÓN GENÉRICA PARA GUARDAR RESULTADOS ---
     def guardar_resultados(modelo_test, modelo_resultado):
-        test = modelo_test(equipo_id=equipo.id, test_id=test_general.id, usuario_id=1)
+        test = modelo_test(equipo_id=equipo.id, test_id=test_general.id, usuario_id=usuario_id)
         db.add(test)
         db.commit()
         db.refresh(test)
@@ -113,7 +125,6 @@ async def guardar_formulario(
 
     # --- DATOS PARA PDF ---
     proyecto = db.query(Proyecto).filter(Proyecto.id == proyecto_id).first()
-
     detalles_equipo = {
         "Proyecto": proyecto.nombre,
         "Ubicación Principal": f"{ubicacion_1} Nº{numero_ubicacion_1}",
@@ -123,7 +134,6 @@ async def guardar_formulario(
         "Tipo de Alimentación": tipo_alimentacion,
         "Terminal": terminal
     }
-
     test_data = {
         "equipo_id": codigo_equipo,
         "tipo_prueba": tipo_prueba,
@@ -134,7 +144,6 @@ async def guardar_formulario(
         "logo_cliente": f"logo_cliente_{proyecto.nombre}.png",
         "logo_subcontrata": f"logo_subcontrata_{proyecto.nombre}.png"
     }
-
     resultados_pdf = [
         {
             "punto_prueba": r["punto_prueba"],
@@ -142,8 +151,8 @@ async def guardar_formulario(
             "unidad": r["unidad"],
             "observaciones": r.get("observaciones", ""),
             "cable_set": r.get("cable_set"),
-            "valor_nominal": r.get("valor_nominal", None),
-            "valor_comprobacion": r.get("valor_comprobacion", None)
+            "valor_nominal": r.get("valor_nominal"),
+            "valor_comprobacion": r.get("valor_comprobacion")
         }
         for r in datos_parsed
     ]
