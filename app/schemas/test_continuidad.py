@@ -4,6 +4,7 @@ from datetime import datetime
 
 class ResultadoContinuidadSchema(BaseModel):
     punto: str
+    cable_set: Optional[int]
     resultado_valor: Optional[float]
     unidad: str
     aprobado: str
