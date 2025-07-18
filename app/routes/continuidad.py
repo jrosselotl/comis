@@ -1,14 +1,13 @@
-# app/routes/continuidad.py
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.test_continuidad import TestContinuidad, ResultadoContinuidad
 from app.models.test import Test
 from app.models.equipo import Equipo
+from app.models.proyecto import Proyecto
 from app.utils.pdf_generator import generar_pdf_test
 from app.utils.correo import enviar_correo_con_pdf, obtener_correos_admins
-from app.models.parametros_continuidad import ParametroContinuidad
-from app.models.proyecto import Proyecto
+
 import os, shutil, json
 from datetime import datetime
 
@@ -36,7 +35,7 @@ async def guardar_test_continuidad(
     db: Session = Depends(get_db)
 ):
     datos_parsed = json.loads(datos)
-    usuario_id = 1  # 🔹 Cambiar luego por usuario autenticado
+    usuario_id = 1  # 🔹 Se usará autenticación más adelante
 
     # ✅ Generar código único del equipo
     codigo_equipo = f"{ubicacion_1}-{tipo_equipo}-{sub_equipo or 'GEN'}{numero_sub_equipo or ''}".upper()
@@ -70,55 +69,27 @@ async def guardar_test_continuidad(
     db.commit()
     db.refresh(test_cont)
 
-    # ✅ Guardar resultados
+    # ✅ Guardar resultados (sin validaciones ni parámetros)
     imagenes_info = []
     for i, r in enumerate(datos_parsed):
-        filename = f"{codigo_equipo}_{r['punto_prueba']}_{i}.png"
-        filepath = os.path.join(UPLOAD_DIR, filename)
-        with open(filepath, "wb") as buffer:
-            shutil.copyfileobj(imagenes[i].file, buffer)
-        imagenes_info.append({"path": filepath, "punto_prueba": r["punto_prueba"], "cable_set": r.get("cable_set")})
+        imagen = imagenes[i] if i < len(imagenes) else None
+        filename = f"{codigo_equipo}_{r['punto_prueba']}_{i}.png" if imagen else None
+        filepath = None
 
-        # ✅ Obtener parámetros del admin (filtrado correcto)
-        parametro = db.query(ParametroContinuidad).filter_by(
-            proyecto_id=proyecto_id,
-            codigo_equipo=codigo_equipo,
-            test_id=test.id
-        ).first()
+        if imagen:
+            filepath = os.path.join(UPLOAD_DIR, filename)
+            with open(filepath, "wb") as buffer:
+                shutil.copyfileobj(imagen.file, buffer)
+            imagenes_info.append({"path": filepath, "punto_prueba": r["punto_prueba"], "cable_set": r.get("cable_set")})
 
-        # ✅ Validación automática
-        aprobado = "SI"
-        if not r['resultado_valor'] or r['resultado_valor'] == "N/A":
-            aprobado = "SI"
-        elif parametro:
-            try:
-                ref = float(parametro.referencia)
-                res = float(r['resultado_valor'])
-                logica = parametro.logica
-                if logica == "menor":
-                    aprobado = "SI" if res < ref else "NO"
-                elif logica == "mayor":
-                    aprobado = "SI" if res > ref else "NO"
-                elif logica == "igual":
-                    aprobado = "SI" if res == ref else "NO"
-                elif logica == "menor_igual":
-                    aprobado = "SI" if res <= ref else "NO"
-                elif logica == "mayor_igual":
-                    aprobado = "SI" if res >= ref else "NO"
-                else:
-                    aprobado = "NO"
-            except:
-                aprobado = "NO"
-
-        # ✅ Guardar resultado en DB
         resultado = ResultadoContinuidad(
             test_id=test_cont.id,
             punto=r['punto_prueba'],
-            resultado_valor=r['resultado_valor'] if r['resultado_valor'] != "N/A" else None,
+            resultado_valor=None if r['resultado_valor'] == "N/A" else float(r['resultado_valor']),
             unidad=r['unidad'],
-            aprobado=aprobado,
             observaciones=r.get('observaciones'),
-            imagen=filepath
+            imagen=filepath,
+            cable_set=r.get("cable_set")
         )
         db.add(resultado)
 
@@ -132,26 +103,26 @@ async def guardar_test_continuidad(
         "Ubicación Secundaria": f"{ubicacion_2} Nº{numero_ubicacion_2}" if ubicacion_2 else "-",
         "Tipo de Equipo": f"{tipo_equipo} Nº{numero_tipo_equipo}",
         "Subequipo": f"{sub_equipo} Nº{numero_sub_equipo}" if sub_equipo else "-",
-        "Tipo de Alimentación": tipo_alimentacion
+        "Tipo de Alimentación": tipo_alimentacion,
+        "Terminal": terminal
     }
+
     test_data = {
         "equipo_id": codigo_equipo,
         "tipo_prueba": tipo_prueba,
         "fecha": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-        "observaciones": "",
         "detalles_equipo": detalles_equipo,
         "imagenes": imagenes_info,
         "logo_cliente": f"logo_cliente_{proyecto.nombre}.png",
         "logo_subcontrata": f"logo_subcontrata_{proyecto.nombre}.png",
-        "nombre_usuario": "Usuario Test"
+        "nombre_usuario": "Técnico"
     }
+
     resultados_pdf = [
         {
             "punto_prueba": r["punto_prueba"],
-            "referencia_valor": parametro.referencia if parametro else "-",
             "resultado_valor": r["resultado_valor"],
             "unidad": r["unidad"],
-            "aprobado": aprobado,
             "observaciones": r.get("observaciones", ""),
             "cable_set": r.get("cable_set")
         }
