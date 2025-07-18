@@ -2,36 +2,21 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 
-class ResultadoMegadoBase(BaseModel):
+class ResultadoMegadoSchema(BaseModel):
     punto: str
     resultado_valor: Optional[float]
     unidad: str
-    aprobado: str
+    tiempo_aplicado: Optional[float] = None  # 🔹 Ahora lo ingresa el técnico manualmente
     observaciones: Optional[str] = None
     imagen: Optional[str] = None
+    cable_set: Optional[int] = None
 
-class ResultadoMegadoCreate(ResultadoMegadoBase):
-    pass
-
-class ResultadoMegado(ResultadoMegadoBase):
-    id: int
-    test_id: int
-
-    class Config:
-        orm_mode = True
-
-class TestMegadoBase(BaseModel):
+class TestMegadoSchema(BaseModel):
     equipo_id: int
     usuario_id: int
     test_id: int
     fecha: Optional[datetime] = None
-
-class TestMegadoCreate(TestMegadoBase):
-    resultados: List[ResultadoMegadoCreate]
-
-class TestMegado(TestMegadoBase):
-    id: int
-    resultados: List[ResultadoMegado]
+    resultados: List[ResultadoMegadoSchema]
 
     class Config:
         orm_mode = True
