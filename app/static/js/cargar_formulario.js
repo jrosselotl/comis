@@ -18,24 +18,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const subEquipoSelect = document.getElementById("sub_equipo");
   const numeroSubEquipoSelect = document.getElementById("numero_sub_equipo");
 
-  // ✅ Cargar proyectos y tipos de test
-  async function cargarProyectosYTipos() {
+  // ✅ Cargar project y tipos de test
+  async function cargarProjectYTipos() {
     try {
-      const [proyectosRes, tiposRes] = await Promise.all([
-        fetch("/proyectos/listar"),
+      const [projectRes, tiposRes] = await Promise.all([
+        fetch("/project/listar"),
         fetch("/tests/listar"),
       ]);
-      const proyectos = await proyectosRes.json();
+      const project = await projectRes.json();
       const tipos = await tiposRes.json();
 
-      // Llenar proyectos
-      const proyectoSelect = document.getElementById("proyecto_id");
-      proyectoSelect.innerHTML = "<option value=''>Seleccione...</option>";
-      proyectos.forEach((p) => {
+      // Llenar project
+      const projectSelect = document.getElementById("project_id");
+      projectSelect.innerHTML = "<option value=''>Seleccione...</option>";
+      project.forEach((p) => {
         const opt = document.createElement("option");
         opt.value = p.id;
         opt.textContent = p.nombre;
-        proyectoSelect.appendChild(opt);
+        projectSelect.appendChild(opt);
       });
 
       // Llenar tipos de test
@@ -47,22 +47,22 @@ document.addEventListener("DOMContentLoaded", () => {
         tipoPruebaSelect.appendChild(opt);
       });
 
-      // Evento para cargar ubicaciones y equipos cuando cambia el proyecto
-      proyectoSelect.addEventListener("change", () => {
-        if (proyectoSelect.value) {
-          cargarUbicaciones(proyectoSelect.value);
+      // Evento para cargar ubicaciones y equipos cuando cambia el project
+      projectSelect.addEventListener("change", () => {
+        if (projectSelect.value) {
+          cargarUbicaciones(projectSelect.value);
           cargarEquipos();
         }
       });
     } catch (error) {
-      console.error("Error cargando proyectos y tipos:", error);
+      console.error("Error cargando project y tipos:", error);
     }
   }
 
   // ✅ Cargar ubicaciones desde la BD
-  async function cargarUbicaciones(proyectoId) {
+  async function cargarUbicaciones(projectId) {
     try {
-      const res = await fetch(`/ubicaciones/listar?proyecto_id=${proyectoId}`);
+      const res = await fetch(`/ubicaciones/listar?project_id=${projectId}`);
       const ubicaciones = await res.json();
 
       // Poblar ubicacion_1
