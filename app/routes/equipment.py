@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.schemas.equipment import EquipmentCreate, EquipmentOut
 from app.models.equipment import Equipment
 from app.models.location import Location
-from app.models.tipo_equipo import EquipmentType
+from app.models.equipment_type import EquipmentType
 from app.database import get_db
 
 router = APIRouter(prefix="/equipment", tags=["Equipment"])
@@ -11,7 +11,7 @@ router = APIRouter(prefix="/equipment", tags=["Equipment"])
 
 @router.post("/", response_model=EquipmentOut)
 def create_equipment(equipment: EquipmentCreate, db: Session = Depends(get_db)):
-    # ✅ Construimos el código dinámico usando los nombres de las tablas relacionadas
+    # ✅ Build dynamic code using related table names
     location_1 = db.query(Location).filter_by(id=equipment.location_1_id).first()
     location_2 = db.query(Location).filter_by(id=equipment.location_2_id).first() if equipment.location_2_id else None
     equipment_type = db.query(EquipmentType).filter_by(id=equipment.equipment_type_id).first()
@@ -20,27 +20,27 @@ def create_equipment(equipment: EquipmentCreate, db: Session = Depends(get_db)):
     if not location_1 or not equipment_type:
         raise HTTPException(status_code=400, detail="Location or equipment type is not valid")
 
-    code = f"{location_1.nombre}{equipment.numero_location_1}"
+    code = f"{location_1.name}{equipment.location_number_1}"
     if location_2:
-        code += f"-{location_2.nombre}{equipment.numero_location_2 or ''}"
-    code += f"-{equipment_type.nombre}{equipment.numero_equipment_type}"
+        code += f"-{location_2.name}{equipment.location_number_2 or ''}"
+    code += f"-{equipment_type.name}{equipment.equipment_type_number}"
     if sub_equipment:
-        code += f"-{sub_equipment.nombre}{equipment.numero_sub_equipment or ''}"
+        code += f"-{sub_equipment.name}{equipment.sub_equipment_number or ''}"
 
     new_equipment = Equipment(
         project_id=equipment.project_id,
         location_1_id=equipment.location_1_id,
-        numero_location_1=equipment.numero_location_1,
+        location_number_1=equipment.location_number_1,
         location_2_id=equipment.location_2_id,
-        numero_location_2=equipment.numero_location_2,
+        location_number_2=equipment.location_number_2,
         equipment_type_id=equipment.equipment_type_id,
-        numero_equipment_type=equipment.numero_equipment_type,
+        equipment_type_number=equipment.equipment_type_number,
         sub_equipment_id=equipment.sub_equipment_id,
-        numero_sub_equipment=equipment.numero_sub_equipment,
+        sub_equipment_number=equipment.sub_equipment_number,
         terminal=equipment.terminal,
-        tipo_alimentacion=equipment.tipo_alimentacion,
+        power_type=equipment.power_type,
         cable_set=equipment.cable_set,
-        codigo=code
+        code=code
     )
 
     db.add(new_equipment)
