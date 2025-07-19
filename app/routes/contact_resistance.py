@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.test_contact_resistance import TestContactResistance, ResultadoContactResistance
 from app.models.test import Test
-from app.models.equipo import Equipment
-from app.models.proyecto import Project
+from app.models.equipment import Equipment
+from app.models.project import Project
 from app.utils.pdf_generator import generar_pdf_test
 from app.utils.correo import enviar_correo_con_pdf, obtener_correos_admins
 
