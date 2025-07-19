@@ -8,7 +8,7 @@ class Proyecto(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, unique=True, nullable=False)
 
-    equipos = relationship("Equipo", back_populates="project")
+    equipment = relationship("Equipo", back_populates="project")
     usuarios_asociados = relationship("UsuarioProyecto", back_populates="project")
 
     logo_cliente = Column(String, nullable=True)
