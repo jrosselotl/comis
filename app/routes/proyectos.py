@@ -1,36 +1,38 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.schemas.proyecto import ProyectoCreate, ProyectoOut
-from app.models.proyecto import Proyecto
+from app.schemas.project import ProjectCreate, ProjectOut
+from app.models.project import Project
 from app.models.test import Test
 from app.database import get_db
 
-router = APIRouter(prefix="/proyectos", tags=["Proyectos"])
+router = APIRouter(prefix="/projects", tags=["Projects"])
 
-# Crear nuevo proyecto
-@router.post("/", response_model=ProyectoOut)
-def crear_proyecto(proyecto: ProyectoCreate, db: Session = Depends(get_db)):
-    nuevo = Proyecto(
-        nombre=proyecto.nombre,
-        descripcion=proyecto.descripcion
+# Create new project
+@router.post("/", response_model=ProjectOut)
+def create_project(project: ProjectCreate, db: Session = Depends(get_db)):
+    new_project = Project(
+        nombre=project.nombre,
+        descripcion=project.descripcion
     )
-    db.add(nuevo)
+    db.add(new_project)
     db.commit()
-    db.refresh(nuevo)
-    return nuevo
+    db.refresh(new_project)
+    return new_project
 
-# Obtener todos los proyectos
-@router.get("/", response_model=list[ProyectoOut])
-def listar_proyectos(db: Session = Depends(get_db)):
-    return db.query(Proyecto).all()
+# Get all projects
+@router.get("/", response_model=list[ProjectOut])
+def list_projects(db: Session = Depends(get_db)):
+    return db.query(Project).all()
 
-# Obtener los tests disponibles para un proyecto
-@router.get("/{proyecto_id}/tests")
-def obtener_tests_proyecto(proyecto_id: int, db: Session = Depends(get_db)):
-    proyecto = db.query(Proyecto).filter_by(id=proyecto_id).first()
-    if not proyecto:
-        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+# Get available tests for a project
+@router.get("/{project_id}/tests")
+def get_project_tests(project_id: int, db: Session = Depends(get_db)):
+    project = db.query(Project).filter_by(id=project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return db.query(Test).filter(Test.project_id == project_id).all()
 
-@router.get("/listar")
-def alias_listar_proyectos(db: Session = Depends(get_db)):
-    return listar_proyectos(db)
+# Alias for frontend compatibility
+@router.get("/list")
+def alias_list_projects(db: Session = Depends(get_db)):
+    return list_projects(db)
