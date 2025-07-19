@@ -1,23 +1,22 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models.test_contact_resistance import TestContactResistance, ResultadoContactResistance
+from app.models.test_continuidad import TestContinuidad, ResultadoContinuidad
 from app.models.test import Test
-from app.models.equipment import Equipment
-from app.models.project import Project
+from app.models.equipo import Equipment
+from app.models.proyecto import Project
 from app.utils.pdf_generator import generar_pdf_test
 from app.utils.correo import enviar_correo_con_pdf, obtener_correos_admins
 
 import os, shutil, json
 from datetime import datetime
 
-router = APIRouter(prefix="/formulario/contact_resistance", tags=["Formulario Contact Resistance"])
-
+router = APIRouter(prefix="/formulario/continuidad", tags=["Formulario Continuidad"])
 UPLOAD_DIR = "static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/guardar")
-async def guardar_test_contact_resistance(
+async def guardar_test_continuidad(
     project_id: int = Form(...),
     ubicacion_1: str = Form(...),
     numero_ubicacion_1: str = Form(...),
@@ -36,44 +35,42 @@ async def guardar_test_contact_resistance(
     db: Session = Depends(get_db)
 ):
     datos_parsed = json.loads(datos)
-    user_id = 1  # 🔹 Se integrará autenticación real en el futuro
+    user_id = 1  # 🔹 Se usará autenticación más adelante
 
-    # ✅ Generar código único del equipo
+    # ✅ Generar código único del equipment
     codigo_equipo = f"{ubicacion_1}-{tipo_equipo}-{sub_equipo or 'GEN'}{numero_sub_equipo or ''}".upper()
 
-    # ✅ Verificar o crear equipo
-    equipo = db.query(Equipo).filter_by(codigo=codigo_equipo).first()
-    if not equipo:
-        equipo = Equipo(
+    # ✅ Verificar o crear el equipment
+    equipment = db.query(Equipment).filter_by(codigo=codigo_equipo).first()
+    if not equipment:
+        equipment = Equipment(
             codigo=codigo_equipo,
-            tipo=tipo_equipo,
+            tipo_equipo=tipo_equipo,
             sub_equipo=sub_equipo,
             project_id=project_id
         )
-        db.add(equipo)
+        db.add(equipment)
         db.commit()
-        db.refresh(equipo)
+        db.refresh(equipment)
 
-    # ✅ Crear registro en tabla general de tests
+    # ✅ Crear registro en tabla general de test
     test = Test(tipo_prueba=tipo_prueba, equipment_id=equipment.id)
     db.add(test)
     db.commit()
     db.refresh(test)
 
-    # ✅ Crear test específico de contact resistance
-    test_contact = TestContactResistance(
+    # ✅ Crear test específico de continuidad
+    test_cont = TestContinuidad(
         equipment_id=equipment.id,
         user_id=user_id,
         test_id=test.id
     )
-    db.add(test_contact)
+    db.add(test_cont)
     db.commit()
-    db.refresh(test_contact)
+    db.refresh(test_cont)
 
-    # ✅ Guardar resultados (sin parámetros ni validaciones)
+    # ✅ Guardar resultados (sin validaciones ni parámetros)
     imagenes_info = []
-    resultados_pdf = []
-
     for i, r in enumerate(datos_parsed):
         imagen = imagenes[i] if i < len(imagenes) else None
         filename = f"{codigo_equipo}_{r['punto_prueba']}_{i}.png" if imagen else None
@@ -84,33 +81,25 @@ async def guardar_test_contact_resistance(
             with open(filepath, "wb") as buffer:
                 shutil.copyfileobj(imagen.file, buffer)
             imagenes_info.append({
-                "cable_set": r.get("cable_set"),
+                "path": filepath,
                 "punto_prueba": r["punto_prueba"],
-                "path": filepath
+                "cable_set": r.get("cable_set")
             })
 
-        resultado = ResultadoContactResistance(
-            test_id=test_contact.id,
-            cable_set=r.get("cable_set"),
-            punto_prueba=r["punto_prueba"],
-            resultado_valor=None if r["resultado_valor"] == "N/A" else float(r["resultado_valor"]),
-            unidad=r["unidad"],
-            observaciones=r.get("observaciones"),
-            imagen=filepath
+        resultado = ResultadoContinuidad(
+            test_id=test_cont.id,
+            punto=r['punto_prueba'],
+            resultado_valor=None if r['resultado_valor'] == "N/A" else float(r['resultado_valor']),
+            unidad=r['unidad'],
+            observaciones=r.get('observaciones'),
+            imagen=filepath,
+            cable_set=r.get("cable_set")
         )
         db.add(resultado)
 
-        resultados_pdf.append({
-            "cable_set": r.get("cable_set"),
-            "punto_prueba": r["punto_prueba"],
-            "resultado_valor": r["resultado_valor"],
-            "unidad": r["unidad"],
-            "observaciones": r.get("observaciones", "")
-        })
-
     db.commit()
 
-    # ✅ Datos para PDF
+    # ✅ Generar PDF
     project = db.query(Project).filter_by(id=project_id).first()
     detalles_equipo = {
         "Project": project.nombre,
@@ -133,7 +122,17 @@ async def guardar_test_contact_resistance(
         "nombre_usuario": "Técnico"
     }
 
-    # ✅ Generar PDF
+    resultados_pdf = [
+        {
+            "punto_prueba": r["punto_prueba"],
+            "resultado_valor": r["resultado_valor"],
+            "unidad": r["unidad"],
+            "observaciones": r.get("observaciones", ""),
+            "cable_set": r.get("cable_set")
+        }
+        for r in datos_parsed
+    ]
+
     output_pdf_path = f"output/{tipo_prueba}_{codigo_equipo}.pdf"
     os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
     generar_pdf_test(test_data, resultados_pdf, output_path=output_pdf_path)
