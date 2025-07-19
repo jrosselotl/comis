@@ -69,7 +69,7 @@ button[type="submit"]:hover {
     background-color: #002f5f;
 }
 
-.tabla-prueba {
+.test-table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 2rem;
@@ -78,21 +78,21 @@ button[type="submit"]:hover {
     overflow: hidden;
 }
 
-.tabla-prueba caption {
+.test-table caption {
     background-color: #004080;
     color: white;
     font-weight: bold;
     padding: 0.5rem;
 }
 
-.tabla-prueba th,
-.tabla-prueba td {
+.test-table th,
+.test-table td {
     border: 1px solid #ddd;
     padding: 0.75rem;
     text-align: center;
 }
 
-.tabla-prueba th {
+.test-table th {
     background-color: #e0eafc;
     color: #333;
 }
@@ -113,6 +113,7 @@ button[type="submit"]:hover {
 input[type="file"] {
     display: none;
 }
+
 .field-group {
     display: flex;
     gap: 1rem;
@@ -122,7 +123,7 @@ input[type="file"] {
 .field-group label {
     flex: 1 1 45%;
 }
-.verde input[type="checkbox"] {
+
+.green input[type="checkbox"] {
     accent-color: green;
 }
-
