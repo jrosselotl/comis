@@ -1,4 +1,4 @@
-from datetime import datetime
+ipmentfrom datetime import datetime
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -35,7 +35,7 @@ class Equipo(Base):
     tipo_equipo = relationship("TipoEquipo", foreign_keys=[tipo_equipo_id])
     sub_equipo = relationship("TipoEquipo", foreign_keys=[sub_equipo_id])
 
-    tests_continuidad = relationship("TestContinuidad", back_populates="equipo")
-    tests_megado = relationship("TestMegado", back_populates="equipo")
-    tests_contact_resistance = relationship("TestContactResistance", back_populates="equipo")
-    tests_torque = relationship("TestTorque", back_populates="equipo")
+    tests_continuidad = relationship("TestContinuidad", back_populates="equipment")
+    tests_megado = relationship("TestMegado", back_populates="equipment")
+    tests_contact_resistance = relationship("TestContactResistance", back_populates="equipment")
+    tests_torque = relationship("TestTorque", back_populates="equipment")
