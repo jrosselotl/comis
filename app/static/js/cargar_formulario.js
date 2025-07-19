@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ubicacion1Select.appendChild(opt);
       });
 
-      ubicacion1Select.addEventListener("change", () => {
+      ubicacion1Select.addEventListener("change", async () => {
         const selected = ubicacion1Select.selectedOptions[0];
         if (!selected) return;
 
@@ -171,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ✅ Evento al cambiar tipo de prueba
-  tipoPruebaSelect.addEventListener("change", () => {
+  tipoPruebaSelect.addEventListener("change", async () => {
     const tipo = tipoPruebaSelect.value;
 
     caracteristicas.style.display = tipo ? "block" : "none";
