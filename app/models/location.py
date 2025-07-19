@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, JSON
 from app.database import Base
 
 class Ubicacion(Base):
-    __tablename__ = "ubicaciones"
+    __tablename__ = "location"
 
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
