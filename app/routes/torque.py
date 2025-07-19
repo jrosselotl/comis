@@ -1,154 +1,156 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models.test_torque import TestTorque, ResultadoTorque
+from app.models.test_torque import TestTorque, ResultTorque
 from app.models.test import Test
-from app.models.equipo import Equipo
-from app.models.proyecto import Proyecto
-from app.utils.pdf_generator import generar_pdf_test
-from app.utils.correo import enviar_correo_con_pdf, obtener_correos_admins
+from app.models.equipment import Equipment
+from app.models.project import Project
+from app.utils.pdf_generator import generate_test_pdf
+from app.utils.email import send_email_with_pdf, get_admin_emails
 
-import os, shutil, json
+import os
+import shutil
+import json
 from datetime import datetime
 
-router = APIRouter(prefix="/formulario/torque", tags=["Formulario Torque"])
+router = APIRouter(prefix="/form/torque", tags=["Form Torque"])
 
 UPLOAD_DIR = "static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-@router.post("/guardar")
-async def guardar_test_torque(
-    proyecto_id: int = Form(...),
-    ubicacion_1: str = Form(...),
-    numero_ubicacion_1: str = Form(...),
-    ubicacion_2: str = Form(None),
-    numero_ubicacion_2: str = Form(None),
-    tipo_equipo: str = Form(...),
-    numero_tipo_equipo: str = Form(...),
-    sub_equipo: str = Form(None),
-    numero_sub_equipo: str = Form(None),
-    tipo_prueba: str = Form(...),
-    cable_sets: int = Form(...),
-    tipo_alimentacion: str = Form(...),
+@router.post("/save")
+async def save_test_torque(
+    project_id: int = Form(...),
+    location_1: str = Form(...),
+    number_location_1: str = Form(...),
+    location_2: str = Form(None),
+    number_location_2: str = Form(None),
+    equipment_type: str = Form(...),
+    number_equipment_type: str = Form(...),
+    sub_equipment: str = Form(None),
+    number_sub_equipment: str = Form(None),
+    test_type: str = Form(...),
+    cable_set: int = Form(...),
+    power_type: str = Form(...),
     terminal: str = Form(None),
-    datos: str = Form(...),
-    imagenes: list[UploadFile] = File(...),
+    data: str = Form(...),
+    images: list[UploadFile] = File(...),
     db: Session = Depends(get_db)
 ):
-    datos_parsed = json.loads(datos)
-    usuario_id = 1  # 🔹 Se integrará autenticación real en el futuro
+    data_parsed = json.loads(data)
+    user_id = 1  # ✅ Will be dynamic in the future
 
-    # ✅ Generar código único del equipo
-    codigo_equipo = f"{ubicacion_1}-{tipo_equipo}-{sub_equipo or 'GEN'}{numero_sub_equipo or ''}".upper()
+    # ✅ Generate unique equipment code
+    equipment_code = f"{location_1}-{equipment_type}-{sub_equipment or 'GEN'}{number_sub_equipment or ''}".upper()
 
-    # ✅ Verificar o crear equipo
-    equipo = db.query(Equipo).filter_by(codigo=codigo_equipo).first()
-    if not equipo:
-        equipo = Equipo(
-            codigo=codigo_equipo,
-            tipo=tipo_equipo,
-            sub_equipo=sub_equipo,
-            proyecto_id=proyecto_id
+    # ✅ Check or create equipment
+    equipment = db.query(Equipment).filter_by(code=equipment_code).first()
+    if not equipment:
+        equipment = Equipment(
+            code=equipment_code,
+            equipment_type=equipment_type,
+            sub_equipment=sub_equipment,
+            project_id=project_id
         )
-        db.add(equipo)
+        db.add(equipment)
         db.commit()
-        db.refresh(equipo)
+        db.refresh(equipment)
 
-    # ✅ Crear test general
-    test = Test(tipo_prueba=tipo_prueba, equipo_id=equipo.id)
+    # ✅ Create general test record
+    test = Test(test_type=test_type, equipment_id=equipment.id)
     db.add(test)
     db.commit()
     db.refresh(test)
 
-    # ✅ Crear test específico de torque
+    # ✅ Create specific torque test
     test_torque = TestTorque(
-        equipo_id=equipo.id,
-        usuario_id=usuario_id,
+        equipment_id=equipment.id,
+        user_id=user_id,
         test_id=test.id
     )
     db.add(test_torque)
     db.commit()
     db.refresh(test_torque)
 
-    # ✅ Guardar resultados (sin parámetros ni lógica de aprobado)
-    imagenes_info = []
-    resultados_pdf = []
+    # ✅ Save results (no parameters or validation logic)
+    images_info = []
+    pdf_results = []
 
-    for i, r in enumerate(datos_parsed):
-        imagen = imagenes[i] if i < len(imagenes) else None
-        filename = f"{codigo_equipo}_{r['punto_prueba']}_{i}.png" if imagen else None
+    for i, r in enumerate(data_parsed):
+        image = images[i] if i < len(images) else None
+        filename = f"{equipment_code}_{r['test_point']}_{i}.png" if image else None
         filepath = None
 
-        if imagen:
+        if image:
             filepath = os.path.join(UPLOAD_DIR, filename)
             with open(filepath, "wb") as buffer:
-                shutil.copyfileobj(imagen.file, buffer)
-            imagenes_info.append({
+                shutil.copyfileobj(image.file, buffer)
+            images_info.append({
                 "cable_set": r.get("cable_set"),
-                "punto_prueba": r["punto_prueba"],
+                "test_point": r["test_point"],
                 "path": filepath
             })
 
-        resultado = ResultadoTorque(
+        result = ResultTorque(
             test_id=test_torque.id,
             cable_set=r.get("cable_set"),
-            punto_prueba=r["punto_prueba"],
-            valor_nominal=float(r.get("valor_nominal", 0)),
-            valor_comprobacion=float(r.get("valor_comprobacion", 0)),
-            resultado_valor=None if r["resultado_valor"] == "N/A" else float(r["resultado_valor"]),
-            unidad=r["unidad"],
-            observaciones=r.get("observaciones"),
-            imagen=filepath
+            test_point=r["test_point"],
+            nominal_value=float(r.get("nominal_value", 0)),
+            check_value=float(r.get("check_value", 0)),
+            result_value=None if r["result_value"] == "N/A" else float(r["result_value"]),
+            unit=r["unit"],
+            observation=r.get("observation"),
+            image=filepath
         )
-        db.add(resultado)
+        db.add(result)
 
-        resultados_pdf.append({
+        pdf_results.append({
             "cable_set": r.get("cable_set"),
-            "punto_prueba": r["punto_prueba"],
-            "valor_nominal": r.get("valor_nominal", 0),
-            "valor_comprobacion": r.get("valor_comprobacion", 0),
-            "resultado_valor": r["resultado_valor"],
-            "unidad": r["unidad"],
-            "observaciones": r.get("observaciones", "")
+            "test_point": r["test_point"],
+            "nominal_value": r.get("nominal_value", 0),
+            "check_value": r.get("check_value", 0),
+            "result_value": r["result_value"],
+            "unit": r["unit"],
+            "observation": r.get("observation", "")
         })
 
     db.commit()
 
-    # ✅ Datos para PDF
-    proyecto = db.query(Proyecto).filter_by(id=proyecto_id).first()
-    detalles_equipo = {
-        "Proyecto": proyecto.nombre,
-        "Ubicación Principal": f"{ubicacion_1} Nº{numero_ubicacion_1}",
-        "Ubicación Secundaria": f"{ubicacion_2} Nº{numero_ubicacion_2}" if ubicacion_2 else "-",
-        "Tipo de Equipo": f"{tipo_equipo} Nº{numero_tipo_equipo}",
-        "Subequipo": f"{sub_equipo} Nº{numero_sub_equipo}" if sub_equipo else "-",
-        "Tipo de Alimentación": tipo_alimentacion,
+    # ✅ Data for PDF
+    project = db.query(Project).filter_by(id=project_id).first()
+    equipment_details = {
+        "Project": project.name,
+        "Main Location": f"{location_1} Nº{number_location_1}",
+        "Secondary Location": f"{location_2} Nº{number_location_2}" if location_2 else "-",
+        "Equipment Type": f"{equipment_type} Nº{number_equipment_type}",
+        "Sub Equipment": f"{sub_equipment} Nº{number_sub_equipment}" if sub_equipment else "-",
+        "Power Type": power_type,
         "Terminal": terminal
     }
 
     test_data = {
-        "equipo_id": codigo_equipo,
-        "tipo_prueba": tipo_prueba,
-        "fecha": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-        "detalles_equipo": detalles_equipo,
-        "imagenes": imagenes_info,
-        "logo_cliente": f"logo_cliente_{proyecto.nombre}.png",
-        "logo_subcontrata": f"logo_subcontrata_{proyecto.nombre}.png",
-        "nombre_usuario": "Técnico"
+        "equipment_id": equipment_code,
+        "test_type": test_type,
+        "date": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+        "equipment_details": equipment_details,
+        "images": images_info,
+        "client_logo": f"logo_client_{project.name}.png",
+        "subcontractor_logo": f"logo_subcontractor_{project.name}.png",
+        "user_name": "Technician"
     }
 
-    # ✅ Generar PDF
-    output_pdf_path = f"output/{tipo_prueba}_{codigo_equipo}.pdf"
+    # ✅ Generate PDF
+    output_pdf_path = f"output/{test_type}_{equipment_code}.pdf"
     os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
-    generar_pdf_test(test_data, resultados_pdf, output_path=output_pdf_path)
+    generate_test_pdf(test_data, pdf_results, output_path=output_pdf_path)
 
-    # ✅ Enviar correo
-    correos_destino = obtener_correos_admins(db, proyecto_id)
-    enviar_correo_con_pdf(
-        destinatarios=correos_destino,
-        asunto=f"{tipo_prueba.capitalize()} - {codigo_equipo}",
-        cuerpo=f"Informe de {tipo_prueba} para el equipo {codigo_equipo}",
-        archivo_pdf=output_pdf_path
+    # ✅ Send email
+    emails = get_admin_emails(db, project_id)
+    send_email_with_pdf(
+        recipients=emails,
+        subject=f"{test_type.capitalize()} - {equipment_code}",
+        body=f"Torque test report for equipment {equipment_code}",
+        pdf_file=output_pdf_path
     )
 
-    return {"mensaje": "Formulario y resultados guardados correctamente"}
+    return {"message": "Form and results saved successfully"}
