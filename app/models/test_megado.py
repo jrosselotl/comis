@@ -3,8 +3,8 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 from datetime import datetime
 
-class TestMegado(Base):
-    __tablename__ = "test_megado"
+class TestIsolation(Base):
+    __tablename__ = "test_isolation"
 
     id = Column(Integer, primary_key=True, index=True)
     equipment_id = Column(Integer, ForeignKey("equipment.id"))
@@ -13,22 +13,24 @@ class TestMegado(Base):
     test_id = Column(Integer, ForeignKey("test.id"))
     date = Column(DateTime, default=datetime.utcnow)
 
-    resultados = relationship("ResultadoMegado", back_populates="test")
+    result = relationship("ResultIsolation", back_populates="test")
     equipment = relationship("Equipment")
-    user = relationship("User", back_populates="tests_megado")
-    project = relationship("Project", back_populates="tests_megado")
+    user = relationship("User", back_populates="test_isolation")
+    project = relationship("Project", back_populates="test_isolation")
 
 
-class ResultadoMegado(Base):
-    __tablename__ = "resultados_megado"
+class ResultIsolation(Base):
+    __tablename__ = "result_isolation"
 
     id = Column(Integer, primary_key=True, index=True)
-    test_id = Column(Integer, ForeignKey("test_megado.id"))
-    punto = Column(String, nullable=False)
-    resultado_valor = Column(Float, nullable=True)
-    unidad = Column(String, nullable=False)
-    observaciones = Column(String, nullable=True)
-    imagen = Column(String, nullable=True)
+    test_id = Column(Integer, ForeignKey("test_isolation.id"))
+    test_point = Column(String, nullable=False)
+    result_value = Column(Float, nullable=True)
+    unit = Column(String, nullable=False)
+    observation = Column(String, nullable=True)
+    image_url = Column(String, nullable=True)
     cable_set = Column(Integer, nullable=True)
+    applied_time = Column(Float, nullable=True)
+    power_type = Column(String(50), nullable=True)
 
-    test = relationship("TestMegado", back_populates="resultados")
+    test = relationship("TestIsolation", back_populates="result")
