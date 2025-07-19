@@ -1,41 +1,40 @@
-ipmentfrom datetime import datetime
+from datetime import datetime
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from app.database import Base
 
 
-class Equipo(Base):
+class Equipment(Base):
     __tablename__ = "equipment"
 
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
 
-    # 🔹 Ahora Foreign Keys hacia las nuevas tablas dinámicas
-    ubicacion_1_id = Column(Integer, ForeignKey("location.id"), nullable=False)
-    ubicacion_2_id = Column(Integer, ForeignKey("location.id"), nullable=True)
+    location_1_id = Column(Integer, ForeignKey("location.id"), nullable=False)
+    location_2_id = Column(Integer, ForeignKey("location.id"), nullable=True)
 
-    tipo_equipo_id = Column(Integer, ForeignKey("tipo_equipos.id"), nullable=False)
-    sub_equipo_id = Column(Integer, ForeignKey("tipo_equipos.id"), nullable=True)
+    equipment_type_id = Column(Integer, ForeignKey("equipment_type.id"), nullable=False)
+    sub_equipment_type_id = Column(Integer, ForeignKey("equipment_type.id"), nullable=True)
 
-    numero_ubicacion_1 = Column(Integer, nullable=False, default=1)
-    numero_ubicacion_2 = Column(Integer, nullable=True)
-    numero_tipo_equipo = Column(Integer, nullable=False, default=1)
-    numero_sub_equipo = Column(Integer, nullable=True)
+    location_1_number = Column(Integer, nullable=False, default=1)
+    location_2_number = Column(Integer, nullable=True)
+    equipment_type_number = Column(Integer, nullable=False, default=1)
+    sub_equipment_type_number = Column(Integer, nullable=True)
 
     terminal = Column(String(50), nullable=True)
-    tipo_alimentacion = Column(String(50), nullable=True)
+    power_type = Column(String(50), nullable=True)  # antes "tipo_alimentacion"
     cable_set = Column(Integer, nullable=True)
-    codigo = Column(String(100), unique=True, nullable=False)
-    fecha_creacion = Column(DateTime, default=datetime.utcnow)
+    code = Column(String(100), unique=True, nullable=False)  # antes "codigo"
+    created_at = Column(DateTime, default=datetime.utcnow)  # antes "fecha_creacion"
 
-    # Relaciones
+    # ✅ Relationships
     project = relationship("Project", back_populates="equipment")
-    ubicacion_1 = relationship("Location", foreign_keys=[ubicacion_1_id])
-    ubicacion_2 = relationship("Location", foreign_keys=[ubicacion_2_id])
-    tipo_equipo = relationship("TipoEquipo", foreign_keys=[tipo_equipo_id])
-    sub_equipo = relationship("TipoEquipo", foreign_keys=[sub_equipo_id])
+    location_1 = relationship("Location", foreign_keys=[location_1_id])
+    location_2 = relationship("Location", foreign_keys=[location_2_id])
+    equipment_type = relationship("EquipmentType", foreign_keys=[equipment_type_id])
+    sub_equipment_type = relationship("EquipmentType", foreign_keys=[sub_equipment_type_id])
 
-    tests_continuidad = relationship("TestContinuidad", back_populates="equipment")
-    tests_megado = relationship("TestMegado", back_populates="equipment")
-    tests_contact_resistance = relationship("TestContactResistance", back_populates="equipment")
-    tests_torque = relationship("TestTorque", back_populates="equipment")
+    test_continuity = relationship("TestContinuity", back_populates="equipment")
+    test_isolation = relationship("TestIsolation", back_populates="equipment")
+    test_contact_resistance = relationship("TestContactResistance", back_populates="equipment")
+    test_torque = relationship("TestTorque", back_populates="equipment")
