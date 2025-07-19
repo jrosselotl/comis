@@ -6,16 +6,16 @@ class TestContactResistance(Base):
     __tablename__ = "tests_contact_resistance"
 
     id = Column(Integer, primary_key=True, index=True)
-    test_id = Column(Integer, ForeignKey("tests.id"), nullable=False)
-    proyecto_id = Column(Integer, ForeignKey("proyectos.id"))
-    equipo_id = Column(Integer, ForeignKey("equipos.id"))
+    test_id = Column(Integer, ForeignKey("test.id"), nullable=False)
+    project_id = Column(Integer, ForeignKey("project.id"))
+    equipment_id = Column(Integer, ForeignKey("equipment.id"))
     tipo_alimentacion = Column(String, nullable=False)
-    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
+    user_id = Column(Integer, ForeignKey("user.id"))
 
     resultados = relationship("ResultadoContactResistance", back_populates="test")
-    project = relationship("Proyecto", back_populates="tests_contact_resistance")
-    equipment = relationship("Equipo", back_populates="tests_contact_resistance")
-    usuario = relationship("Usuario", back_populates="tests_contact_resistance")
+    project = relationship("Project", back_populates="tests_contact_resistance")
+    equipment = relationship("Equipment", back_populates="tests_contact_resistance")
+    user= relationship("User", back_populates="tests_contact_resistance")
 
 class ResultadoContactResistance(Base):
     __tablename__ = "resultados_contact_resistance"
