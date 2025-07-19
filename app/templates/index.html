@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Panel de Pruebas Eléctricas</title>
+  <title>Electrical Test Panel</title>
   <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
@@ -11,120 +11,120 @@
   <div class="sidebar">
     <h2>Panel</h2>
     <button id="btn-dashboard">📊 Dashboard</button>
-    <button id="btn-mytests">📂 My Tests</button>
+    <button id="btn-mytest">📂 My Test</button>
     <button id="btn-newtest">➕ New Test</button>
-    <a href="/logout" class="logout-btn">Cerrar Sesión</a>
+    <a href="/logout" class="logout-btn">Log out</a>
   </div>
 
-  <!-- Contenido principal -->
+  <!-- Main Content -->
   <div class="content">
 
     <!-- ✅ DASHBOARD -->
     <div id="section-dashboard">
-      <h2>Estadísticas de Pruebas</h2>
-      <canvas id="grafico-tests" width="400" height="200"></canvas>
+      <h2>Test Statistics</h2>
+      <canvas id="chart-test" width="400" height="200"></canvas>
     </div>
 
-    <!-- ✅ MY TEST LIST -->
-    <div id="section-mytests" class="hidden">
-      <h2>My test list</h2>
-      <table class="tabla-tests">
+    <!-- ✅ MY TEST -->
+    <div id="section-mytest" class="hidden">
+      <h2>My Test</h2>
+      <table class="table-test">
         <thead>
           <tr>
-            <th>Equipment asset</th>
-            <th>Test name</th>
+            <th>Equipment</th>
+            <th>Test Name</th>
             <th>Date</th>
             <th>Status</th>
-            <th>Actions buttons</th>
+            <th>Action</th>
           </tr>
         </thead>
-        <tbody id="tabla-mytests"></tbody>
+        <tbody id="table-mytest"></tbody>
       </table>
     </div>
 
     <!-- ✅ NEW TEST -->
     <div id="section-newtest" class="hidden">
-      <form id="formulario-pruebas" enctype="multipart/form-data">
-        <!-- Paso 1: Datos del equipo -->
+      <form id="form-test" enctype="multipart/form-data">
+        <!-- Step 1: Equipment Data -->
         <fieldset>
-          <legend>1. Datos del Equipo</legend>
+          <legend>1. Equipment Data</legend>
 
-          <label>Proyecto:
-            <select id="proyecto_id" name="proyecto_id" required></select>
+          <label>Project:
+            <select id="project_id" name="project_id" required></select>
           </label>
 
-          <label>Ubicación Principal:
+          <label>Main Location:
             <div class="field-group">
-              <select id="ubicacion_1" name="ubicacion_1" required></select>
-              <select id="numero_ubicacion_1" name="numero_ubicacion_1" required></select>
+              <select id="location_1" name="location_1" required></select>
+              <select id="number_location_1" name="number_location_1" required></select>
             </div>
           </label>
 
-          <div id="label-ubicacion_2" style="display:none;">
-            <label>Ubicación secundaria:</label>
+          <div id="label-location_2" style="display:none;">
+            <label>Secondary Location:</label>
             <div class="field-group">
-              <select id="ubicacion_2" name="ubicacion_2"></select>
-              <select id="numero_ubicacion_2" name="numero_ubicacion_2"></select>
+              <select id="location_2" name="location_2"></select>
+              <select id="number_location_2" name="number_location_2"></select>
             </div>
           </div>
 
-          <label>Tipo de equipo:
+          <label>Equipment Type:
             <div class="field-group">
-              <select id="tipo_equipo" name="tipo_equipo" required></select>
-              <select id="numero_tipo_equipo" name="numero_tipo_equipo" required></select>
+              <select id="equipment_type" name="equipment_type" required></select>
+              <select id="number_equipment_type" name="number_equipment_type" required></select>
             </div>
           </label>
 
-          <label id="label-sub_equipo" style="display:none;">Sub-equipo:
+          <label id="label-sub_equipment" style="display:none;">Sub Equipment:
             <div class="field-group">
-              <select id="sub_equipo" name="sub_equipo"></select>
-              <select id="numero_sub_equipo" name="numero_sub_equipo"></select>
+              <select id="sub_equipment" name="sub_equipment"></select>
+              <select id="number_sub_equipment" name="number_sub_equipment"></select>
             </div>
           </label>
 
           <label>Terminal:
-            <input type="text" id="terminal" name="terminal" placeholder="Nº Terminal" />
+            <input type="text" id="terminal" name="terminal" placeholder="Terminal Nº" />
           </label>
         </fieldset>
 
-        <!-- Paso 2: Tipo de prueba -->
+        <!-- Step 2: Test Type -->
         <fieldset>
-          <legend>2. Tipo de prueba</legend>
-          <label>Tipo de prueba:
-            <select id="tipo-prueba" name="tipo_prueba" required>
-              <option value="">Seleccione prueba...</option>
+          <legend>2. Test Type</legend>
+          <label>Test Type:
+            <select id="test-type" name="test_type" required>
+              <option value="">Select test...</option>
             </select>
           </label>
         </fieldset>
 
-        <!-- Paso 3: Características -->
-        <fieldset id="bloque-caracteristicas" style="display:none;">
-          <legend>3. Características</legend>
+        <!-- Step 3: Features -->
+        <fieldset id="block-features" style="display:none;">
+          <legend>3. Features</legend>
 
-          <label for="cable_sets">Cable Sets:
+          <label for="cable_sets">Cable Set:
             <input type="number" id="cable_sets" name="cable_sets" min="1" value="1" required />
           </label>
 
-          <label>Tipo de alimentación:
-            <select id="tipo_alimentacion" name="tipo_alimentacion" required>
-              <option value="trifasica">Trifásica (L1, L2, L3, N, PE)</option>
-              <option value="monofasica">Monofásica (L, N, PE)</option>
+          <label>Power Type:
+            <select id="power_type" name="power_type" required>
+              <option value="trifasica">Three-phase (L1, L2, L3, N, PE)</option>
+              <option value="monofasica">Single-phase (L, N, PE)</option>
             </select>
           </label>
 
-          <label id="label-unidad">Unidad:
-            <select id="unidad" name="unidad"></select>
+          <label id="label-unit">Unit:
+            <select id="unit" name="unit"></select>
           </label>
         </fieldset>
 
-        <!-- Paso 4: Resultados -->
-        <fieldset id="bloque-resultados" style="display:none;">
-          <legend>4. Resultados de la prueba</legend>
-          <div id="contenedor-resultados"></div>
+        <!-- Step 4: Test Result -->
+        <fieldset id="block-results" style="display:none;">
+          <legend>4. Test Result</legend>
+          <div id="container-results"></div>
         </fieldset>
 
-        <button type="submit" class="btn-guardar">Guardar</button>
-        <button type="button" id="btn-enviar-pdf" class="btn-enviar hidden">Enviar PDF</button>
+        <button type="submit" class="btn-save">Save</button>
+        <button type="button" id="btn-send-pdf" class="btn-send hidden">Send PDF</button>
       </form>
     </div>
 
@@ -137,7 +137,7 @@
   <script src="/static/js/formulario_megado.js"></script>
   <script src="/static/js/formulario_contact_resistance.js"></script>
   <script src="/static/js/formulario_torque.js"></script>
-  <script src="/static/js/cargar_formulario.js"></script>
-  <script src="/static/js/unidades_por_test.js"></script>
+  <script src="/static/js/load_form.js"></script>
+  <script src="/static/js/unit_by_test.js"></script>
 </body>
 </html>
