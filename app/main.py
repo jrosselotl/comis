@@ -56,7 +56,7 @@ async def render_index(request: Request, db: Session = Depends(get_db)):
     if not user_id:
         return RedirectResponse(url="/login", status_code=302)
 
-    user = db.query(Usuario).filter_by(id=user_id).first()
+    user = db.query(User).filter_by(id=user_id).first()
     if not user:
         request.session.clear()
         return RedirectResponse(url="/login", status_code=302)
@@ -73,7 +73,7 @@ async def render_admin(request: Request, db: Session = Depends(get_db)):
     if not user_id:
         return RedirectResponse(url="/login", status_code=302)
 
-    user = db.query(Usuario).filter_by(id=user_id).first()
+    user = db.query(User).filter_by(id=user_id).first()
     if not user or user.rol != "project":
         return RedirectResponse(url="/login", status_code=302)
 
