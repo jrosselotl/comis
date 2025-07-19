@@ -7,36 +7,36 @@ document.addEventListener("DOMContentLoaded", () => {
   const sectionMyTests = document.getElementById("section-mytests");
   const sectionNewTest = document.getElementById("section-newtest");
 
-  const tablaMyTests = document.getElementById("tabla-mytests");
-  const graficoCanvas = document.getElementById("grafico-tests");
+  const tableMyTests = document.getElementById("tabla-mytests");
+  const chartCanvas = document.getElementById("grafico-tests");
 
-  // ✅ Mostrar solo una sección
-  function sectionShow(section) {
+  // ✅ Show only one section
+  function showSection(section) {
     [sectionDashboard, sectionMyTests, sectionNewTest].forEach((s) =>
       s.classList.add("hidden")
     );
-    seccion.classList.remove("hidden");
+    section.classList.remove("hidden");
   }
 
-  // ✅ Cargar gráfico dinámico desde backend
-  async function cargarGrafico() {
-    if (!graficoCanvas) return;
+  // ✅ Load dynamic chart from backend
+  async function loadChart() {
+    if (!chartCanvas) return;
 
     try {
-      const res = await fetch("/test_realizados/estadisticas_usuario/1"); // Usuario logueado (mock id=1)
-      const datos = await res.json();
+      const res = await fetch("/test_done/user_stats/1"); // Logged user (mock id=1)
+      const data = await res.json();
 
-      const tipos = Object.keys(datos);
-      const cantidades = Object.values(datos);
+      const types = Object.keys(data);
+      const quantities = Object.values(data);
 
-      new Chart(graficoCanvas, {
+      new Chart(chartCanvas, {
         type: "bar",
         data: {
-          labels: tipos,
+          labels: types,
           datasets: [
             {
-              label: "Tests realizados",
-              data: cantidades,
+              label: "Completed Tests",
+              data: quantities,
               backgroundColor: ["#3498db", "#9b59b6", "#e67e22", "#27ae60"],
             },
           ],
@@ -47,86 +47,86 @@ document.addEventListener("DOMContentLoaded", () => {
         },
       });
     } catch (error) {
-      console.error("Error cargando estadísticas:", error);
+      console.error("Error loading stats:", error);
     }
   }
 
-  // ✅ Cargar My Tests dinámico desde backend
-  async function cargarMyTests() {
-    tablaMyTests.innerHTML = "";
+  // ✅ Load My Tests dynamically from backend
+  async function loadMyTests() {
+    tableMyTests.innerHTML = "";
     try {
-      const res = await fetch("/test_realizados/listar_usuario/1"); // Usuario logueado (mock id=1)
+      const res = await fetch("/test_done/list_user/1"); // Logged user (mock id=1)
       const tests = await res.json();
 
       tests.forEach((t) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${t.id}</td>
-          <td>${t.tipo_prueba}</td>
-          <td>${t.equipo}</td>
-          <td>${new Date(t.fecha).toLocaleDateString()}</td>
-          <td>${t.estado}</td>
+          <td>${t.test_type}</td>
+          <td>${t.equipment}</td>
+          <td>${new Date(t.date).toLocaleDateString()}</td>
+          <td>${t.status}</td>
           <td>
             ${
-              t.estado === "Incompleto"
-                ? `<button class="btn btn-continuar" data-id="${t.id}">Continuar</button>`
+              t.status === "Incomplete"
+                ? `<button class="btn btn-continue" data-id="${t.id}">Continue</button>`
                 : ""
             }
             ${
-              t.estado === "Completo"
-                ? `<button class="btn btn-enviar" data-id="${t.id}">Enviar</button>`
+              t.status === "Complete"
+                ? `<button class="btn btn-send" data-id="${t.id}">Send</button>`
                 : ""
             }
           </td>
         `;
-        tablaMyTests.appendChild(tr);
+        tableMyTests.appendChild(tr);
       });
 
-      // ✅ Eventos para botones
-      document.querySelectorAll(".btn-continuar").forEach((btn) => {
+      // ✅ Events for buttons
+      document.querySelectorAll(".btn-continue").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
           const id = e.target.dataset.id;
-          alert(`Cargar formulario para continuar test ID ${id}...`);
-          // TODO: Cargar datos en el formulario según test_id
-          mostrarSeccion(sectionNewTest);
+          alert(`Loading form to continue test ID ${id}...`);
+          // TODO: Load data into the form by test_id
+          showSection(sectionNewTest);
         });
       });
 
-      document.querySelectorAll(".btn-enviar").forEach((btn) => {
+      document.querySelectorAll(".btn-send").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
           const id = e.target.dataset.id;
           if (
-            confirm(`¿Deseas enviar el PDF por correo para el test ID ${id}?`)
+            confirm(`Do you want to send the PDF by email for test ID ${id}?`)
           ) {
-            const resp = await fetch(`/test_realizados/enviar_pdf/${id}`, {
+            const resp = await fetch(`/test_done/send_pdf/${id}`, {
               method: "POST",
             });
             const data = await resp.json();
-            alert(data.mensaje || "PDF enviado correctamente.");
+            alert(data.message || "PDF sent successfully.");
           }
         });
       });
     } catch (error) {
-      console.error("Error cargando mis tests:", error);
+      console.error("Error loading my tests:", error);
     }
   }
 
-  // ✅ Eventos Sidebar
+  // ✅ Sidebar events
   btnDashboard.addEventListener("click", () => {
-    mostrarSeccion(sectionDashboard);
-    cargarGrafico();
+    showSection(sectionDashboard);
+    loadChart();
   });
 
   btnMyTests.addEventListener("click", () => {
-    mostrarSeccion(sectionMyTests);
-    cargarMyTests();
+    showSection(sectionMyTests);
+    loadMyTests();
   });
 
   btnNewTest.addEventListener("click", () => {
-    mostrarSeccion(sectionNewTest);
+    showSection(sectionNewTest);
   });
 
-  // ✅ Mostrar Dashboard al inicio
-  mostrarSeccion(sectionDashboard);
-  cargarGrafico();
+  // ✅ Show Dashboard on start
+  showSection(sectionDashboard);
+  loadChart();
 });
