@@ -79,7 +79,7 @@ function initFormularioTorque(tipoAlimentacion) {
         const datos = [];
         const imagenes = [];
 
-        const proyecto_id = document.getElementById("proyecto_id").value;
+        const project_id = document.getElementById("project_id").value;
         const ubicacion_1 = document.getElementById("ubicacion_1").value;
         const numero_ubicacion_1 = document.getElementById("numero_ubicacion_1").value;
         const ubicacion_2 = document.getElementById("ubicacion_2")?.value || "";
@@ -114,7 +114,7 @@ function initFormularioTorque(tipoAlimentacion) {
         }
 
         const formData = new FormData();
-        formData.append("proyecto_id", proyecto_id);
+        formData.append("project_id", project_id);
         formData.append("ubicacion_1", ubicacion_1);
         formData.append("numero_ubicacion_1", numero_ubicacion_1);
         formData.append("ubicacion_2", ubicacion_2);
