@@ -7,16 +7,16 @@ class TestContinuidad(Base):
     __tablename__ = "test_continuidad"
 
     id = Column(Integer, primary_key=True, index=True)
-    equipo_id = Column(Integer, ForeignKey("equipos.id"))
-    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
-    proyecto_id = Column(Integer, ForeignKey("proyectos.id"))
-    test_id = Column(Integer, ForeignKey("tests.id"))
-    fecha = Column(DateTime, default=datetime.utcnow)
+    equipment_id = Column(Integer, ForeignKey("equipment.id"))
+    user_id = Column(Integer, ForeignKey("user.id"))
+    project_id = Column(Integer, ForeignKey("project.id"))
+    test_id = Column(Integer, ForeignKey("test.id"))
+    date = Column(DateTime, default=datetime.utcnow)
 
     resultados = relationship("ResultadoContinuidad", back_populates="test")
-    equipo = relationship("Equipo")
-    usuario = relationship("Usuario", back_populates="tests_continuidad")
-    proyecto = relationship("Proyecto", back_populates="tests_continuidad")
+    equipment = relationship("Equipment")
+    user = relationship("User", back_populates="tests_continuidad")
+    project = relationship("Project", back_populates="tests_continuidad")
 
 class ResultadoContinuidad(Base):
     __tablename__ = "resultados_continuidad"
