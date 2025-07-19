@@ -7,16 +7,16 @@ class TestMegado(Base):
     __tablename__ = "test_megado"
 
     id = Column(Integer, primary_key=True, index=True)
-    equipo_id = Column(Integer, ForeignKey("equipos.id"))
-    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
-    proyecto_id = Column(Integer, ForeignKey("proyectos.id"))
-    test_id = Column(Integer, ForeignKey("tests.id"))
-    fecha = Column(DateTime, default=datetime.utcnow)
+    equipment_id = Column(Integer, ForeignKey("equipment.id"))
+    user_id = Column(Integer, ForeignKey("user.id"))
+    project_id = Column(Integer, ForeignKey("project.id"))
+    test_id = Column(Integer, ForeignKey("test.id"))
+    date = Column(DateTime, default=datetime.utcnow)
 
     resultados = relationship("ResultadoMegado", back_populates="test")
-    equipo = relationship("Equipo")
-    usuario = relationship("Usuario", back_populates="tests_megado")
-    proyecto = relationship("Proyecto", back_populates="tests_megado")
+    equipment = relationship("Equipo")
+    user = relationship("Usuario", back_populates="tests_megado")
+    project = relationship("Proyecto", back_populates="tests_megado")
 
 
 class ResultadoMegado(Base):
