@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.test_contact_resistance import TestContactResistance, ResultadoContactResistance
 from app.models.test import Test
-from app.models.equipo import Equipo
-from app.models.proyecto import Proyecto
+from app.models.equipo import Equipment
+from app.models.proyecto import Project
 from app.utils.pdf_generator import generar_pdf_test
 from app.utils.correo import enviar_correo_con_pdf, obtener_correos_admins
 
@@ -18,7 +18,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/guardar")
 async def guardar_test_contact_resistance(
-    proyecto_id: int = Form(...),
+    project_id: int = Form(...),
     ubicacion_1: str = Form(...),
     numero_ubicacion_1: str = Form(...),
     ubicacion_2: str = Form(None),
@@ -36,7 +36,7 @@ async def guardar_test_contact_resistance(
     db: Session = Depends(get_db)
 ):
     datos_parsed = json.loads(datos)
-    usuario_id = 1  # 🔹 Se integrará autenticación real en el futuro
+    user_id = 1  # 🔹 Se integrará autenticación real en el futuro
 
     # ✅ Generar código único del equipo
     codigo_equipo = f"{ubicacion_1}-{tipo_equipo}-{sub_equipo or 'GEN'}{numero_sub_equipo or ''}".upper()
@@ -55,15 +55,15 @@ async def guardar_test_contact_resistance(
         db.refresh(equipo)
 
     # ✅ Crear registro en tabla general de tests
-    test = Test(tipo_prueba=tipo_prueba, equipo_id=equipo.id)
+    test = Test(tipo_prueba=tipo_prueba, equipment_id=equipment.id)
     db.add(test)
     db.commit()
     db.refresh(test)
 
     # ✅ Crear test específico de contact resistance
     test_contact = TestContactResistance(
-        equipo_id=equipo.id,
-        usuario_id=usuario_id,
+        equipment_id=equipment.id,
+        user_id=user_id,
         test_id=test.id
     )
     db.add(test_contact)
@@ -113,7 +113,7 @@ async def guardar_test_contact_resistance(
     # ✅ Datos para PDF
     proyecto = db.query(Proyecto).filter_by(id=proyecto_id).first()
     detalles_equipo = {
-        "Proyecto": proyecto.nombre,
+        "Proyecto": project.nombre,
         "Ubicación Principal": f"{ubicacion_1} Nº{numero_ubicacion_1}",
         "Ubicación Secundaria": f"{ubicacion_2} Nº{numero_ubicacion_2}" if ubicacion_2 else "-",
         "Tipo de Equipo": f"{tipo_equipo} Nº{numero_tipo_equipo}",
@@ -123,9 +123,9 @@ async def guardar_test_contact_resistance(
     }
 
     test_data = {
-        "equipo_id": codigo_equipo,
+        "equipment_id": codigo_equipo,
         "tipo_prueba": tipo_prueba,
-        "fecha": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+        "date": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
         "detalles_equipo": detalles_equipo,
         "imagenes": imagenes_info,
         "logo_cliente": f"logo_cliente_{proyecto.nombre}.png",
@@ -139,7 +139,7 @@ async def guardar_test_contact_resistance(
     generar_pdf_test(test_data, resultados_pdf, output_path=output_pdf_path)
 
     # ✅ Enviar correo
-    correos_destino = obtener_correos_admins(db, proyecto_id)
+    correos_destino = obtener_correos_admins(db, project_id)
     enviar_correo_con_pdf(
         destinatarios=correos_destino,
         asunto=f"{tipo_prueba.capitalize()} - {codigo_equipo}",
