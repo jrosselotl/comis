@@ -6,7 +6,7 @@ from app.models.test import Test
 from app.models.equipment import Equipment
 from app.models.project import Project
 from app.utils.pdf_generator import generate_test_pdf
-from app.utils.mail import send_email_with_pdf, get_admin_emails
+from app.utils.email import send_email_with_pdf, get_admin_emails
 
 import os, shutil, json
 from datetime import datetime
