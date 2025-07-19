@@ -6,16 +6,16 @@ class TestTorque(Base):
     __tablename__ = "tests_torque"
 
     id = Column(Integer, primary_key=True, index=True)
-    test_id = Column(Integer, ForeignKey("tests.id"), nullable=False)
-    proyecto_id = Column(Integer, ForeignKey("proyectos.id"))
-    equipo_id = Column(Integer, ForeignKey("equipos.id"))
+    test_id = Column(Integer, ForeignKey("test.id"), nullable=False)
+    project_id = Column(Integer, ForeignKey("project.id"))
+    equipment_id = Column(Integer, ForeignKey("equipment.id"))
     tipo_alimentacion = Column(String, nullable=True)
-    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
+    user_id = Column(Integer, ForeignKey("user.id"))
 
     resultados = relationship("ResultadoTorque", back_populates="test")
-    proyecto = relationship("Proyecto", back_populates="tests_torque")
-    equipo = relationship("Equipo", back_populates="tests_torque")
-    usuario = relationship("Usuario", back_populates="tests_torque")
+    project = relationship("Project", back_populates="tests_torque")
+    equipment = relationship("Equipment", back_populates="tests_torque")
+    user = relationship("User", back_populates="tests_torque")
 
 
 class ResultadoTorque(Base):
