@@ -128,8 +128,8 @@ async def guardar_test_contact_resistance(
         "date": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
         "detalles_equipo": detalles_equipo,
         "imagenes": imagenes_info,
-        "logo_cliente": f"logo_cliente_{proyecto.nombre}.png",
-        "logo_subcontrata": f"logo_subcontrata_{proyecto.nombre}.png",
+        "logo_cliente": f"logo_cliente_{project.nombre}.png",
+        "logo_subcontrata": f"logo_subcontrata_{project.nombre}.png",
         "nombre_usuario": "Técnico"
     }
 
