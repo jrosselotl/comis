@@ -1,34 +1,37 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from app.database import Base
 
+
 class TestContactResistance(Base):
-    __tablename__ = "tests_contact_resistance"
+    __tablename__ = "test_contact_resistance"
 
     id = Column(Integer, primary_key=True, index=True)
     test_id = Column(Integer, ForeignKey("test.id"), nullable=False)
     project_id = Column(Integer, ForeignKey("project.id"))
     equipment_id = Column(Integer, ForeignKey("equipment.id"))
-    tipo_alimentacion = Column(String, nullable=False)
+    power_type = Column(String, nullable=False)  # tipo_alimentacion → power_type
     user_id = Column(Integer, ForeignKey("user.id"))
     date = Column(DateTime, default=datetime.utcnow)
 
-    resultados = relationship("ResultadoContactResistance", back_populates="test")
-    project = relationship("Project", back_populates="tests_contact_resistance")
-    equipment = relationship("Equipment", back_populates="tests_contact_resistance")
-    user= relationship("User", back_populates="tests_contact_resistance")
+    result = relationship("ResultContactResistance", back_populates="test")
+    project = relationship("Project", back_populates="test_contact_resistance")
+    equipment = relationship("Equipment", back_populates="test_contact_resistance")
+    user = relationship("User", back_populates="test_contact_resistance")
 
-class ResultadoContactResistance(Base):
-    __tablename__ = "resultados_contact_resistance"
+
+class ResultContactResistance(Base):
+    __tablename__ = "result_contact_resistance"
 
     id = Column(Integer, primary_key=True, index=True)
-    test_id = Column(Integer, ForeignKey("tests_contact_resistance.id"), nullable=False)
+    test_id = Column(Integer, ForeignKey("test_contact_resistance.id"), nullable=False)
     cable_set = Column(Integer, nullable=False)
-    punto_prueba = Column(String, nullable=False)
-    referencia_valor = Column(String, nullable=False)
-    resultado_valor = Column(String, nullable=True)
-    unidad = Column(String, nullable=False)
-    observaciones = Column(String, nullable=True)
-    imagen = Column(String, nullable=True)
+    cable_point = Column(String, nullable=False)  # punto_prueba → cable_point
+    reference_value = Column(String, nullable=False)  # referencia_valor → reference_value
+    result_value = Column(String, nullable=True)  # resultado_valor → result_value
+    unit = Column(String, nullable=False)  # unidad → unit
+    observation = Column(String, nullable=True)  # observaciones → observation
+    image = Column(String, nullable=True)  # imagen → image
 
-    test = relationship("TestContactResistance", back_populates="resultados")
+    test = relationship("TestContactResistance", back_populates="result")
