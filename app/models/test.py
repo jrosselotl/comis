@@ -6,5 +6,5 @@ class Test(Base):
     __tablename__ = "test"
 
     id = Column(Integer, primary_key=True, index=True)
-    nombre = Column(String(100), nullable=False, unique=True)
+    name = Column(String(100), nullable=False, unique=True)
 
