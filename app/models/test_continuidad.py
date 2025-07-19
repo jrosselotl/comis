@@ -3,8 +3,8 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 from datetime import datetime
 
-class TestContinuidad(Base):
-    __tablename__ = "test_continuidad"
+class TestContinuity(Base):
+    __tablename__ = "test_continuity"
 
     id = Column(Integer, primary_key=True, index=True)
     equipment_id = Column(Integer, ForeignKey("equipment.id"))
@@ -13,21 +13,22 @@ class TestContinuidad(Base):
     test_id = Column(Integer, ForeignKey("test.id"))
     date = Column(DateTime, default=datetime.utcnow)
 
-    resultados = relationship("ResultadoContinuidad", back_populates="test")
+    result = relationship("ResultContinuity", back_populates="test")
     equipment = relationship("Equipment")
-    user = relationship("User", back_populates="tests_continuidad")
-    project = relationship("Project", back_populates="tests_continuidad")
+    user = relationship("User", back_populates="test_continuity")
+    project = relationship("Project", back_populates="test_continuity")
 
-class ResultadoContinuidad(Base):
-    __tablename__ = "resultados_continuidad"
+
+class ResultContinuity(Base):
+    __tablename__ = "result_continuity"
 
     id = Column(Integer, primary_key=True, index=True)
-    test_id = Column(Integer, ForeignKey("test_continuidad.id"))
-    punto = Column(String, nullable=False)
-    resultado_valor = Column(Float, nullable=True)
-    unidad = Column(String, nullable=False)
-    observaciones = Column(String, nullable=True)
-    imagen = Column(String, nullable=True)
+    test_id = Column(Integer, ForeignKey("test_continuity.id"))
+    test_point = Column(String, nullable=False)
+    result_value = Column(Float, nullable=True)
+    unit = Column(String, nullable=False)
+    observation = Column(String, nullable=True)
+    image_url = Column(String, nullable=True)
     cable_set = Column(Integer, nullable=True)
 
-    test = relationship("TestContinuidad", back_populates="resultados")
+    test = relationship("TestContinuity", back_populates="result")
