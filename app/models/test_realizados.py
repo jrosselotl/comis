@@ -3,8 +3,8 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 from datetime import datetime
 
-class TestRealizado(Base):
-    __tablename__ = "test_realizados"
+class TestPerformed(Base):
+    __tablename__ = "test_performed"
 
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("project.id", ondelete="CASCADE"))
@@ -12,8 +12,8 @@ class TestRealizado(Base):
     user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"))
     test_id = Column(Integer, ForeignKey("test.id", ondelete="CASCADE"))
     date = Column(DateTime, default=datetime.utcnow)
-    estado = Column(String(50), default="Incompleto")
+    status = Column(String(50), default="Incomplete")
 
-    projet = relationship("Project")
+    project = relationship("Project")
     equipment = relationship("Equipment")
     user = relationship("User")
