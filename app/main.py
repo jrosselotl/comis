@@ -9,30 +9,29 @@ from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session
 from starlette.templating import Jinja2Templates
 
-# Base de datos y modelos
+# Database and models
 from app.database import get_db
 from app.models.usuario import Usuario
 
-# Routers principales
+# Main routers
 from app.routes import (
     auth,
-    usuarios,
-    proyectos,
-    equipos,
-    tests,
-    continuidad,
-    megado,
-    formulario,
+    user,
+    project,
+    equipment,
+    test,
+    continuity,
+    isolation,
     contact_resistance,
     torque,
-    test_realizados,      # ✅ NUEVO (dashboard y my tests)
-    ubicaciones,          # ✅ NUEVO (poblar dropdowns dinámicos)
-    tipo_equipos          # ✅ NUEVO (poblar dropdowns dinámicos)
+    test_performed,     # ✅ Dashboard and My Tests
+    location,           # ✅ Dynamic dropdowns for locations
+    equipment_type      # ✅ Dynamic dropdowns for equipment
 )
 
 app = FastAPI()
 
-# Middleware de sesiones y CORS
+# Session and CORS middleware
 app.add_middleware(SessionMiddleware, secret_key="w97k8Zj9B4fD1VmL3zXeT5GqNpHs0YuA")
 app.add_middleware(
     CORSMiddleware,
@@ -42,61 +41,60 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Directorios base
+# Base directories
 BASE_DIR = pathlib.Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 TEMPLATES_DIR = BASE_DIR / "templates"
 
-# Configuración de Jinja2
+# Jinja2 configuration
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
-# Página raíz: redirige según el rol del usuario
+# Root page: redirect based on user role
 @app.get("/", response_class=HTMLResponse)
 async def render_index(request: Request, db: Session = Depends(get_db)):
-    usuario_id = request.session.get("usuario_id")
-    if not usuario_id:
+    user_id = request.session.get("user_id")
+    if not user_id:
         return RedirectResponse(url="/login", status_code=302)
 
-    usuario = db.query(Usuario).filter_by(id=usuario_id).first()
-    if not usuario:
+    user = db.query(Usuario).filter_by(id=user_id).first()
+    if not user:
         request.session.clear()
         return RedirectResponse(url="/login", status_code=302)
 
-    if usuario.rol == "proyecto":
+    if user.rol == "project":
         return RedirectResponse(url="/admin", status_code=302)
 
     return templates.TemplateResponse("index.html", {"request": request})
 
-# Página para usuarios con rol "proyecto"
+# Page for users with "project" role
 @app.get("/admin", response_class=HTMLResponse)
 async def render_admin(request: Request, db: Session = Depends(get_db)):
-    usuario_id = request.session.get("usuario_id")
-    if not usuario_id:
+    user_id = request.session.get("user_id")
+    if not user_id:
         return RedirectResponse(url="/login", status_code=302)
 
-    usuario = db.query(Usuario).filter_by(id=usuario_id).first()
-    if not usuario or usuario.rol != "proyecto":
+    user = db.query(Usuario).filter_by(id=user_id).first()
+    if not user or user.rol != "project":
         return RedirectResponse(url="/login", status_code=302)
 
     return templates.TemplateResponse("index_admin.html", {"request": request})
 
-# Montar carpeta /static para CSS/JS
+# Mount /static folder for CSS/JS
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-# Incluir todos los routers
+# Include all routers
 app.include_router(auth.router)
-app.include_router(usuarios.router)
-app.include_router(proyectos.router)
-app.include_router(equipos.router)
-app.include_router(tests.router)
-app.include_router(continuidad.router)
-app.include_router(megado.router)
+app.include_router(user.router)
+app.include_router(project.router)
+app.include_router(equipment.router)
+app.include_router(test.router)
+app.include_router(continuity.router)
+app.include_router(isolation.router)
 app.include_router(contact_resistance.router)
 app.include_router(torque.router)
-app.include_router(formulario.router)
-app.include_router(test_realizados.router)  # ✅ My Tests y Dashboard
-app.include_router(ubicaciones.router)      # ✅ Dropdown ubicaciones dinámicas
-app.include_router(tipo_equipos.router)     # ✅ Dropdown equipos dinámicos
+app.include_router(test_performed.router)  # ✅ My Tests and Dashboard
+app.include_router(location.router)        # ✅ Dynamic location dropdowns
+app.include_router(equipment_type.router)  # ✅ Dynamic equipment dropdowns
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
