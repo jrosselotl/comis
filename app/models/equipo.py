@@ -8,7 +8,7 @@ class Equipo(Base):
     __tablename__ = "equipos"
 
     id = Column(Integer, primary_key=True, index=True)
-    proyecto_id = Column(Integer, ForeignKey("proyectos.id"), nullable=False)
+    project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
 
     # 🔹 Ahora Foreign Keys hacia las nuevas tablas dinámicas
     ubicacion_1_id = Column(Integer, ForeignKey("ubicaciones.id"), nullable=False)
