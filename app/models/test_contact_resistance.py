@@ -11,6 +11,7 @@ class TestContactResistance(Base):
     equipment_id = Column(Integer, ForeignKey("equipment.id"))
     tipo_alimentacion = Column(String, nullable=False)
     user_id = Column(Integer, ForeignKey("user.id"))
+    date = Column(DateTime, default=datetime.utcnow)
 
     resultados = relationship("ResultadoContactResistance", back_populates="test")
     project = relationship("Project", back_populates="tests_contact_resistance")
