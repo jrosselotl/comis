@@ -1,0 +1,184 @@
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
+from sqlalchemy.orm import Session
+from app.database import get_db
+
+# Test models
+from app.models.test_continuity import TestContinuity, ResultContinuity
+from app.models.test_isolation import TestIsolation, ResultIsolation
+from app.models.test_contact_resistance import TestContactResistance, ResultContactResistance
+from app.models.test_torque import TestTorque, ResultTorque
+
+# Other models
+from app.models.project import Project
+from app.models.test import Test
+from app.models.equipment import Equipment
+from app.models.test_performed import TestPerformed  # ✅ Dashboard / My Tests
+
+# Utilities
+from app.utils.pdf_generator import generate_test_pdf
+from app.utils.email import send_email_with_pdf, get_admin_emails
+
+import os
+import shutil
+from datetime import datetime
+import json
+
+router = APIRouter(prefix="/form", tags=["Form"])
+UPLOAD_DIR = "static/uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+
+@router.post("/save")
+async def save_form(
+    project_id: int = Form(...),
+    location_1: str = Form(...),
+    location_number_1: str = Form(...),
+    location_2: str = Form(None),
+    location_number_2: str = Form(None),
+    equipment_type: str = Form(...),
+    equipment_type_number: str = Form(...),
+    sub_equipment: str = Form(None),
+    sub_equipment_number: str = Form(None),
+    test_type: str = Form(...),
+    cable_set: int = Form(...),
+    power_type: str = Form(...),
+    terminal: str = Form(None),
+    data: str = Form(...),
+    images: list[UploadFile] = File(...),
+    db: Session = Depends(get_db)
+):
+    data_parsed = json.loads(data)
+    user_id = 1  # ✅ Will be dynamic (authenticated user)
+
+    # --- EQUIPMENT ---
+    equipment_code = f"{location_1}-{equipment_type}-{equipment_type_number}".upper()
+    equipment = db.query(Equipment).filter(Equipment.code == equipment_code).first()
+    if not equipment:
+        equipment = Equipment(
+            code=equipment_code,
+            equipment_type=equipment_type,
+            sub_equipment=sub_equipment,
+            project_id=project_id
+        )
+        db.add(equipment)
+        db.commit()
+        db.refresh(equipment)
+
+    # --- GENERAL TEST ---
+    test_general = Test(project_id=project_id)
+    db.add(test_general)
+    db.commit()
+    db.refresh(test_general)
+
+    # ✅ --- REGISTER IN TEST_PERFORMED ---
+    new_test_performed = TestPerformed(
+        project_id=project_id,
+        equipment_id=equipment.id,
+        user_id=user_id,
+        test_id=test_general.id,
+        status="Incomplete"
+    )
+    db.add(new_test_performed)
+    db.commit()
+
+    # --- IMAGES ---
+    images_info = []
+    img_iter = iter(images)
+
+    # --- GENERIC FUNCTION TO SAVE RESULTS ---
+    def save_results(test_model, result_model):
+        test_instance = test_model(equipment_id=equipment.id, test_id=test_general.id, user_id=user_id)
+        db.add(test_instance)
+        db.commit()
+        db.refresh(test_instance)
+
+        for r in data_parsed:
+            image = next(img_iter, None)
+            filename = f"{datetime.utcnow().timestamp()}_{image.filename}" if image else None
+            path = None
+            if image:
+                path = os.path.join(UPLOAD_DIR, filename)
+                with open(path, "wb") as f:
+                    shutil.copyfileobj(image.file, f)
+                images_info.append({
+                    "cable_set": r.get("cable_set"),
+                    "test_point": r["test_point"],
+                    "path": path
+                })
+
+            result = result_model(
+                test_id=test_instance.id,
+                test_point=r["test_point"],
+                result_value=None if r["result_value"] == "N/A" else float(r["result_value"]),
+                unit=r["unit"],
+                observation=r.get("observation", ""),
+                image=path,
+                cable_set=r.get("cable_set"),
+                applied_time=float(r.get("applied_time", 0)) if "applied_time" in r else None,
+                nominal_value=float(r.get("nominal_value", 0)) if "nominal_value" in r else None,
+                check_value=float(r.get("check_value", 0)) if "check_value" in r else None
+            )
+            db.add(result)
+        db.commit()
+
+    # --- TEST SELECTION ---
+    if test_type == "continuity":
+        save_results(TestContinuity, ResultContinuity)
+    elif test_type == "isolation":
+        save_results(TestIsolation, ResultIsolation)
+    elif test_type == "contact_resistance":
+        save_results(TestContactResistance, ResultContactResistance)
+    elif test_type == "torque":
+        save_results(TestTorque, ResultTorque)
+    else:
+        raise HTTPException(status_code=400, detail="Test type not recognized")
+
+    # --- PDF DATA ---
+    project = db.query(Project).filter(Project.id == project_id).first()
+    equipment_details = {
+        "Project": project.name,
+        "Main Location": f"{location_1} Nº{location_number_1}",
+        "Secondary Location": f"{location_2} Nº{location_number_2}" if location_2 else "-",
+        "Equipment Type": f"{equipment_type} Nº{equipment_type_number}",
+        "Sub Equipment": f"{sub_equipment} Nº{sub_equipment_number}" if sub_equipment else "-",
+        "Power Type": power_type,
+        "Terminal": terminal
+    }
+    test_data = {
+        "equipment_id": equipment_code,
+        "test_type": test_type,
+        "date": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+        "equipment_details": equipment_details,
+        "images": images_info,
+        "user_name": "Technician",
+        "client_logo": f"logo_client_{project.name}.png",
+        "subcontractor_logo": f"logo_subcontractor_{project.name}.png"
+    }
+    pdf_results = [
+        {
+            "test_point": r["test_point"],
+            "result_value": r["result_value"],
+            "unit": r["unit"],
+            "observation": r.get("observation", ""),
+            "cable_set": r.get("cable_set"),
+            "nominal_value": r.get("nominal_value"),
+            "check_value": r.get("check_value")
+        }
+        for r in data_parsed
+    ]
+
+    # --- GENERATE PDF ---
+    output_pdf_path = f"output/{test_type}_{equipment_code}.pdf"
+    os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
+    generate_test_pdf(test_data, pdf_results, output_path=output_pdf_path)
+
+    # --- SEND EMAIL ---
+    emails = get_admin_emails(db, project_id)
+    send_email_with_pdf(
+        recipients=emails,
+        subject=f"{test_type.capitalize()} - {equipment_code}",
+        body=f"Test report: {test_type} for equipment {equipment_code}",
+        pdf_file=output_pdf_path
+    )
+
+    return {"message": "Form and results saved successfully"}
