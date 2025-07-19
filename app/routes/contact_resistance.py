@@ -48,7 +48,7 @@ async def guardar_test_contact_resistance(
             codigo=codigo_equipo,
             tipo=tipo_equipo,
             sub_equipo=sub_equipo,
-            proyecto_id=proyecto_id
+            project_id=project_id
         )
         db.add(equipo)
         db.commit()
@@ -111,9 +111,9 @@ async def guardar_test_contact_resistance(
     db.commit()
 
     # ✅ Datos para PDF
-    proyecto = db.query(Proyecto).filter_by(id=proyecto_id).first()
+    project = db.query(Project).filter_by(id=project_id).first()
     detalles_equipo = {
-        "Proyecto": project.nombre,
+        "Project": project.nombre,
         "Ubicación Principal": f"{ubicacion_1} Nº{numero_ubicacion_1}",
         "Ubicación Secundaria": f"{ubicacion_2} Nº{numero_ubicacion_2}" if ubicacion_2 else "-",
         "Tipo de Equipo": f"{tipo_equipo} Nº{numero_tipo_equipo}",
