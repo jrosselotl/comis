@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Form
 from sqlalchemy.orm import Session
 from app.schemas.user import UserCreate, UserOut
-from app.models.user import User, RoleUser
+from app.models.user import User, UserRole
 from app.database import get_db
 from passlib.context import CryptContext
 
@@ -20,7 +20,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
         name=user.name,
         email=user.email,
         password_hash=hashed_pw,
-        role=getattr(user, "role", RoleUser.technician)
+        role=getattr(user, "role", UserRole.technician)
     )
     db.add(new_user)
     db.commit()
