@@ -1,149 +1,149 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models.test_continuidad import TestContinuidad, ResultadoContinuidad
+from app.models.test_contact_resistance import TestContactResistance, ResultContactResistance
 from app.models.test import Test
-from app.models.equipo import Equipment
-from app.models.proyecto import Project
-from app.utils.pdf_generator import generar_pdf_test
-from app.utils.correo import enviar_correo_con_pdf, obtener_correos_admins
+from app.models.equipment import Equipment
+from app.models.project import Project
+from app.utils.pdf_generator import generate_pdf_test
+from app.utils.mail import send_email_with_pdf, get_admin_emails
 
 import os, shutil, json
 from datetime import datetime
 
-router = APIRouter(prefix="/formulario/continuidad", tags=["Formulario Continuidad"])
+router = APIRouter(prefix="/form/contact_resistance", tags=["Contact Resistance Form"])
 UPLOAD_DIR = "static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-@router.post("/guardar")
-async def guardar_test_continuidad(
+@router.post("/save")
+async def save_contact_resistance_test(
     project_id: int = Form(...),
-    ubicacion_1: str = Form(...),
-    numero_ubicacion_1: str = Form(...),
-    ubicacion_2: str = Form(None),
-    numero_ubicacion_2: str = Form(None),
-    tipo_equipo: str = Form(...),
-    numero_tipo_equipo: str = Form(...),
-    sub_equipo: str = Form(None),
-    numero_sub_equipo: str = Form(None),
-    tipo_prueba: str = Form(...),
-    cable_sets: int = Form(...),
-    tipo_alimentacion: str = Form(...),
+    location_1: str = Form(...),
+    location_number_1: str = Form(...),
+    location_2: str = Form(None),
+    location_number_2: str = Form(None),
+    equipment_type: str = Form(...),
+    equipment_type_number: str = Form(...),
+    sub_equipment: str = Form(None),
+    sub_equipment_number: str = Form(None),
+    test_type: str = Form(...),
+    cable_set: int = Form(...),
+    power_type: str = Form(...),
     terminal: str = Form(None),
-    datos: str = Form(...),
-    imagenes: list[UploadFile] = File(...),
+    data: str = Form(...),
+    images: list[UploadFile] = File(...),
     db: Session = Depends(get_db)
 ):
-    datos_parsed = json.loads(datos)
-    user_id = 1  # 🔹 Se usará autenticación más adelante
+    data_parsed = json.loads(data)
+    user_id = 1  # ✅ Will be dynamic (authenticated user)
 
-    # ✅ Generar código único del equipment
-    codigo_equipo = f"{ubicacion_1}-{tipo_equipo}-{sub_equipo or 'GEN'}{numero_sub_equipo or ''}".upper()
+    # ✅ Generate unique equipment code
+    equipment_code = f"{location_1}-{equipment_type}-{sub_equipment or 'GEN'}{sub_equipment_number or ''}".upper()
 
-    # ✅ Verificar o crear el equipment
-    equipment = db.query(Equipment).filter_by(codigo=codigo_equipo).first()
+    # ✅ Check or create equipment
+    equipment = db.query(Equipment).filter_by(code=equipment_code).first()
     if not equipment:
         equipment = Equipment(
-            codigo=codigo_equipo,
-            tipo_equipo=tipo_equipo,
-            sub_equipo=sub_equipo,
+            code=equipment_code,
+            type=equipment_type,
+            sub_equipment=sub_equipment,
             project_id=project_id
         )
         db.add(equipment)
         db.commit()
         db.refresh(equipment)
 
-    # ✅ Crear registro en tabla general de test
-    test = Test(tipo_prueba=tipo_prueba, equipment_id=equipment.id)
+    # ✅ Create general test record
+    test = Test(test_type=test_type, equipment_id=equipment.id)
     db.add(test)
     db.commit()
     db.refresh(test)
 
-    # ✅ Crear test específico de continuidad
-    test_cont = TestContinuidad(
+    # ✅ Create specific contact resistance test
+    contact_test = TestContactResistance(
         equipment_id=equipment.id,
         user_id=user_id,
         test_id=test.id
     )
-    db.add(test_cont)
+    db.add(contact_test)
     db.commit()
-    db.refresh(test_cont)
+    db.refresh(contact_test)
 
-    # ✅ Guardar resultados (sin validaciones ni parámetros)
-    imagenes_info = []
-    for i, r in enumerate(datos_parsed):
-        imagen = imagenes[i] if i < len(imagenes) else None
-        filename = f"{codigo_equipo}_{r['punto_prueba']}_{i}.png" if imagen else None
+    # ✅ Save results (without validations)
+    images_info = []
+    for i, r in enumerate(data_parsed):
+        image = images[i] if i < len(images) else None
+        filename = f"{equipment_code}_{r['test_point']}_{i}.png" if image else None
         filepath = None
 
-        if imagen:
+        if image:
             filepath = os.path.join(UPLOAD_DIR, filename)
             with open(filepath, "wb") as buffer:
-                shutil.copyfileobj(imagen.file, buffer)
-            imagenes_info.append({
+                shutil.copyfileobj(image.file, buffer)
+            images_info.append({
                 "path": filepath,
-                "punto_prueba": r["punto_prueba"],
+                "test_point": r["test_point"],
                 "cable_set": r.get("cable_set")
             })
 
-        resultado = ResultadoContinuidad(
-            test_id=test_cont.id,
-            punto=r['punto_prueba'],
-            resultado_valor=None if r['resultado_valor'] == "N/A" else float(r['resultado_valor']),
-            unidad=r['unidad'],
-            observaciones=r.get('observaciones'),
-            imagen=filepath,
+        result = ResultContactResistance(
+            test_id=contact_test.id,
+            test_point=r['test_point'],
+            result_value=None if r['result_value'] == "N/A" else float(r['result_value']),
+            unit=r['unit'],
+            observations=r.get('observations'),
+            image=filepath,
             cable_set=r.get("cable_set")
         )
-        db.add(resultado)
+        db.add(result)
 
     db.commit()
 
-    # ✅ Generar PDF
+    # ✅ Generate PDF
     project = db.query(Project).filter_by(id=project_id).first()
-    detalles_equipo = {
-        "Project": project.nombre,
-        "Ubicación Principal": f"{ubicacion_1} Nº{numero_ubicacion_1}",
-        "Ubicación Secundaria": f"{ubicacion_2} Nº{numero_ubicacion_2}" if ubicacion_2 else "-",
-        "Tipo de Equipo": f"{tipo_equipo} Nº{numero_tipo_equipo}",
-        "Subequipo": f"{sub_equipo} Nº{numero_sub_equipo}" if sub_equipo else "-",
-        "Tipo de Alimentación": tipo_alimentacion,
+    equipment_details = {
+        "Project": project.name,
+        "Main Location": f"{location_1} Nº{location_number_1}",
+        "Secondary Location": f"{location_2} Nº{location_number_2}" if location_2 else "-",
+        "Equipment Type": f"{equipment_type} Nº{equipment_type_number}",
+        "Sub Equipment": f"{sub_equipment} Nº{sub_equipment_number}" if sub_equipment else "-",
+        "Power Type": power_type,
         "Terminal": terminal
     }
 
     test_data = {
-        "equipment_id": codigo_equipo,
-        "tipo_prueba": tipo_prueba,
+        "equipment_id": equipment_code,
+        "test_type": test_type,
         "date": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-        "detalles_equipo": detalles_equipo,
-        "imagenes": imagenes_info,
-        "logo_cliente": f"logo_cliente_{project.nombre}.png",
-        "logo_subcontrata": f"logo_subcontrata_{project.nombre}.png",
-        "nombre_usuario": "Técnico"
+        "equipment_details": equipment_details,
+        "images": images_info,
+        "client_logo": f"client_logo_{project.name}.png",
+        "subcontract_logo": f"subcontract_logo_{project.name}.png",
+        "user_name": "Technician"
     }
 
-    resultados_pdf = [
+    results_pdf = [
         {
-            "punto_prueba": r["punto_prueba"],
-            "resultado_valor": r["resultado_valor"],
-            "unidad": r["unidad"],
-            "observaciones": r.get("observaciones", ""),
+            "test_point": r["test_point"],
+            "result_value": r["result_value"],
+            "unit": r["unit"],
+            "observations": r.get("observations", ""),
             "cable_set": r.get("cable_set")
         }
-        for r in datos_parsed
+        for r in data_parsed
     ]
 
-    output_pdf_path = f"output/{tipo_prueba}_{codigo_equipo}.pdf"
+    output_pdf_path = f"output/{test_type}_{equipment_code}.pdf"
     os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
-    generar_pdf_test(test_data, resultados_pdf, output_path=output_pdf_path)
+    generate_pdf_test(test_data, results_pdf, output_path=output_pdf_path)
 
-    # ✅ Enviar correo
-    correos_destino = obtener_correos_admins(db, project_id)
-    enviar_correo_con_pdf(
-        destinatarios=correos_destino,
-        asunto=f"{tipo_prueba.capitalize()} - {codigo_equipo}",
-        cuerpo=f"Informe de {tipo_prueba} para el equipo {codigo_equipo}",
-        archivo_pdf=output_pdf_path
+    # ✅ Send email
+    admin_emails = get_admin_emails(db, project_id)
+    send_email_with_pdf(
+        recipients=admin_emails,
+        subject=f"{test_type.capitalize()} - {equipment_code}",
+        body=f"{test_type} report for equipment {equipment_code}",
+        pdf_file=output_pdf_path
     )
 
-    return {"mensaje": "Formulario y resultados guardados correctamente"}
+    return {"message": "Form and results saved successfully"}
