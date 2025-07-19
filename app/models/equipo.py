@@ -11,8 +11,8 @@ class Equipo(Base):
     project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
 
     # 🔹 Ahora Foreign Keys hacia las nuevas tablas dinámicas
-    ubicacion_1_id = Column(Integer, ForeignKey("ubicaciones.id"), nullable=False)
-    ubicacion_2_id = Column(Integer, ForeignKey("ubicaciones.id"), nullable=True)
+    ubicacion_1_id = Column(Integer, ForeignKey("location.id"), nullable=False)
+    ubicacion_2_id = Column(Integer, ForeignKey("location.id"), nullable=True)
 
     tipo_equipo_id = Column(Integer, ForeignKey("tipo_equipos.id"), nullable=False)
     sub_equipo_id = Column(Integer, ForeignKey("tipo_equipos.id"), nullable=True)
@@ -29,7 +29,7 @@ class Equipo(Base):
     fecha_creacion = Column(DateTime, default=datetime.utcnow)
 
     # Relaciones
-    project = relationship("Project", back_populates="equipos")
+    project = relationship("Project", back_populates="equipment")
     ubicacion_1 = relationship("Ubicacion", foreign_keys=[ubicacion_1_id])
     ubicacion_2 = relationship("Ubicacion", foreign_keys=[ubicacion_2_id])
     tipo_equipo = relationship("TipoEquipo", foreign_keys=[tipo_equipo_id])
