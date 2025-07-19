@@ -30,8 +30,8 @@ class Equipo(Base):
 
     # Relaciones
     project = relationship("Project", back_populates="equipment")
-    ubicacion_1 = relationship("Ubicacion", foreign_keys=[ubicacion_1_id])
-    ubicacion_2 = relationship("Ubicacion", foreign_keys=[ubicacion_2_id])
+    ubicacion_1 = relationship("Location", foreign_keys=[ubicacion_1_id])
+    ubicacion_2 = relationship("Location", foreign_keys=[ubicacion_2_id])
     tipo_equipo = relationship("TipoEquipo", foreign_keys=[tipo_equipo_id])
     sub_equipo = relationship("TipoEquipo", foreign_keys=[sub_equipo_id])
 
