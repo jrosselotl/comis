@@ -18,17 +18,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const subEquipmentSelect = document.getElementById("sub_equipment");
   const numberSubEquipmentSelect = document.getElementById("number_sub_equipment");
 
-  // ✅ Load project and test type
+  // ✅ Load project and test types
   async function loadProjectAndTestType() {
     try {
       const [projectRes, testRes] = await Promise.all([
-        fetch("/project/list"),
-        fetch("/test/list"),
+        fetch("/project/list"),  // ✅ Cambiar a /project/listar si mantienes español
+        fetch("/test/list"),     // ✅ Cambiar a /tests/listar si mantienes español
       ]);
       const projectData = await projectRes.json();
       const testData = await testRes.json();
 
-      // Populate project
       const projectSelect = document.getElementById("project_id");
       projectSelect.innerHTML = "<option value=''>Select...</option>";
       projectData.forEach((p) => {
@@ -38,7 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
         projectSelect.appendChild(opt);
       });
 
-      // Populate test type
       testTypeSelect.innerHTML = "<option value=''>Select test...</option>";
       testData.forEach((t) => {
         const opt = document.createElement("option");
@@ -47,7 +45,6 @@ document.addEventListener("DOMContentLoaded", () => {
         testTypeSelect.appendChild(opt);
       });
 
-      // Load location and equipment when project changes
       projectSelect.addEventListener("change", () => {
         if (projectSelect.value) {
           loadLocation(projectSelect.value);
@@ -55,17 +52,16 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     } catch (error) {
-      console.error("Error loading project and test:", error);
+      console.error("Error loading project and test types:", error);
     }
   }
 
-  // ✅ Load location from database
+  // ✅ Load locations
   async function loadLocation(projectId) {
     try {
-      const res = await fetch(`/location/list?project_id=${projectId}`);
+      const res = await fetch(`/location/list?project_id=${projectId}`); // ✅ Cambiar a /ubicaciones/listar si usas español
       const locationData = await res.json();
 
-      // Populate location_1
       location1Select.innerHTML = "<option value=''>Select</option>";
       locationData.forEach((l) => {
         const opt = document.createElement("option");
@@ -81,7 +77,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const selected = location1Select.selectedOptions[0];
         if (!selected) return;
 
-        // Populate number_location_1
         const numbers1 = JSON.parse(selected.dataset.number || "[]");
         numberLocation1Select.innerHTML = "";
         numbers1.forEach((n) => {
@@ -91,7 +86,6 @@ document.addEventListener("DOMContentLoaded", () => {
           numberLocation1Select.appendChild(opt);
         });
 
-        // Show / hide location_2
         const location2 = selected.dataset.location2;
         if (location2) {
           location2Container.style.display = "block";
@@ -115,10 +109,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ Load equipment type from database
+  // ✅ Load equipment types
   async function loadEquipment() {
     try {
-      const res = await fetch(`/equipment_type/list`);
+      const res = await fetch(`/equipment_type/list`); // ✅ Cambiar a /tipo_equipos/listar si usas español
       const equipmentData = await res.json();
 
       equipmentTypeSelect.innerHTML = "<option value=''>Select</option>";
@@ -136,7 +130,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const selected = equipmentTypeSelect.selectedOptions[0];
         if (!selected) return;
 
-        // Populate number_equipment_type
         const numbers = JSON.parse(selected.dataset.number || "[]");
         numberEquipmentTypeSelect.innerHTML = "";
         numbers.forEach((n) => {
@@ -146,7 +139,6 @@ document.addEventListener("DOMContentLoaded", () => {
           numberEquipmentTypeSelect.appendChild(opt);
         });
 
-        // Show / hide sub_equipment
         const sub = selected.dataset.sub;
         if (sub) {
           subEquipmentContainer.style.display = "block";
@@ -170,17 +162,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ Event when test type changes
+  // ✅ Change test type
   testTypeSelect.addEventListener("change", async () => {
     const type = testTypeSelect.value;
 
     featureBlock.style.display = type ? "block" : "none";
     resultBlock.style.display = "none";
 
-    // ✅ Load unit dynamically from backend
     if (type) {
       try {
-        const res = await fetch(`/test/unit?test_type=${type}`);
+        const res = await fetch(`/test/unit?test_type=${type}`); // ✅ Cambiar a /tests/unidades?tipo_test= si usas español
         const data = await res.json();
 
         const unitSelect = document.getElementById("unit");
@@ -209,7 +200,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (type === "torque") initFormTorque(powerTypeSelect.value);
   });
 
-  // ✅ Change power type reloads the test
   powerTypeSelect.addEventListener("change", () => {
     testTypeSelect.dispatchEvent(new Event("change"));
   });
