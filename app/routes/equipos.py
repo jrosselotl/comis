@@ -1,52 +1,54 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.schemas.equipo import EquipoCreate, EquipoOut
-from app.models.equipo import Equipo
+from app.schemas.equipment import EquipmentCreate, EquipmentOut
+from app.models.equipment import Equipment
+from app.models.location import Location
+from app.models.tipo_equipo import EquipmentType
 from app.database import get_db
 
-router = APIRouter(prefix="/equipos", tags=["Equipos"])
+router = APIRouter(prefix="/equipment", tags=["Equipment"])
 
 
-@router.post("/", response_model=EquipoOut)
-def crear_equipo(equipo: EquipoCreate, db: Session = Depends(get_db)):
+@router.post("/", response_model=EquipmentOut)
+def create_equipment(equipment: EquipmentCreate, db: Session = Depends(get_db)):
     # ✅ Construimos el código dinámico usando los nombres de las tablas relacionadas
-    ubicacion_1 = db.query(Ubicacion).filter_by(id=equipo.ubicacion_1_id).first()
-    ubicacion_2 = db.query(Ubicacion).filter_by(id=equipo.ubicacion_2_id).first() if equipo.ubicacion_2_id else None
-    tipo_equipo = db.query(TipoEquipo).filter_by(id=equipo.tipo_equipo_id).first()
-    sub_equipo = db.query(TipoEquipo).filter_by(id=equipo.sub_equipo_id).first() if equipo.sub_equipo_id else None
+    location_1 = db.query(Location).filter_by(id=equipment.location_1_id).first()
+    location_2 = db.query(Location).filter_by(id=equipment.location_2_id).first() if equipment.location_2_id else None
+    equipment_type = db.query(EquipmentType).filter_by(id=equipment.equipment_type_id).first()
+    sub_equipment = db.query(EquipmentType).filter_by(id=equipment.sub_equipment_id).first() if equipment.sub_equipment_id else None
 
-    if not ubicacion_1 or not tipo_equipo:
-        raise HTTPException(status_code=400, detail="Ubicación o tipo de equipo no válido")
+    if not location_1 or not equipment_type:
+        raise HTTPException(status_code=400, detail="Location or equipment type is not valid")
 
-    codigo = f"{ubicacion_1.nombre}{equipo.numero_ubicacion_1}"
-    if ubicacion_2:
-        codigo += f"-{ubicacion_2.nombre}{equipo.numero_ubicacion_2 or ''}"
-    codigo += f"-{tipo_equipo.nombre}{equipo.numero_tipo_equipo}"
-    if sub_equipo:
-        codigo += f"-{sub_equipo.nombre}{equipo.numero_sub_equipo or ''}"
+    code = f"{location_1.nombre}{equipment.numero_location_1}"
+    if location_2:
+        code += f"-{location_2.nombre}{equipment.numero_location_2 or ''}"
+    code += f"-{equipment_type.nombre}{equipment.numero_equipment_type}"
+    if sub_equipment:
+        code += f"-{sub_equipment.nombre}{equipment.numero_sub_equipment or ''}"
 
-    nuevo = Equipo(
-        proyecto_id=equipo.proyecto_id,
-        ubicacion_1_id=equipo.ubicacion_1_id,
-        numero_ubicacion_1=equipo.numero_ubicacion_1,
-        ubicacion_2_id=equipo.ubicacion_2_id,
-        numero_ubicacion_2=equipo.numero_ubicacion_2,
-        tipo_equipo_id=equipo.tipo_equipo_id,
-        numero_tipo_equipo=equipo.numero_tipo_equipo,
-        sub_equipo_id=equipo.sub_equipo_id,
-        numero_sub_equipo=equipo.numero_sub_equipo,
-        terminal=equipo.terminal,
-        tipo_alimentacion=equipo.tipo_alimentacion,
-        cable_set=equipo.cable_set,
-        codigo=codigo
+    new_equipment = Equipment(
+        project_id=equipment.project_id,
+        location_1_id=equipment.location_1_id,
+        numero_location_1=equipment.numero_location_1,
+        location_2_id=equipment.location_2_id,
+        numero_location_2=equipment.numero_location_2,
+        equipment_type_id=equipment.equipment_type_id,
+        numero_equipment_type=equipment.numero_equipment_type,
+        sub_equipment_id=equipment.sub_equipment_id,
+        numero_sub_equipment=equipment.numero_sub_equipment,
+        terminal=equipment.terminal,
+        tipo_alimentacion=equipment.tipo_alimentacion,
+        cable_set=equipment.cable_set,
+        codigo=code
     )
 
-    db.add(nuevo)
+    db.add(new_equipment)
     db.commit()
-    db.refresh(nuevo)
-    return nuevo
+    db.refresh(new_equipment)
+    return new_equipment
 
 
-@router.get("/", response_model=list[EquipoOut])
-def listar_equipos(db: Session = Depends(get_db)):
-    return db.query(Equipo).all()
+@router.get("/", response_model=list[EquipmentOut])
+def list_equipment(db: Session = Depends(get_db)):
+    return db.query(Equipment).all()
