@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 class TestBase(BaseModel):
-    nombre: str
+    name: str
 
 class TestCreate(TestBase):
     pass
@@ -10,4 +10,4 @@ class TestOut(TestBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
