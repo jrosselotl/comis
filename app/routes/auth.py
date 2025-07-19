@@ -4,52 +4,52 @@ from fastapi.templating import Jinja2Templates
 from starlette.status import HTTP_302_FOUND
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
-from app.models.test_continuidad import TestContinuidad
-from app.models.test_megado import TestMegado
+from app.models.test_continuity import TestContinuity
+from app.models.test_isolation import TestIsolation
 
 from app.database import get_db
-from app.models.usuario import Usuario
+from app.models.user import User
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Página de login
+# ✅ Login page
 @router.get("/login", response_class=HTMLResponse)
-def mostrar_login(request: Request):
+def show_login(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
-# Procesar login
+# ✅ Process login
 @router.post("/auth/login")
-def procesar_login(
+def process_login(
     request: Request,
-    correo: str = Form(...),
+    email: str = Form(...),
     password: str = Form(...),
-    recordar: bool = Form(False),
+    remember: bool = Form(False),
     db: Session = Depends(get_db)
 ):
-    usuario = db.query(Usuario).filter_by(correo=correo).first()
+    user = db.query(User).filter_by(email=email).first()
 
-    if not usuario or not pwd_context.verify(password, usuario.password_hash):
+    if not user or not pwd_context.verify(password, user.password_hash):
         return templates.TemplateResponse(
             "login.html",
-            {"request": request, "error": "Credenciales inválidas"}
+            {"request": request, "error": "Invalid credentials"}
         )
 
-    # Guardar datos en sesión
-    request.session["usuario_id"] = usuario.id
-    request.session["usuario_rol"] = usuario.rol
-    if recordar:
-        request.session["recordar"] = True
+    # ✅ Save session data
+    request.session["user_id"] = user.id
+    request.session["user_role"] = user.role
+    if remember:
+        request.session["remember"] = True
 
-    # Redirigir según el rol
-    if usuario.rol == "proyecto":
+    # ✅ Redirect based on role
+    if user.role == "project":
         return RedirectResponse(url="/admin", status_code=HTTP_302_FOUND)
     else:
         return RedirectResponse(url="/", status_code=HTTP_302_FOUND)
 
-# Cerrar sesión
+# ✅ Logout
 @router.get("/logout")
-def cerrar_sesion(request: Request):
+def logout(request: Request):
     request.session.clear()
     return RedirectResponse(url="/login", status_code=HTTP_302_FOUND)
