@@ -24,4 +24,4 @@ class User(Base):
     test_contact_resistance = relationship("TestContactResistance", back_populates="user")
     test_torque = relationship("TestTorque", back_populates="user")
 
-    project_user = relationship("UserProject", back_populates="user")
+    user_project = relationship("UserProject", back_populates="user")
