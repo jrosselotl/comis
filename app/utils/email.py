@@ -4,8 +4,8 @@ from email.message import EmailMessage
 import os
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
-from app.models.usuario import Usuario
-from app.models.usuarios_proyectos import UsuarioProyecto
+from app.models.user import User
+from app.models.project_user import ProjectUser
 
 load_dotenv()
 
@@ -45,11 +45,11 @@ def get_admin_emails(db: Session, project_id: int) -> list[str]:
     If no admin/project users are found, returns a fallback email.
     """
     admin_users = (
-        db.query(Usuario)
-        .join(UsuarioProyecto, Usuario.id == UsuarioProyecto.usuario_id)
-        .filter(UsuarioProyecto.proyecto_id == project_id)
-        .filter(Usuario.rol.in_(["admin", "proyecto"]))
+        db.query(User)
+        .join(ProjectUser, User.id == ProjectUser.user_id)
+        .filter(UProjectUser.project_id == project_id)
+        .filter(User.rol.in_(["admin", "project"]))
         .all()
     )
-    emails = [u.correo for u in admin_users]
-    return emails or ["jrosselot@alancx.com"]  # Fallback
+    email = [u.email for u in admin_users]
+    return email or ["jrosselot@alancx.com"]  # Fallback
