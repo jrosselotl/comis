@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const graficoCanvas = document.getElementById("grafico-tests");
 
   // ✅ Mostrar solo una sección
-  function mostrarSeccion(seccion) {
+  function sectionShow(section) {
     [sectionDashboard, sectionMyTests, sectionNewTest].forEach((s) =>
       s.classList.add("hidden")
     );
