@@ -13,18 +13,18 @@
     };
 
     // Prevent redefinition if already defined globally
-    if (!window.UNITS_BY_TEST) {
-        window.UNITS_BY_TEST = UNITS_BY_TEST;
+    if (!window.UNIT_BY_TEST) {
+        window.UNIT_BY_TEST = UNIT_BY_TEST;
     } else {
-        console.warn("UNITS_BY_TEST was already defined in the global context.");
+        console.warn("UNIT_BY_TEST was already defined in the global context.");
     }
 })();
 
 /**
- * Dynamically loads units into the <select> based on the test type
+ * Dynamically loads unit into the <select> based on the test type
  * @param {string} testType - The test type (e.g., "continuity", "torque")
  */
-function loadUnitsByTest(testType) {
+function loadUnitByTest(testType) {
     const unitSelect = document.getElementById("unit");
     const labelUnit = document.getElementById("label-unit");
 
@@ -35,9 +35,9 @@ function loadUnitsByTest(testType) {
 
     unitSelect.innerHTML = '<option value="">Select unit...</option>';
 
-    const units = window.UNITS_BY_TEST[testType] || [];
-    if (units.length > 0) {
-        units.forEach(unit => {
+    const unit = window.UNIT_BY_TEST[testType] || [];
+    if (unit.length > 0) {
+        unit.forEach(unit => {
             const option = document.createElement("option");
             option.value = unit;
             option.textContent = unit;
