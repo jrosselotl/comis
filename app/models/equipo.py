@@ -5,7 +5,7 @@ from app.database import Base
 
 
 class Equipo(Base):
-    __tablename__ = "equipos"
+    __tablename__ = "equipment"
 
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
