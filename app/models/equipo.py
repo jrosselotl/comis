@@ -29,7 +29,7 @@ class Equipo(Base):
     fecha_creacion = Column(DateTime, default=datetime.utcnow)
 
     # Relaciones
-    proyecto = relationship("Proyecto", back_populates="equipos")
+    project = relationship("Project", back_populates="equipos")
     ubicacion_1 = relationship("Ubicacion", foreign_keys=[ubicacion_1_id])
     ubicacion_2 = relationship("Ubicacion", foreign_keys=[ubicacion_2_id])
     tipo_equipo = relationship("TipoEquipo", foreign_keys=[tipo_equipo_id])
