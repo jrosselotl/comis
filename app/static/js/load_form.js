@@ -1,5 +1,3 @@
-// static/js/load_form.js
-
 document.addEventListener("DOMContentLoaded", () => {
   const testTypeSelect = document.getElementById("test-type");
   const featureBlock = document.getElementById("block-features");
@@ -22,8 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadProjectAndTestType() {
     try {
       const [projectRes, testRes] = await Promise.all([
-        fetch("/project/list"),  // ✅ Cambiar a /project/listar si mantienes español
-        fetch("/test/list"),     // ✅ Cambiar a /tests/listar si mantienes español
+        fetch("/project/list"),
+        fetch("/test/list"),
       ]);
       const projectData = await projectRes.json();
       const testData = await testRes.json();
@@ -59,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ✅ Load locations
   async function loadLocation(projectId) {
     try {
-      const res = await fetch(`/location/list?project_id=${projectId}`); // ✅ Cambiar a /ubicaciones/listar si usas español
+      const res = await fetch(`/location/list?project_id=${projectId}`);
       const locationData = await res.json();
 
       location1Select.innerHTML = "<option value=''>Select</option>";
@@ -112,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ✅ Load equipment types
   async function loadEquipment() {
     try {
-      const res = await fetch(`/equipment_type/list`); // ✅ Cambiar a /tipo_equipos/listar si usas español
+      const res = await fetch(`/equipment_type/list`);
       const equipmentData = await res.json();
 
       equipmentTypeSelect.innerHTML = "<option value=''>Select</option>";
@@ -171,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (type) {
       try {
-        const res = await fetch(`/test/unit?test_type=${type}`); // ✅ Cambiar a /tests/unidades?tipo_test= si usas español
+        const res = await fetch(`/test/unit?test_type=${type}`);
         const data = await res.json();
 
         const unitSelect = document.getElementById("unit");
