@@ -11,7 +11,7 @@ from starlette.templating import Jinja2Templates
 
 # Database and models
 from app.database import get_db
-from app.models.usuario import Usuario
+from app.models.user import User
 
 # Main routers
 from app.routes import (
