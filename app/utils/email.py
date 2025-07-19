@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from app.models.user import User
-from app.models.project_user import ProjectUser
+from app.models.user_project import UserProject
 
 load_dotenv()
 
@@ -46,8 +46,8 @@ def get_admin_emails(db: Session, project_id: int) -> list[str]:
     """
     admin_users = (
         db.query(User)
-        .join(ProjectUser, User.id == ProjectUser.user_id)
-        .filter(UProjectUser.project_id == project_id)
+        .join(UserProject, User.id == UserProject.user_id)
+        .filter(UserProject.project_id == project_id)
         .filter(User.rol.in_(["admin", "project"]))
         .all()
     )
