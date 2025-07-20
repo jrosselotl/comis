@@ -24,9 +24,9 @@ def create_project(project: ProjectCreate, db: Session = Depends(get_db)):
 def list_project(db: Session = Depends(get_db)):
     return db.query(Project).all()
 
-# Get available tests for a project
-@router.get("/{project_id}/tests")
-def get_project_tests(project_id: int, db: Session = Depends(get_db)):
+# Get available test for a project
+@router.get("/{project_id}/test")
+def get_project_test(project_id: int, db: Session = Depends(get_db)):
     project = db.query(Project).filter_by(id=project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
