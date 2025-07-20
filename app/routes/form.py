@@ -43,6 +43,7 @@ async def save_form(
     cable_set: int = Form(...),
     power_type: str = Form(...),
     terminal: str = Form(None),
+    unit: str = Form(None),  # ✅ Unidad global
     data: str = Form(...),
     images: list[UploadFile] = File(...),
     db: Session = Depends(get_db)
@@ -110,7 +111,7 @@ async def save_form(
                 test_id=test_instance.id,
                 test_point=r["test_point"],
                 result_value=None if r["result_value"] == "N/A" else float(r["result_value"]),
-                unit=r["unit"],
+                unit=r.get("unit") or unit,  # ✅ Usa la global si no viene por fila
                 observation=r.get("observation", ""),
                 image=path,
                 cable_set=r.get("cable_set"),
@@ -158,7 +159,7 @@ async def save_form(
         {
             "test_point": r["test_point"],
             "result_value": r["result_value"],
-            "unit": r["unit"],
+            "unit": r.get("unit") or unit,  # ✅ También aquí, para PDF
             "observation": r.get("observation", ""),
             "cable_set": r.get("cable_set"),
             "nominal_value": r.get("nominal_value"),
