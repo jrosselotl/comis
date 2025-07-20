@@ -16,10 +16,10 @@ class Equipment(Base):
     equipment_type_id = Column(Integer, ForeignKey("equipment_type.id"), nullable=False)
     sub_equipment_type_id = Column(Integer, ForeignKey("equipment_type.id"), nullable=True)
 
-    location_1_number = Column(Integer, nullable=False, default=1)
-    location_2_number = Column(Integer, nullable=True)
-    equipment_type_number = Column(Integer, nullable=False, default=1)
-    sub_equipment_type_number = Column(Integer, nullable=True)
+    number_location_1 = Column(Integer, nullable=False, default=1)
+    number_location_2 = Column(Integer, nullable=True)
+    number_equipment_type = Column(Integer, nullable=False, default=1)
+    number_sub_equipment_type = Column(Integer, nullable=True)
 
     terminal = Column(String(50), nullable=True)
     power_type = Column(String(50), nullable=True)  # antes "tipo_alimentacion"
