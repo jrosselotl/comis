@@ -11,8 +11,8 @@ router = APIRouter(prefix="/project", tags=["Project"])
 @router.post("/", response_model=ProjectOut)
 def create_project(project: ProjectCreate, db: Session = Depends(get_db)):
     new_project = Project(
-        nombre=project.nombre,
-        descripcion=project.descripcion
+        name=project.name,
+        description=project.description
     )
     db.add(new_project)
     db.commit()
