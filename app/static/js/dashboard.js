@@ -1,18 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
   const btnDashboard = document.getElementById("btn-dashboard");
-  const btnMyTests = document.getElementById("btn-mytests");
+  const btnMyTest = document.getElementById("btn-mytest");
   const btnNewTest = document.getElementById("btn-newtest");
 
   const sectionDashboard = document.getElementById("section-dashboard");
-  const sectionMyTests = document.getElementById("section-mytests");
+  const sectionMyTest = document.getElementById("section-mytest");
   const sectionNewTest = document.getElementById("section-newtest");
 
-  const tableMyTests = document.getElementById("tabla-mytests");
-  const chartCanvas = document.getElementById("grafico-tests");
+  const tableMyTest = document.getElementById("tabla-mytest");
+  const chartCanvas = document.getElementById("grafico-test");
 
   // ✅ Show only one section
   function showSection(section) {
-    [sectionDashboard, sectionMyTests, sectionNewTest].forEach((s) =>
+    [sectionDashboard, sectionMyTest, sectionNewTest].forEach((s) =>
       s.classList.add("hidden")
     );
     section.classList.remove("hidden");
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
           labels: types,
           datasets: [
             {
-              label: "Completed Tests",
+              label: "Completed Test",
               data: quantities,
               backgroundColor: ["#3498db", "#9b59b6", "#e67e22", "#27ae60"],
             },
@@ -51,14 +51,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ Load My Tests dynamically from backend
-  async function loadMyTests() {
-    tableMyTests.innerHTML = "";
+  // ✅ Load My Test dynamically from backend
+  async function loadMyTest() {
+    tableMyTest.innerHTML = "";
     try {
       const res = await fetch("/test_done/list_user/1"); // Logged user (mock id=1)
-      const tests = await res.json();
+      const test = await res.json();
 
-      tests.forEach((t) => {
+      test.forEach((t) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${t.id}</td>
