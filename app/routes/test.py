@@ -22,15 +22,15 @@ def create_test(test: TestCreate, db: Session = Depends(get_db)):
 
 # ✅ List all test types
 @router.get("/", response_model=list[TestOut])
-def list_tests(db: Session = Depends(get_db)):
+def list_test(db: Session = Depends(get_db)):
     return db.query(Test).all()
 
 # ✅ Alias to list (keeps JS compatibility)
 @router.get("/list", response_model=list[TestOut])
-def alias_list_tests(db: Session = Depends(get_db)):
-    return list_tests(db)
+def alias_list_test(db: Session = Depends(get_db)):
+    return list_test(db)
 
 # ✅ List valid units by test type
 @router.get("/unit")
-def list_units(test_type: str = Query(...)):
-    return {"units": get_units_by_test(test_type)}
+def list_unit(test_type: str = Query(...)):
+    return {"unit": get_unit_by_test(test_type)}
