@@ -24,6 +24,23 @@ function initFormContinuity(powerType) {
         resultContainer.innerHTML = "";
         resultBlock.style.display = quantity > 0 ? "block" : "none";
 
+        // ✅ Load global unit select
+        if (window.UNIT_BY_TEST && window.UNIT_BY_TEST["continuity"]) {
+            const unitSelect = document.getElementById("unit");
+            const labelUnit = document.getElementById("label-unit");
+
+            if (unitSelect && labelUnit) {
+                unitSelect.innerHTML = '<option value="">Select unit...</option>';
+                window.UNIT_BY_TEST["continuity"].forEach((u) => {
+                    const opt = document.createElement("option");
+                    opt.value = u;
+                    opt.textContent = u;
+                    unitSelect.appendChild(opt);
+                });
+                labelUnit.style.display = "block";
+            }
+        }
+
         for (let i = 1; i <= quantity; i++) {
             const table = document.createElement("table");
             table.classList.add("test-table");
@@ -33,7 +50,6 @@ function initFormContinuity(powerType) {
                 <tr>
                     <th>Point</th>
                     <th>Result / N/A</th>
-                    <th>Unit</th>
                     <th>Observation</th>
                     <th>Image</th>
                 </tr>`;
@@ -51,7 +67,6 @@ function initFormContinuity(powerType) {
                             <input type="text" name="${idResult}" id="${idResult}" />
                         </div>
                     </td>
-                    <td><input name="unit_${i}_${point}" type="text" /></td>
                     <td><input name="observation_${i}_${point}" type="text" /></td>
                     <td>
                         <label class="camera-label">
@@ -66,23 +81,17 @@ function initFormContinuity(powerType) {
                 const buttonNA = row.querySelector(`#${idNA}`);
 
                 buttonNA.addEventListener("click", () => {
-                    if (inputResult.disabled) {
-                        inputResult.disabled = false;
-                        inputResult.value = "";
-                        buttonNA.classList.remove("active");
-                    } else {
-                        inputResult.disabled = true;
-                        inputResult.value = "N/A";
-                        buttonNA.classList.add("active");
-                    }
+                    inputResult.disabled = !inputResult.disabled;
+                    inputResult.value = inputResult.disabled ? "N/A" : "";
+                    buttonNA.classList.toggle("active");
                 });
 
                 const label = row.querySelector("label");
                 const inputFile = label.querySelector("input[type='file']");
                 const textAttach = label.querySelector(".attach-text");
 
-                inputFile.addEventListener("change", (e) => {
-                    textAttach.textContent = e.target.files[0] ? "📎 File attached" : "";
+                inputFile.addEventListener("change", () => {
+                    textAttach.textContent = inputFile.files.length ? "📎 File attached" : "";
                 });
             });
 
@@ -107,6 +116,7 @@ function initFormContinuity(powerType) {
 
         const data = [];
         const images = [];
+        const selectedUnit = document.getElementById("unit")?.value || "";
 
         const project_id = document.getElementById("project_id").value;
         const location_1 = document.getElementById("location_1").value;
@@ -123,7 +133,6 @@ function initFormContinuity(powerType) {
         for (let i = 1; i <= cableSets; i++) {
             for (const point of combination) {
                 const result = document.querySelector(`[name="result_${i}_${point}"]`)?.value || "";
-                const unit = document.querySelector(`[name="unit_${i}_${point}"]`)?.value || "";
                 const observation = document.querySelector(`[name="observation_${i}_${point}"]`)?.value || "";
                 const imageInput = document.querySelector(`[name="image_${i}_${point}"]`);
                 const image = imageInput?.files[0];
@@ -132,7 +141,7 @@ function initFormContinuity(powerType) {
                     cable_set: i,
                     test_point: point,
                     result_value: result,
-                    unit: unit,
+                    unit: selectedUnit,
                     observation: observation
                 });
 
