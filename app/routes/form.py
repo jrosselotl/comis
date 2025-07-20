@@ -32,9 +32,9 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 async def save_form(
     project_id: int = Form(...),
     location_1: str = Form(...),
-    location_number_1: str = Form(...),
+    number_location_1: str = Form(...),
     location_2: str = Form(None),
-    location_number_2: str = Form(None),
+    number_location_2: str = Form(None),
     equipment_type: str = Form(...),
     equipment_type_number: str = Form(...),
     sub_equipment: str = Form(None),
