@@ -1,147 +1,162 @@
-function initFormularioTorque(tipoAlimentacion) {
+function initFormTorque(powerType) {
     const cableSetInput = document.getElementById("cable_sets");
-    const contenedorResultados = document.getElementById("contenedor-resultados");
-    const bloqueResultados = document.getElementById("bloque-resultados");
+    const resultContainer = document.getElementById("result-container");
+    const resultBlock = document.getElementById("result-block");
 
-    // ✅ Torque usa conductores unitarios, no combinaciones
-    const conductores = tipoAlimentacion === "monofasica"
+    // ✅ Torque uses individual conductors, not combinations
+    const conductors = powerType === "single_phase"
         ? ["L", "N", "PE"]
         : ["L1", "L2", "L3", "N", "PE"];
 
-    function generarCampos() {
-        const cantidad = parseInt(cableSetInput.value) || 0;
-        contenedorResultados.innerHTML = "";
-        bloqueResultados.style.display = cantidad > 0 ? "block" : "none";
+    function generateFields() {
+        const quantity = parseInt(cableSetInput.value) || 0;
+        resultContainer.innerHTML = "";
+        resultBlock.style.display = quantity > 0 ? "block" : "none";
 
-        for (let i = 1; i <= cantidad; i++) {
-            const tabla = document.createElement("table");
-            tabla.classList.add("tabla-prueba");
+        // ✅ Load global unit select (only once)
+        if (window.UNIT_BY_TEST && window.UNIT_BY_TEST["torque"]) {
+            const unitSelect = document.getElementById("unit");
+            const labelUnit = document.getElementById("label-unit");
 
-            tabla.innerHTML = 
+            if (unitSelect && labelUnit) {
+                unitSelect.innerHTML = '<option value="">Select unit...</option>';
+                window.UNIT_BY_TEST["torque"].forEach((u) => {
+                    const opt = document.createElement("option");
+                    opt.value = u;
+                    opt.textContent = u;
+                    unitSelect.appendChild(opt);
+                });
+                labelUnit.style.display = "block";
+            }
+        }
+
+        for (let i = 1; i <= quantity; i++) {
+            const table = document.createElement("table");
+            table.classList.add("test-table");
+
+            table.innerHTML = `
                 <caption>Torque - Cable Set ${i}</caption>
                 <tr>
                     <th>Conductor</th>
-                    <th>Valor Nominal</th>
-                    <th>Valor Comprobación</th>
-                    <th>Unidad</th>
-                    <th>Observaciones</th>
-                    <th>Imagen</th>
-                </tr>;
+                    <th>Nominal Value</th>
+                    <th>Verification Value</th>
+                    <th>Observation</th>
+                    <th>Image</th>
+                </tr>`;
 
-            conductores.forEach((conductor) => {
-                const fila = document.createElement("tr");
-                const idNominal = nominal_${i}_${conductor};
-                const idComprobacion = comprobacion_${i}_${conductor};
+            conductors.forEach((conductor) => {
+                const row = document.createElement("tr");
+                const idNominal = `nominal_${i}_${conductor}`;
+                const idVerification = `verification_${i}_${conductor}`;
 
-                fila.innerHTML = 
+                row.innerHTML = `
                     <td>${conductor}</td>
                     <td><input name="${idNominal}" type="text" /></td>
-                    <td><input name="${idComprobacion}" type="text" /></td>
-                    <td><input name="unidad_${i}_${conductor}" type="text" /></td>
-                    <td><input name="observaciones_${i}_${conductor}" type="text" /></td>
+                    <td><input name="${idVerification}" type="text" /></td>
+                    <td><input name="observation_${i}_${conductor}" type="text" /></td>
                     <td>
                         <label class="camera-label">
-                            📷 <span class="adjunto-texto"></span>
-                            <input type="file" accept="image/*" name="imagen_${i}_${conductor}" style="display:none;" />
+                            📷 <span class="attach-text"></span>
+                            <input type="file" accept="image/*" name="image_${i}_${conductor}" style="display:none;" />
                         </label>
                     </td>
-                ;
-                tabla.appendChild(fila);
+                `;
+                table.appendChild(row);
 
-                const label = fila.querySelector("label");
+                const label = row.querySelector("label");
                 const inputFile = label.querySelector("input[type='file']");
-                const textoAdjunto = label.querySelector(".adjunto-texto");
+                const textAttach = label.querySelector(".attach-text");
 
                 inputFile.addEventListener("change", () => {
-                    textoAdjunto.textContent = inputFile.files.length ? "📎 Archivo adjunto" : "";
+                    textAttach.textContent = inputFile.files.length ? "📎 File attached" : "";
                 });
             });
 
-            contenedorResultados.appendChild(tabla);
+            resultContainer.appendChild(table);
         }
     }
 
-    cableSetInput.addEventListener("input", generarCampos);
-    generarCampos();
+    cableSetInput.addEventListener("input", generateFields);
+    generateFields();
 
-    document.getElementById("formulario-pruebas").addEventListener("submit", async function (e) {
-        const tipo = document.getElementById("tipo-prueba")?.value;
-        if (tipo !== "torque") return;
+    document.getElementById("test-form").addEventListener("submit", async function (e) {
+        const type = document.getElementById("test-type")?.value;
+        if (type !== "torque") return;
 
         e.preventDefault();
 
         const cableSets = parseInt(cableSetInput.value);
         if (!cableSets) {
-            alert("Debe ingresar la cantidad de Cable Sets.");
+            alert("Enter cable set quantity.");
             return;
         }
 
-        const datos = [];
-        const imagenes = [];
+        const data = [];
+        const images = [];
 
         const project_id = document.getElementById("project_id").value;
-        const ubicacion_1 = document.getElementById("ubicacion_1").value;
-        const numero_ubicacion_1 = document.getElementById("numero_ubicacion_1").value;
-        const ubicacion_2 = document.getElementById("ubicacion_2")?.value || "";
-        const numero_ubicacion_2 = document.getElementById("numero_ubicacion_2")?.value || "";
-        const tipo_equipo = document.getElementById("tipo_equipo").value;
-        const numero_tipo_equipo = document.getElementById("numero_tipo_equipo").value;
-        const sub_equipo = document.getElementById("sub_equipo")?.value || "";
-        const numero_sub_equipo = document.getElementById("numero_sub_equipo")?.value || "";
-        const tipo_alimentacion = document.getElementById("tipo_alimentacion")?.value;
+        const location_1 = document.getElementById("location_1").value;
+        const number_location_1 = document.getElementById("number_location_1").value;
+        const location_2 = document.getElementById("location_2")?.value || "";
+        const number_location_2 = document.getElementById("number_location_2")?.value || "";
+        const equipment_type = document.getElementById("equipment_type").value;
+        const number_equipment_type = document.getElementById("number_equipment_type").value;
+        const sub_equipment = document.getElementById("sub_equipment")?.value || "";
+        const number_sub_equipment = document.getElementById("number_sub_equipment")?.value || "";
+        const power_type = document.getElementById("power_type")?.value;
         const terminal = document.getElementById("terminal")?.value || "";
+        const selectedUnit = document.getElementById("unit")?.value || "";
 
         for (let i = 1; i <= cableSets; i++) {
-            for (const conductor of conductores) {
-                const nominal = document.querySelector([name="nominal_${i}_${conductor}"])?.value || "";
-                const comprobacion = document.querySelector([name="comprobacion_${i}_${conductor}"])?.value || "";
-                const unidad = document.querySelector([name="unidad_${i}_${conductor}"])?.value || "";
-                const observaciones = document.querySelector([name="observaciones_${i}_${conductor}"])?.value || "";
-                const imagenInput = document.querySelector([name="imagen_${i}_${conductor}"]);
-                const imagen = imagenInput?.files[0];
+            for (const conductor of conductors) {
+                const nominal = document.querySelector(`[name="nominal_${i}_${conductor}"]`)?.value || "";
+                const verification = document.querySelector(`[name="verification_${i}_${conductor}"]`)?.value || "";
+                const observation = document.querySelector(`[name="observation_${i}_${conductor}"]`)?.value || "";
+                const imageInput = document.querySelector(`[name="image_${i}_${conductor}"]`);
+                const image = imageInput?.files[0];
 
-                datos.push({
+                data.push({
                     cable_set: i,
-                    punto_prueba: conductor,
-                    valor_nominal: nominal,
-                    valor_comprobacion: comprobacion,
-                    unidad: unidad,
-                    observaciones: observaciones
+                    test_point: conductor,
+                    nominal_value: nominal,
+                    verification_value: verification,
+                    unit: selectedUnit,
+                    observation: observation
                 });
 
-                imagenes.push(imagen || new File([], ""));
+                images.push(image || new File([], ""));
             }
         }
 
         const formData = new FormData();
         formData.append("project_id", project_id);
-        formData.append("ubicacion_1", ubicacion_1);
-        formData.append("numero_ubicacion_1", numero_ubicacion_1);
-        formData.append("ubicacion_2", ubicacion_2);
-        formData.append("numero_ubicacion_2", numero_ubicacion_2);
-        formData.append("tipo_equipo", tipo_equipo);
-        formData.append("numero_tipo_equipo", numero_tipo_equipo);
-        formData.append("sub_equipo", sub_equipo);
-        formData.append("numero_sub_equipo", numero_sub_equipo);
-        formData.append("tipo_prueba", "torque");
+        formData.append("location_1", location_1);
+        formData.append("number_location_1", number_location_1);
+        formData.append("location_2", location_2);
+        formData.append("number_location_2", number_location_2);
+        formData.append("equipment_type", equipment_type);
+        formData.append("number_equipment_type", number_equipment_type);
+        formData.append("sub_equipment", sub_equipment);
+        formData.append("number_sub_equipment", number_sub_equipment);
+        formData.append("test_type", "torque");
         formData.append("cable_sets", cableSets);
-        formData.append("tipo_alimentacion", tipo_alimentacion);
+        formData.append("power_type", power_type);
         formData.append("terminal", terminal);
-        formData.append("datos", JSON.stringify(datos));
-        imagenes.forEach((img) => formData.append("imagenes", img));
+        formData.append("data", JSON.stringify(data));
+        images.forEach((img) => formData.append("images", img));
 
-        const response = await fetch("/formulario/torque/guardar", {
+        const response = await fetch("/form/torque/save", {
             method: "POST",
             body: formData
         });
 
         const res = await response.json().catch(() => null);
-        if (response.ok && res?.mensaje) {
-            alert(res.mensaje);
+        if (response.ok && res?.message) {
+            alert(res.message);
         } else {
-            alert(res?.detail || "Error al guardar el formulario.");
+            alert(res?.detail || "Error saving form.");
         }
     });
 }
 
-window.initFormularioTorque = initFormularioTorque;
+window.initFormTorque = initFormTorque;
