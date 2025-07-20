@@ -5,7 +5,7 @@ from app.models.project import Project
 from app.models.test import Test
 from app.database import get_db
 
-router = APIRouter(prefix="/projects", tags=["Projects"])
+router = APIRouter(prefix="/project", tags=["Project"])
 
 # Create new project
 @router.post("/", response_model=ProjectOut)
@@ -19,9 +19,9 @@ def create_project(project: ProjectCreate, db: Session = Depends(get_db)):
     db.refresh(new_project)
     return new_project
 
-# Get all projects
+# Get all project
 @router.get("/", response_model=list[ProjectOut])
-def list_projects(db: Session = Depends(get_db)):
+def list_project(db: Session = Depends(get_db)):
     return db.query(Project).all()
 
 # Get available tests for a project
@@ -34,5 +34,5 @@ def get_project_tests(project_id: int, db: Session = Depends(get_db)):
 
 # Alias for frontend compatibility
 @router.get("/list")
-def alias_list_projects(db: Session = Depends(get_db)):
-    return list_projects(db)
+def alias_list_project(db: Session = Depends(get_db)):
+    return list_project(db)
