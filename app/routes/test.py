@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.schemas.test import TestCreate, TestOut
 from app.models.test import Test
 from app.database import get_db
-from app.utils.unit_conversion import get_units_by_test
+from app.utils.unit_conversion import get_unit_by_test
 
 router = APIRouter(prefix="/test", tags=["Test Types"])
 
