@@ -10,7 +10,7 @@ class Project(Base):
     name = Column(String, unique=True, nullable=False)
 
     equipment = relationship("Equipment", back_populates="project")
-    users_associated = relationship("UserProject", back_populates="project")
+    user_project = relationship("UserProject", back_populates="project")
 
     client_logo = Column(String, nullable=True)
     subcontractor_logo = Column(String, nullable=True)
