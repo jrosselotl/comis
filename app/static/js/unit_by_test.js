@@ -2,7 +2,7 @@
 
 (function () {
     const UNITS_BY_TEST = {
-        continuity: ["Ω", "mΩ", "kΩ", "MΩ"],
+        continuity: ["Ω", "mΩ", "kΩ"],
         isolation: ["MΩ", "GΩ", "kΩ"],
         contact_resistance: ["µΩ", "mΩ", "Ω"],
         torque: ["Nm", "Nmm", "kNm"],
