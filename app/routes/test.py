@@ -31,6 +31,6 @@ def alias_list_tests(db: Session = Depends(get_db)):
     return list_tests(db)
 
 # ✅ List valid units by test type
-@router.get("/units")
+@router.get("/unit")
 def list_units(test_type: str = Query(...)):
     return {"units": get_units_by_test(test_type)}
