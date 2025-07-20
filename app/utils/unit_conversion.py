@@ -32,7 +32,7 @@ UNIT_CONVERSION = {
     }
 }
 
-def get_units_by_test(test_type: str):
+def get_unit_by_test(test_type: str):
     units = {
         "continuity": ["Ω", "mΩ"],
         "isolation": ["kΩ", "MΩ", "GΩ"],
