@@ -61,7 +61,7 @@ async def render_index(request: Request, db: Session = Depends(get_db)):
         request.session.clear()
         return RedirectResponse(url="/login", status_code=302)
 
-    if user.rol == "project":
+    if user.role == "project":
         return RedirectResponse(url="/admin", status_code=302)
 
     return templates.TemplateResponse("index.html", {"request": request})
@@ -74,7 +74,7 @@ async def render_admin(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url="/login", status_code=302)
 
     user = db.query(User).filter_by(id=user_id).first()
-    if not user or user.rol != "project":
+    if not user or user.role != "project":
         return RedirectResponse(url="/login", status_code=302)
 
     return templates.TemplateResponse("index_admin.html", {"request": request})
