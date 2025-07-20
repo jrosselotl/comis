@@ -1,7 +1,7 @@
 // static/js/unidades_por_test.js
 
 (function () {
-    const UNITS_BY_TEST = {
+    const UNIT_BY_TEST = {
         continuity: ["Ω", "mΩ", "kΩ"],
         isolation: ["MΩ", "GΩ", "kΩ"],
         contact_resistance: ["µΩ", "mΩ", "Ω"],
