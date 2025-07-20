@@ -1,20 +1,23 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const testTypeSelect = document.getElementById("test-type");
-  const featureBlock = document.getElementById("block-features");
-  const resultBlock = document.getElementById("block-results");
-  const powerTypeSelect = document.getElementById("power_type");
+
 
   const location1Select = document.getElementById("location_1");
   const numberLocation1Select = document.getElementById("number_location_1");
   const location2Container = document.getElementById("label-location_2");
   const location2Select = document.getElementById("location_2");
   const numberLocation2Select = document.getElementById("number_location_2");
-
+  
   const equipmentTypeSelect = document.getElementById("equipment_type");
   const numberEquipmentTypeSelect = document.getElementById("number_equipment_type");
   const subEquipmentContainer = document.getElementById("label-sub_equipment");
   const subEquipmentSelect = document.getElementById("sub_equipment");
   const numberSubEquipmentSelect = document.getElementById("number_sub_equipment");
+
+  const testTypeSelect = document.getElementById("test-type");
+  const featureBlock = document.getElementById("block-features");
+  const resultBlock = document.getElementById("block-results");
+  const powerTypeSelect = document.getElementById("power_type");
+  
 
   // ✅ Load project and test types
   async function loadProjectAndTestType() {
