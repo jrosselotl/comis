@@ -24,6 +24,23 @@ function initFormContactResistance(powerType) {
         resultContainer.innerHTML = "";
         resultBlock.style.display = quantity > 0 ? "block" : "none";
 
+        // ✅ Load global unit select (only once)
+        if (window.UNIT_BY_TEST && window.UNIT_BY_TEST["contact_resistance"]) {
+            const unitSelect = document.getElementById("unit");
+            const labelUnit = document.getElementById("label-unit");
+
+            if (unitSelect && labelUnit) {
+                unitSelect.innerHTML = '<option value="">Select unit...</option>';
+                window.UNIT_BY_TEST["contact_resistance"].forEach((u) => {
+                    const opt = document.createElement("option");
+                    opt.value = u;
+                    opt.textContent = u;
+                    unitSelect.appendChild(opt);
+                });
+                labelUnit.style.display = "block";
+            }
+        }
+
         for (let i = 1; i <= quantity; i++) {
             const table = document.createElement("table");
             table.classList.add("test-table");
@@ -33,7 +50,6 @@ function initFormContactResistance(powerType) {
                 <tr>
                     <th>Point</th>
                     <th>Result / N/A</th>
-                    <th>Unit</th>
                     <th>Observation</th>
                     <th>Image</th>
                 </tr>`;
@@ -51,7 +67,6 @@ function initFormContactResistance(powerType) {
                             <input type="text" name="${idResult}" id="${idResult}" />
                         </div>
                     </td>
-                    <td><input name="unit_${i}_${point}" type="text" /></td>
                     <td><input name="observation_${i}_${point}" type="text" /></td>
                     <td>
                         <label class="camera-label">
@@ -112,10 +127,11 @@ function initFormContactResistance(powerType) {
         const power_type = document.getElementById("power_type")?.value;
         const terminal = document.getElementById("terminal")?.value || "";
 
+        const selectedUnit = document.getElementById("unit")?.value || "";
+
         for (let i = 1; i <= cableSets; i++) {
             for (const point of combination) {
                 const result = document.querySelector(`[name="result_${i}_${point}"]`)?.value || "";
-                const unit = document.querySelector(`[name="unit_${i}_${point}"]`)?.value || "";
                 const observation = document.querySelector(`[name="observation_${i}_${point}"]`)?.value || "";
                 const imageInput = document.querySelector(`[name="image_${i}_${point}"]`);
                 const image = imageInput?.files[0];
@@ -124,7 +140,7 @@ function initFormContactResistance(powerType) {
                     cable_set: i,
                     test_point: point,
                     result_value: result,
-                    unit: unit,
+                    unit: selectedUnit,
                     observation: observation
                 });
 
