@@ -5,8 +5,8 @@ function initFormTorque(powerType) {
     const resultBlock = document.getElementById("result-block");
     
 
-    // ✅ Torque uses individual conductors, not combinations
-    const conductors = powerType === "single_phase"
+    // ✅ Torque uses individual point, not combinations
+    const point = powerType === "single_phase"
         ? ["L", "N", "PE"]
         : ["L1", "L2", "L3", "N", "PE"];
 
@@ -39,7 +39,7 @@ function initFormTorque(powerType) {
             table.innerHTML = `
                 <caption>Torque - Cable Set ${i}</caption>
                 <tr>
-                    <th>Conductor</th>
+                    <th>Point</th>
                     <th>Nominal Value</th>
                     <th>Verification Value</th>
                     <th>Unit</th>
@@ -47,25 +47,25 @@ function initFormTorque(powerType) {
                     <th>Image</th>
                 </tr>`;
 
-            conductors.forEach((conductor) => {
+            point.forEach((point) => {
                 const row = document.createElement("tr");
-                const idNominal = `nominal_${i}_${conductor}`;
-                const idVerification = `verification_${i}_${conductor}`;
+                const idNominal = `nominal_${i}_${point}`;
+                const idVerification = `verification_${i}_${point}`;
 
                 row.innerHTML = `
-                    <td>${conductor}</td>
+                    <td>${point}</td>
                     <td><input name="${idNominal}" type="text" /></td>
                     <td><input name="${idVerification}" type="text" /></td>
                     <td>
-                      <select name="unit_${i}_${conductor}">
+                      <select name="unit_${i}_${point}">
                         <option value="${selectedUnit}">${selectedUnit}</option>
                       </select>
                     </td>
-                    <td><input name="observation_${i}_${conductor}" type="text" /></td>
+                    <td><input name="observation_${i}_${point}" type="text" /></td>
                     <td>
                         <label class="camera-label">
                             📷 <span class="attach-text"></span>
-                            <input type="file" accept="image/*" name="image_${i}_${conductor}" style="display:none;" />
+                            <input type="file" accept="image/*" name="image_${i}_${point}" style="display:none;" />
                         </label>
                     </td>
                 `;
