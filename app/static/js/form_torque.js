@@ -1,7 +1,9 @@
 function initFormTorque(powerType) {
     const cableSetInput = document.getElementById("cable_sets");
+    const selectedUnit = document.getElementById("unit")?.value || "";
     const resultContainer = document.getElementById("result-container");
     const resultBlock = document.getElementById("result-block");
+    
 
     // ✅ Torque uses individual conductors, not combinations
     const conductors = powerType === "single_phase"
@@ -111,7 +113,7 @@ function initFormTorque(powerType) {
         const number_sub_equipment = document.getElementById("number_sub_equipment")?.value || "";
         const power_type = document.getElementById("power_type")?.value;
         const terminal = document.getElementById("terminal")?.value || "";
-        const selectedUnit = document.getElementById("unit")?.value || "";
+        
 
         for (let i = 1; i <= cableSets; i++) {
             for (const conductor of conductors) {
