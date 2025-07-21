@@ -169,7 +169,7 @@ function initFormContinuity(powerType) {
         formData.append("data", JSON.stringify(data));
         images.forEach((img) => formData.append("images", img));
 
-        const response = await fetch("/form/save", {
+        const response = await fetch("/form/continuity/save", {
             method: "POST",
             body: formData
         });
