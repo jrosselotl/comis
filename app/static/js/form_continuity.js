@@ -68,6 +68,11 @@ function initFormContinuity(powerType) {
                             <input type="text" name="${idResult}" id="${idResult}" />
                         </div>
                     </td>
+                    <td>
+                      <select name="unit_${i}_${point}">
+                        <option value="${selectedUnit}">${selectedUnit}</option>
+                      </select>
+                    </td>
                     <td><input name="observation_${i}_${point}" type="text" /></td>
                     <td>
                         <label class="camera-label">
