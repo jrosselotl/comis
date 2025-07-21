@@ -20,19 +20,19 @@ def create_equipment(equipment: EquipmentCreate, db: Session = Depends(get_db)):
     if not location_1 or not equipment_type:
         raise HTTPException(status_code=400, detail="Location or equipment type is not valid")
 
-    code = f"{location_1.name}{equipment.location_number_1}"
+    code = f"{location_1.name}{equipment.number_location_1}"
     if location_2:
-        code += f"-{location_2.name}{equipment.location_number_2 or ''}"
-    code += f"-{equipment_type.name}{equipment.equipment_type_number}"
+        code += f"-{location_2.name}{equipment.number_location_2 or ''}"
+    code += f"-{equipment_type.name}{equipment.number_equipment_type}"
     if sub_equipment:
-        code += f"-{sub_equipment.name}{equipment.sub_equipment_number or ''}"
+        code += f"-{sub_equipment.name}{equipment.number_sub_equipment or ''}"
 
     new_equipment = Equipment(
         project_id=equipment.project_id,
         location_1_id=equipment.location_1_id,
-        location_number_1=equipment.location_number_1,
+        number_location_1=equipment.number_location_1,
         location_2_id=equipment.location_2_id,
-        location_number_2=equipment.location_number_2,
+        number_location_2=equipment.number_location_2,
         equipment_type_id=equipment.equipment_type_id,
         equipment_type_number=equipment.equipment_type_number,
         sub_equipment_id=equipment.sub_equipment_id,
