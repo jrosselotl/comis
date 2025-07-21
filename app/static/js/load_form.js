@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const testTypeSelect = document.getElementById("test-type");
   const featureBlock = document.getElementById("block-features");
-  const resultBlock = document.getElementById("block-results");
+  const resultBlock = document.getElementById("result-block");
   const powerTypeSelect = document.getElementById("power_type");
 
   // ✅ Helper para mostrar/ocultar selects con required
