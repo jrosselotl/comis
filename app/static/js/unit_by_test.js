@@ -1,5 +1,4 @@
-// static/js/unidades_por_test.js
-
+// ✅ Static Units by Test
 (function () {
     const UNIT_BY_TEST = {
         continuity: ["Ω", "mΩ", "kΩ"],
@@ -12,7 +11,7 @@
         // Future: pressure: ["bar", "psi", "kPa"]
     };
 
-    // Prevent redefinition if already defined globally
+    // ✅ Prevent redefinition if already defined globally
     if (!window.UNIT_BY_TEST) {
         window.UNIT_BY_TEST = UNIT_BY_TEST;
     } else {
@@ -21,7 +20,7 @@
 })();
 
 /**
- * Dynamically loads unit into the <select> based on the test type
+ * ✅ Dynamically loads unit into the <select> based on the test type
  * @param {string} testType - The test type (e.g., "continuity", "torque")
  */
 function loadUnitByTest(testType) {
@@ -48,3 +47,14 @@ function loadUnitByTest(testType) {
         labelUnit.style.display = "none";
     }
 }
+
+/**
+ * ✅ Auto-update all table Unit fields when the global unit changes
+ */
+document.getElementById("unit")?.addEventListener("change", () => {
+    const selectedUnit = document.getElementById("unit").value;
+
+    document.querySelectorAll("#result-container input[name^='unit_']").forEach(input => {
+        input.value = selectedUnit;
+    });
+});
