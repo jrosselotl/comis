@@ -1,14 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const btnDashboard = document.getElementById("btn-dashboard");
-  const btnMyTest = document.getElementById("btn-mytest");
-  const btnNewTest = document.getElementById("btn-newtest");
+  const btnDashboard = document.getElementById("btnDashboard");
+  const btnMyTest = document.getElementById("btnMyTest");
+  const btnNewTest = document.getElementById("btnNewTest");
 
   const sectionDashboard = document.getElementById("section-dashboard");
   const sectionMyTest = document.getElementById("section-mytest");
   const sectionNewTest = document.getElementById("section-newtest");
 
-  const tableMyTest = document.getElementById("tabla-mytest");
-  const chartCanvas = document.getElementById("grafico-test");
+  const tableMyTest = document.getElementById("table-mytest");
+  const chartCanvas = document.getElementById("chart-test");
 
   // ✅ Show only one section
   function showSection(section) {
@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!chartCanvas) return;
 
     try {
-      const res = await fetch("/test_done/user_stats/1"); // Logged user (mock id=1)
+      const res = await fetch("/test_done/user_stats/1"); // Mock user id=1
       const data = await res.json();
 
       const types = Object.keys(data);
@@ -55,31 +55,30 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadMyTest() {
     tableMyTest.innerHTML = "";
     try {
-      const res = await fetch("/test_done/list_user/1"); // Logged user (mock id=1)
-      const test = await res.json();
+      const res = await fetch("/test_performed/list_user/1"); // Mock user id=1
+      const tests = await res.json();
 
-      test.forEach((t) => {
+      tests.forEach((t) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${t.id}</td>
+          <td>${t.asset}</td>
           <td>${t.test_type}</td>
-          <td>${t.equipment}</td>
           <td>${new Date(t.date).toLocaleDateString()}</td>
           <td>${t.status}</td>
           <td>
             ${
               t.status === "Incomplete"
-                ? `<button class="btn btn-continue" data-id="${t.id}">Continue</button>`
+                ? `<button class="btn btn-continue" data-id="${t.id}">✏️ Edit</button>`
                 : ""
             }
             ${
-              t.status === "Complete"
-                ? `<button class="btn btn-send" data-id="${t.id}">Send</button>`
+              t.status !== "Sent"
+                ? `<button class="btn btn-send" data-id="${t.id}">📧 Send</button>`
                 : ""
             }
           </td>
         `;
-        tableMyTests.appendChild(tr);
+        tableMyTest.appendChild(tr);
       });
 
       // ✅ Events for buttons
@@ -87,7 +86,6 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.addEventListener("click", async (e) => {
           const id = e.target.dataset.id;
           alert(`Loading form to continue test ID ${id}...`);
-          // TODO: Load data into the form by test_id
           showSection(sectionNewTest);
         });
       });
@@ -95,9 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll(".btn-send").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
           const id = e.target.dataset.id;
-          if (
-            confirm(`Do you want to send the PDF by email for test ID ${id}?`)
-          ) {
+          if (confirm(`Do you want to send the PDF by email for test ID ${id}?`)) {
             const resp = await fetch(`/test_done/send_pdf/${id}`, {
               method: "POST",
             });
@@ -117,9 +113,9 @@ document.addEventListener("DOMContentLoaded", () => {
     loadChart();
   });
 
-  btnMyTests.addEventListener("click", () => {
-    showSection(sectionMyTests);
-    loadMyTests();
+  btnMyTest.addEventListener("click", () => {
+    showSection(sectionMyTest);
+    loadMyTest();
   });
 
   btnNewTest.addEventListener("click", () => {
