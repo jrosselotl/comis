@@ -40,6 +40,7 @@ function initFormTorque(powerType) {
                     <th>Conductor</th>
                     <th>Nominal Value</th>
                     <th>Verification Value</th>
+                    <th>Unit</th>
                     <th>Observation</th>
                     <th>Image</th>
                 </tr>`;
@@ -53,6 +54,11 @@ function initFormTorque(powerType) {
                     <td>${conductor}</td>
                     <td><input name="${idNominal}" type="text" /></td>
                     <td><input name="${idVerification}" type="text" /></td>
+                    <td>
+                      <select name="unit_${i}_${point}">
+                        <option value="${selectedUnit}">${selectedUnit}</option>
+                      </select>
+                    </td>
                     <td><input name="observation_${i}_${conductor}" type="text" /></td>
                     <td>
                         <label class="camera-label">
