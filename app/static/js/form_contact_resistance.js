@@ -50,6 +50,7 @@ function initFormContactResistance(powerType) {
                 <tr>
                     <th>Point</th>
                     <th>Result / N/A</th>
+                    <th>Unit</th>
                     <th>Observation</th>
                     <th>Image</th>
                 </tr>`;
