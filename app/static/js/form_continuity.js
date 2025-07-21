@@ -70,7 +70,7 @@ function initFormContinuity(powerType) {
                         </div>
                     </td>
                     <td>
-                    <input type="text" name="unit_${i}_${point}" value="${selectedUnit}" readonly />
+                    <input type="text" value="${selectedUnit}" readonly name="unit_${i}_${point}" />
                     </td>
                     <td><input name="observation_${i}_${point}" type="text" /></td>
                     <td>
@@ -170,7 +170,7 @@ function initFormContinuity(powerType) {
         formData.append("data", JSON.stringify(data));
         images.forEach((img) => formData.append("images", img));
 
-        const response = await fetch("/form/continuity/save", {
+        const response = await fetch("/form/save", {
             method: "POST",
             body: formData
         });
