@@ -22,7 +22,13 @@ def list_user_tests(user_id: int, db: Session = Depends(get_db)):
         {
             "id": t.TestPerformed.id,
             "test_type": t.Test.name,
-            "equipment_code": t.Equipment.code,
+            # ✅ Asset completo concatenado
+            "asset": "-".join(
+                filter(None, [
+                    f"{t.Equipment.location_1}{t.Equipment.number_location_1 or ''}",
+                    f"{t.Equipment.location_2}{t.Equipment.number_location_2 or ''}" if t.Equipment.location_2 else None,
+                    f"{t.Equipment.equipment_type}{t.Equipment.number_equipment_type or ''}",
+                    f"{t.Equipment.sub_equipment}{t.Equipment.number_sub_equipment or ''}" if t.Equipment.sub_equipment else None,
             "date": t.TestPerformed.date.strftime("%Y-%m-%d"),
             "status": t.TestPerformed.status
         }
