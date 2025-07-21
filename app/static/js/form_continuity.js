@@ -1,9 +1,10 @@
 function initFormContinuity(powerType) {
     const cableSetInput = document.getElementById("cable_sets");
+    const selectedUnit = document.getElementById("unit")?.value || "";
     const resultContainer = document.getElementById("result-container");
     const resultBlock = document.getElementById("result-block");
 
-    const conductors = powerType === "single_phase"
+    const conductor = powerType === "single_phase"
         ? ["L", "N", "PE"]
         : ["L1", "L2", "L3", "N", "PE"];
 
@@ -17,7 +18,7 @@ function initFormContinuity(powerType) {
         return combo;
     }
 
-    const combination = generateCombination(conductors);
+    const combination = generateCombination(conductor);
 
     function generateFields() {
         const quantity = parseInt(cableSetInput.value) || 0;
