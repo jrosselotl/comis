@@ -18,6 +18,11 @@ function initFormContinuity(powerType) {
     }
 
     const combination = generateCombination(conductors);
+    const resultContainer = document.getElementById("result-container");
+        if (!resultContainer) {
+    console.error("Result container not found for continuity");
+    return;
+    }
 
     function generateFields() {
         const quantity = parseInt(cableSetInput.value) || 0;
