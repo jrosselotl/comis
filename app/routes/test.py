@@ -23,7 +23,7 @@ def create_test(test: TestCreate, db: Session = Depends(get_db)):
 # ✅ List all test types
 @router.get("/", response_model=list[TestOut])
 def list_test(db: Session = Depends(get_db)):
-    return db.query(Test).all()
+    return db.query(Test).order_by(Test.id.asc()).all()
 
 # ✅ Alias to list (keeps JS compatibility)
 @router.get("/list", response_model=list[TestOut])
