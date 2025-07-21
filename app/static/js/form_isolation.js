@@ -91,7 +91,7 @@ function initFormIsolation(powerType) {
     cableSetInput.addEventListener("input", generateFields);
     generateFields();
 
-    document.getElementById("test-form").addEventListener("submit", async function (e) {
+    document.getElementById("form-test").addEventListener("submit", async function (e) {
         const type = document.getElementById("test-type")?.value;
         if (type !== "isolation") return;
 
