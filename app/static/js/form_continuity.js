@@ -1,6 +1,5 @@
 function initFormContinuity(powerType) {
     const cableSetInput = document.getElementById("cable_sets");
-    const selectedUnit = document.getElementById("unit")?.value || "";
     const resultContainer = document.getElementById("result-container");
     const resultBlock = document.getElementById("result-block");
 
@@ -57,6 +56,7 @@ function initFormContinuity(powerType) {
                 </tr>`;
 
             combination.forEach((point) => {
+                const selectedUnit = document.getElementById("unit")?.value || "";
                 const row = document.createElement("tr");
                 const idResult = `result_${i}_${point}`;
                 const idNA = `na_${i}_${point}`;
