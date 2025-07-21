@@ -123,7 +123,6 @@ function initFormContinuity(powerType) {
 
         const data = [];
         const images = [];
-        const selectedUnit = document.getElementById("unit")?.value || "";
 
         const project_id = document.getElementById("project_id").value;
         const location_1 = document.getElementById("location_1").value;
