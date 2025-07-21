@@ -5,7 +5,7 @@ function initFormTorque(powerType) {
     
 
     // ✅ Torque uses individual point, not combinations
-    const point = powerType === "single_phase"
+    const conductors = powerType === "single_phase"
         ? ["L", "N", "PE"]
         : ["L1", "L2", "L3", "N", "PE"];
 
@@ -114,7 +114,7 @@ function initFormTorque(powerType) {
         
 
         for (let i = 1; i <= cableSets; i++) {
-            for (const conductor of conductors) {
+            for (const point of conductors) {
                 const nominal = document.querySelector(`[name="nominal_${i}_${conductor}"]`)?.value || "";
                 const verification = document.querySelector(`[name="verification_${i}_${conductor}"]`)?.value || "";
                 const observation = document.querySelector(`[name="observation_${i}_${conductor}"]`)?.value || "";
@@ -151,7 +151,7 @@ function initFormTorque(powerType) {
         formData.append("data", JSON.stringify(data));
         images.forEach((img) => formData.append("images", img));
 
-        const response = await fetch("/form/save", {
+        const response = await fetch("/form/torque/save", {
             method: "POST",
             body: formData
         });
