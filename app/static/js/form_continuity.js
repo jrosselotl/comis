@@ -4,7 +4,7 @@ function initFormContinuity(powerType) {
     const resultContainer = document.getElementById("result-container");
     const resultBlock = document.getElementById("result-block");
 
-    const conductor = powerType === "single_phase"
+    const point = powerType === "single_phase"
         ? ["L", "N", "PE"]
         : ["L1", "L2", "L3", "N", "PE"];
 
@@ -18,7 +18,7 @@ function initFormContinuity(powerType) {
         return combo;
     }
 
-    const combination = generateCombination(conductor);
+    const combination = generateCombination(point);
 
     function generateFields() {
         const quantity = parseInt(cableSetInput.value) || 0;
