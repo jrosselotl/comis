@@ -57,7 +57,7 @@ function initFormTorque(powerType) {
                     <td><input name="${idNominal}" type="text" /></td>
                     <td><input name="${idVerification}" type="text" /></td>
                     <td>
-                    <input type="text" name="unit_${i}_${point}" value="${selectedUnit}" readonly />
+                    <input type="text" value="${selectedUnit}" readonly name="unit_${i}_${point}" />
                     </td>
                     <td><input name="observation_${i}_${point}" type="text" /></td>
                     <td>
