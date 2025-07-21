@@ -54,7 +54,13 @@ function initFormIsolation(powerType) {
                             <input type="text" name="${idResult}" id="${idResult}" />
                         </div>
                     </td>
-                    <td><input name="unit_${i}_${point}" type="text" /></td>
+                    <td>
+                      <select name="unit_${i}_${point}">
+                        <option value="${document.getElementById("unit")?.value || ""}">
+                          ${document.getElementById("unit")?.value || ""}
+                        </option>
+                      </select>
+                    </td>
                     <td><input name="${idTime}" type="number" /></td>
                     <td><input name="observation_${i}_${point}" type="text" /></td>
                     <td>
