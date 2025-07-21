@@ -75,36 +75,43 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       location1Select.addEventListener("change", () => {
-        const selected = location1Select.selectedOptions[0];
-        if (!selected) return;
+  const selected = location1Select.selectedOptions[0];
+  if (!selected) return;
 
-        const numbers1 = JSON.parse(selected.dataset.number || "[]");
-        numberLocation1Select.innerHTML = "";
-        numbers1.forEach((n) => {
-          const opt = document.createElement("option");
-          opt.value = n;
-          opt.textContent = n;
-          numberLocation1Select.appendChild(opt);
-        });
+  const numbers1 = JSON.parse(selected.dataset.number || "[]");
 
-        const location2 = selected.dataset.location2;
-        if (location2) {
-          location2Container.style.display = "block";
-          location2Select.innerHTML = `<option value="${location2}">${location2}</option>`;
-          const numbers2 = JSON.parse(selected.dataset.number2 || "[]");
-          numberLocation2Select.innerHTML = "";
-          numbers2.forEach((n) => {
-            const opt = document.createElement("option");
-            opt.value = n;
-            opt.textContent = n;
-            numberLocation2Select.appendChild(opt);
-          });
-        } else {
-          location2Container.style.display = "none";
-          location2Select.innerHTML = "";
-          numberLocation2Select.innerHTML = "";
-        }
-      });
+  if (numbers1.length > 0) {
+    numberLocation1Select.parentElement.style.display = "block";
+    numberLocation1Select.innerHTML = "";
+    numbers1.forEach((n) => {
+      const opt = document.createElement("option");
+      opt.value = n;
+      opt.textContent = n;
+      numberLocation1Select.appendChild(opt);
+    });
+  } else {
+    numberLocation1Select.parentElement.style.display = "none";
+    numberLocation1Select.innerHTML = "";
+  }
+
+  const location2 = selected.dataset.location2;
+  if (location2) {
+    location2Container.style.display = "block";
+    location2Select.innerHTML = `<option value="${location2}">${location2}</option>`;
+    const numbers2 = JSON.parse(selected.dataset.number2 || "[]");
+    numberLocation2Select.innerHTML = "";
+    numbers2.forEach((n) => {
+      const opt = document.createElement("option");
+      opt.value = n;
+      opt.textContent = n;
+      numberLocation2Select.appendChild(opt);
+    });
+  } else {
+    location2Container.style.display = "none";
+    location2Select.innerHTML = "";
+    numberLocation2Select.innerHTML = "";
+  }
+});
     } catch (error) {
       console.error("Error loading location:", error);
     }
@@ -128,36 +135,51 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       equipmentTypeSelect.addEventListener("change", () => {
-        const selected = equipmentTypeSelect.selectedOptions[0];
-        if (!selected) return;
+  const selected = equipmentTypeSelect.selectedOptions[0];
+  if (!selected) return;
 
-        const numbers = JSON.parse(selected.dataset.number || "[]");
-        numberEquipmentTypeSelect.innerHTML = "";
-        numbers.forEach((n) => {
-          const opt = document.createElement("option");
-          opt.value = n;
-          opt.textContent = n;
-          numberEquipmentTypeSelect.appendChild(opt);
-        });
+  const numbers = JSON.parse(selected.dataset.number || "[]");
+  if (numbers.length > 0) {
+    numberEquipmentTypeSelect.parentElement.style.display = "block";
+    numberEquipmentTypeSelect.innerHTML = "";
+    numbers.forEach((n) => {
+      const opt = document.createElement("option");
+      opt.value = n;
+      opt.textContent = n;
+      numberEquipmentTypeSelect.appendChild(opt);
+    });
+  } else {
+    numberEquipmentTypeSelect.parentElement.style.display = "none";
+    numberEquipmentTypeSelect.innerHTML = "";
+  }
 
-        const sub = selected.dataset.sub;
-        if (sub) {
-          subEquipmentContainer.style.display = "block";
-          subEquipmentSelect.innerHTML = `<option value="${sub}">${sub}</option>`;
-          const numbersSub = JSON.parse(selected.dataset.numberSub || "[]");
-          numberSubEquipmentSelect.innerHTML = "";
-          numbersSub.forEach((n) => {
-            const opt = document.createElement("option");
-            opt.value = n;
-            opt.textContent = n;
-            numberSubEquipmentSelect.appendChild(opt);
-          });
-        } else {
-          subEquipmentContainer.style.display = "none";
-          subEquipmentSelect.innerHTML = "";
-          numberSubEquipmentSelect.innerHTML = "";
-        }
+  const sub = selected.dataset.sub;
+  if (sub) {
+    subEquipmentContainer.style.display = "block";
+    subEquipmentSelect.innerHTML = `<option value="${sub}">${sub}</option>`;
+
+    const numbersSub = JSON.parse(selected.dataset.numberSub || "[]");
+    if (numbersSub.length > 0) {
+      numberSubEquipmentSelect.parentElement.style.display = "block";
+      numberSubEquipmentSelect.innerHTML = "";
+      numbersSub.forEach((n) => {
+        const opt = document.createElement("option");
+        opt.value = n;
+        opt.textContent = n;
+        numberSubEquipmentSelect.appendChild(opt);
       });
+    } else {
+      numberSubEquipmentSelect.parentElement.style.display = "none";
+      numberSubEquipmentSelect.innerHTML = "";
+    }
+  } else {
+    subEquipmentContainer.style.display = "none";
+    subEquipmentSelect.innerHTML = "";
+    numberSubEquipmentSelect.parentElement.style.display = "none";
+    numberSubEquipmentSelect.innerHTML = "";
+  }
+});
+
     } catch (error) {
       console.error("Error loading equipment:", error);
     }
