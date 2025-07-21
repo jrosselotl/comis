@@ -1,9 +1,10 @@
 function initFormContactResistance(powerType) {
     const cableSetInput = document.getElementById("cable_sets");
+    const selectedUnit = document.getElementById("unit")?.value || "";
     const resultContainer = document.getElementById("result-container");
     const resultBlock = document.getElementById("result-block");
 
-    const conductorList = powerType === "single_phase"
+    const pointList = powerType === "single_phase"
         ? ["L", "N", "PE"]
         : ["L1", "L2", "L3", "N", "PE"];
 
@@ -17,7 +18,7 @@ function initFormContactResistance(powerType) {
         return combo;
     }
 
-    const combination = generateCombination(conductorList);
+    const combination = generateCombination(pointList);
 
     function generateFields() {
         const quantity = parseInt(cableSetInput.value) || 0;
@@ -133,8 +134,6 @@ function initFormContactResistance(powerType) {
         const number_sub_equipment = document.getElementById("number_sub_equipment")?.value || "";
         const power_type = document.getElementById("power_type")?.value;
         const terminal = document.getElementById("terminal")?.value || "";
-
-        const selectedUnit = document.getElementById("unit")?.value || "";
 
         for (let i = 1; i <= cableSets; i++) {
             for (const point of combination) {
