@@ -40,7 +40,6 @@ function initFormIsolation(powerType) {
                 </tr>`;
 
             combination.forEach((point) => {
-                const selectedUnit = document.getElementById("unit")?.value || "";
                 const row = document.createElement("tr");
                 const idResult = `result_${i}_${point}`;
                 const idNA = `na_${i}_${point}`;
@@ -96,7 +95,7 @@ function initFormIsolation(powerType) {
         if (type !== "isolation") return;
 
         e.preventDefault();
-
+        const selectedUnit = document.getElementById("unit")?.value || "";
         const cableSets = parseInt(cableSetInput.value);
         if (!cableSets) {
             alert("Enter cable set quantity.");
