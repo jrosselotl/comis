@@ -7,13 +7,13 @@ router = APIRouter(prefix="/equipment_type", tags=["Equipment Type"])
 
 @router.get("/list")
 def list_equipment_type(db: Session = Depends(get_db)):
-    types = db.query(EquipmentType).all()
+    equipment_types = db.query(EquipmentType).all()
     return [
         {
             "equipment_type": t.equipment_type,
-            "number_equipment_type": t.number_equipment_type,  # ARRAY in DB
-            "sub_equipment": t.sub_equipment,
-            "number_sub_equipment": t.number_sub_equipment,    # ARRAY in DB
+            "number_equipment_type": t.number_equipment_type if hasattr(t, "number_equipment_type") else [],
+            "sub_equipment": t.sub_equipment if hasattr(t, "sub_equipment") else "",
+            "number_sub_equipment": t.number_sub_equipment if hasattr(t, "number_sub_equipment") else []
         }
-        for t in types
+        for t in equipment_types
     ]
