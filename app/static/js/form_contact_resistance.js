@@ -26,6 +26,7 @@ function initFormContactResistance(powerType) {
 
         // ✅ Load global unit select (only once)
         if (window.UNIT_BY_TEST && window.UNIT_BY_TEST["contact_resistance"]) {
+            const unitSelect = document.getElementById("unit");
             const labelUnit = document.getElementById("label-unit");
 
             if (unitSelect && labelUnit) {
