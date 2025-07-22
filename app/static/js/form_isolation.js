@@ -23,7 +23,7 @@ function initFormIsolation(powerType) {
         const quantity = parseInt(cableSetInput.value) || 0;
         resultContainer.innerHTML = "";
         resultBlock.style.display = quantity > 0 ? "block" : "none";
-
+        const selectedUnit = document.getElementById("unit")?.value || "";
         for (let i = 1; i <= quantity; i++) {
             const table = document.createElement("table");
             table.classList.add("test-table");
@@ -95,7 +95,6 @@ function initFormIsolation(powerType) {
         if (type !== "isolation") return;
 
         e.preventDefault();
-        const selectedUnit = document.getElementById("unit")?.value || "";
         const cableSets = parseInt(cableSetInput.value);
         if (!cableSets) {
             alert("Enter cable set quantity.");
