@@ -8,24 +8,20 @@ class Equipment(Base):
     __tablename__ = "equipment"
 
     id = Column(Integer, primary_key=True, index=True)
-    project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
-
-    location_1_id = Column(Integer, ForeignKey("location.id"), nullable=False)
-    location_2_id = Column(Integer, ForeignKey("location.id"), nullable=True)
-
-    equipment_type_id = Column(Integer, ForeignKey("equipment_type.id"), nullable=False)
-    sub_equipment_type_id = Column(Integer, ForeignKey("equipment_type.id"), nullable=True)
-
-    number_location_1 = Column(Integer, nullable=False, default=1)
-    number_location_2 = Column(Integer, nullable=True)
-    number_equipment_type = Column(Integer, nullable=False, default=1)
-    number_sub_equipment_type = Column(Integer, nullable=True)
-
-    terminal = Column(String(50), nullable=True)
-    power_type = Column(String(50), nullable=True)  # antes "tipo_alimentacion"
-    cable_set = Column(Integer, nullable=True)
-    code = Column(String(100), unique=True, nullable=False)  # antes "codigo"
-    created_at = Column(DateTime, default=datetime.utcnow)  # antes "fecha_creacion"
+    project_id = Column(Integer, ForeignKey("projects.id"))
+    location_1 = Column(String, nullable=False)
+    number_location_1 = Column(Integer)
+    location_2 = Column(String)
+    number_location_2 = Column(Integer)
+    equipment_type = Column(String)
+    number_equipment_type = Column(Integer)
+    sub_equipment = Column(String)
+    number_sub_equipment = Column(Integer)
+    terminal = Column(String)
+    power_type = Column(String)
+    cable_set = Column(Integer)
+    code = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     # ✅ Relationships
     project = relationship("Project", back_populates="equipment")
