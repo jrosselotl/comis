@@ -7,60 +7,64 @@
   <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
-  <!-- Sidebar -->
+  <!-- ✅ Sidebar -->
   <div class="sidebar">
     <h2>Panel</h2>
-    <button id="btnDashboard">📊 Dashboard</button>
-    <button id="btnMyTest">📂 My Test</button>
-    <button id="btnNewTest">➕ New Test</button>
+    <button id="btnDashboard" class="sidebar-btn">📊 Dashboard</button>
+    <button id="btnMyTest" class="sidebar-btn">📂 My Test</button>
+    <button id="btnNewTest" class="sidebar-btn">➕ New Test</button>
     <a href="/logout" class="logout-btn">Log out</a>
   </div>
 
-  <!-- Main Content -->
-  <div class="content">
-
-    <!-- ✅ DASHBOARD -->
-    <div id="section-dashboard">
+  <!-- ✅ Main Content -->
+  <div class="main-content">
+    <!-- DASHBOARD -->
+    <div id="section-dashboard" class="chart-container">
       <h2>Test Statistics</h2>
-      <canvas id="chart-test" width="400" height="200"></canvas>
+      <div class="chart-container">
+        <canvas id="chart-test"></canvas>
+      </div>
     </div>
 
-    <!-- ✅ MY TEST -->
+    <!-- MY TEST -->
     <div id="section-mytest" class="hidden">
       <h2>My Test</h2>
-      <table class="table-test">
-        <thead>
-          <tr>
-            <th>Equipment</th>
-            <th>Test Name</th>
-            <th>Date</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="table-mytest"></tbody>
-      </table>
+      <div class="table-responsive">
+        <table class="table-test">
+          <thead>
+            <tr>
+              <th>Equipment</th>
+              <th>Test Name</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="table-mytest"></tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- ✅ NEW TEST -->
+    <!-- NEW TEST -->
     <div id="section-newtest" class="hidden">
       <form id="form-test" enctype="multipart/form-data">
-        <!-- Step 1: Equipment Data -->
+        <!-- Step 1 -->
         <fieldset>
           <legend>1. Equipment Data</legend>
-
-          <label>Project:
+          <div class="form-group">
+            <label>Project:</label>
             <select id="project_id" name="project_id" required></select>
-          </label>
+          </div>
 
-          <label>Main Location:
+          <div class="form-group">
+            <label>Main Location:</label>
             <div class="field-group">
               <select id="location_1" name="location_1" required></select>
               <select id="number_location_1" name="number_location_1" required></select>
             </div>
-          </label>
+          </div>
 
-          <div id="label-location_2" style="display:none;">
+          <div class="form-group" id="label-location_2" style="display:none;">
             <label>Secondary Location:</label>
             <div class="field-group">
               <select id="location_2" name="location_2"></select>
@@ -68,56 +72,62 @@
             </div>
           </div>
 
-          <label>Equipment Type:
+          <div class="form-group">
+            <label>Equipment Type:</label>
             <div class="field-group">
               <select id="equipment_type" name="equipment_type" required></select>
               <select id="number_equipment_type" name="number_equipment_type" required></select>
             </div>
-          </label>
+          </div>
 
-          <label id="label-sub_equipment" style="display:none;">Sub Equipment:
+          <div class="form-group" id="label-sub_equipment" style="display:none;">
+            <label>Sub Equipment:</label>
             <div class="field-group">
               <select id="sub_equipment" name="sub_equipment"></select>
               <select id="number_sub_equipment" name="number_sub_equipment"></select>
             </div>
-          </label>
+          </div>
 
-          <label>Terminal:
+          <div class="form-group">
+            <label>Terminal:</label>
             <input type="text" id="terminal" name="terminal" placeholder="Terminal Nº" />
-          </label>
+          </div>
         </fieldset>
 
-        <!-- Step 2: Test Type -->
+        <!-- Step 2 -->
         <fieldset>
           <legend>2. Test Type</legend>
-          <label>Test Type:
+          <div class="form-group">
+            <label>Test Type:</label>
             <select id="test-type" name="test_type" required>
               <option value="">Select test...</option>
             </select>
-          </label>
+          </div>
         </fieldset>
 
-        <!-- Step 3: Features -->
+        <!-- Step 3 -->
         <fieldset id="block-features" style="display:none;">
           <legend>3. Features</legend>
-
-          <label for="cable_sets">Cable Set:
+          <div class="form-group">
+            <label for="cable_sets">Cable Set:</label>
             <input type="number" id="cable_sets" name="cable_sets" min="1" value="1" required />
-          </label>
+          </div>
 
-          <label>Power Type:
+          <div class="form-group">
+            <label>Power Type:</label>
             <select id="power_type" name="power_type" required>
               <option value="three_phase">Three-phase (L1, L2, L3, N, PE)</option>
               <option value="single_phase">Single-phase (L, N, PE)</option>
             </select>
-          </label>
+          </div>
 
-          <label id="label-unit">Unit:
+          <div class="form-group" id="label-unit">
+            <label>Unit:</label>
             <select id="unit" name="unit"></select>
-          </label>
+          </div>
         </fieldset>
 
-        <!-- Step 4: Test Result -->
+        <!-- Step 4 -->
         <fieldset id="result-block" style="display:none;">
           <legend>4. Test Result</legend>
           <div id="result-container"></div>
@@ -127,9 +137,8 @@
         <button type="button" id="btn-send-pdf" class="btn-send hidden">Send PDF</button>
       </form>
     </div>
-
   </div>
-  
+
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="/static/js/dashboard.js"></script>
@@ -139,6 +148,5 @@
   <script src="/static/js/form_isolation.js"></script>
   <script src="/static/js/form_contact_resistance.js"></script>
   <script src="/static/js/form_torque.js"></script>
-  
 </body>
 </html>
