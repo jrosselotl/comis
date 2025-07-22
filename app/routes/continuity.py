@@ -52,7 +52,7 @@ async def save_continuity_bridge(
         location_2=location_2,
         number_location_2=number_location_2,
         equipment_type=equipment_type,
-        equipment_type_number=number_equipment_type,  # 🔄 Ajuste de nombre que espera form.py
+        number_equipment_type=number_equipment_type,  # 🔄 Ajuste de nombre que espera form.py
         sub_equipment=sub_equipment,
         sub_equipment_number=number_sub_equipment,
         test_type=test_type,
