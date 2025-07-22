@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
+
 from app.models.test_continuity import TestContinuity, ResultContinuity
 from app.models.test import Test
 from app.models.equipment import Equipment
-from app.models.project import Project
-from app.utils.pdf_generator import generate_test_pdf
-from app.utils.email import send_email_with_pdf, get_admin_emails
+from app.models.test_performed import TestPerformed
 
 import os, shutil, json
 from datetime import datetime
@@ -19,13 +18,13 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 async def save_continuity_test(
     project_id: int = Form(...),
     location_1: str = Form(...),
-    number_location_1: str = Form(...),
+    number_location_1: int = Form(...),
     location_2: str = Form(None),
-    number_location_2: str = Form(None),
+    number_location_2: int = Form(None),
     equipment_type: str = Form(...),
-    number_equipment_type: str = Form(...),
+    number_equipment_type: int = Form(...),
     sub_equipment: str = Form(None),
-    number_sub_equipment: str = Form(None),
+    number_sub_equipment: int = Form(None),
     test_type: str = Form(...),
     cable_set: int = Form(...),
     power_type: str = Form(...),
@@ -34,136 +33,91 @@ async def save_continuity_test(
     images: list[UploadFile] = File(...),
     db: Session = Depends(get_db)
 ):
-    data_parsed = json.loads(data)
-    user_id = 1  # ✅ Temporal (más adelante será dinámico)
+    try:
+        data_parsed = json.loads(data)
+        user_id = 1  # ✅ Temporal
 
-    # ✅ 1) Verificar o crear equipo
-    equipment_code = f"{location_1}-{equipment_type}-{number_equipment_type}".upper()
-    equipment = db.query(Equipment).filter_by(code=equipment_code).first()
-    if not equipment:
-        equipment = Equipment(
+        # ✅ 1) Verificar o crear equipo
+        equipment_code = f"{location_1}-{equipment_type}-{number_equipment_type}".upper()
+        equipment = db.query(Equipment).filter_by(code=equipment_code).first()
+        if not equipment:
+            equipment = Equipment(
+                project_id=project_id,
+                location_1=location_1,
+                number_location_1=number_location_1,
+                location_2=location_2,
+                number_location_2=number_location_2,
+                equipment_type=equipment_type,
+                number_equipment_type=number_equipment_type,
+                sub_equipment=sub_equipment,
+                number_sub_equipment=number_sub_equipment,
+                terminal=terminal,
+                power_type=power_type,
+                cable_set=cable_set,
+                code=equipment_code
+            )
+            db.add(equipment)
+            db.commit()
+            db.refresh(equipment)
+
+        # ✅ 2) Buscar ID del test en la tabla fija `test`
+        test_fixed = db.query(Test).filter(Test.name == test_type).first()
+        if not test_fixed:
+            raise HTTPException(status_code=400, detail="Test type not found in fixed table")
+
+        # ✅ 3) Insertar en test_performed
+        test_performed = TestPerformed(
             project_id=project_id,
-            location_1=location_1,
-            number_location_1=number_location_1,
-            location_2=location_2,
-            number_location_2=number_location_2,
-            equipment_type=equipment_type,
-            number_equipment_type=number_equipment_type,
-            sub_equipment=sub_equipment,
-            number_sub_equipment=number_sub_equipment,
-            terminal=terminal,
-            power_type=power_type,
-            cable_set=cable_set,
-            code=equipment_code
+            equipment_id=equipment.id,
+            user_id=user_id,
+            test_id=test_fixed.id,
+            status="Incomplete"
         )
-        db.add(equipment)
+        db.add(test_performed)
         db.commit()
-        db.refresh(equipment)
+        db.refresh(test_performed)
 
-    # ✅ 2) Buscar ID del test en la tabla fija `test`
-    test_fixed = db.query(Test).filter(Test.name == test_type).first()
-    if not test_fixed:
-        raise HTTPException(status_code=400, detail="Test type not found in fixed table")
-
-    # ✅ 3) Insertar en test_performed
-    test_performed = TestPerformed(
-        project_id=project_id,
-        equipment_id=equipment.id,
-        user_id=user_id,
-        test_id=test_fixed.id,
-        status="Incomplete"
-    )
-    db.add(test_performed)
-    db.commit()
-    db.refresh(test_performed)
-
-    # ✅ 4) Crear el test específico (test_continuity)
-    continuity_test = TestContinuity(
-        equipment_id=equipment.id,
-        user_id=user_id,
-        project_id=project_id,
-        test_id=test_fixed.id
-    )
-    db.add(continuity_test)
-    db.commit()
-    db.refresh(continuity_test)
-
-    # ✅ 5) Guardar resultados
-    images_info = []
-    for i, r in enumerate(data_parsed):
-        image = images[i] if i < len(images) else None
-        filename = f"{equipment_code}_{r['test_point']}_{i}.png" if image else None
-        filepath = None
-
-        if image:
-            filepath = os.path.join(UPLOAD_DIR, filename)
-            with open(filepath, "wb") as buffer:
-                shutil.copyfileobj(image.file, buffer)
-            images_info.append({
-                "path": filepath,
-                "test_point": r["test_point"],
-                "cable_set": r.get("cable_set")
-            })
-
-        result = ResultContinuity(
-            test_id=continuity_test.id,
-            test_point=r['test_point'],
-            result_value=None if r['result_value'] == "N/A" else float(r['result_value']),
-            unit=r.get('unit'),
-            observation=r.get('observation'),
-            image_url=filepath,
-            cable_set=r.get("cable_set")
+        # ✅ 4) Crear el test específico (test_continuity)
+        continuity_test = TestContinuity(
+            equipment_id=equipment.id,
+            user_id=user_id,
+            project_id=project_id,
+            test_id=test_fixed.id
         )
-        db.add(result)
-    db.commit()
+        db.add(continuity_test)
+        db.commit()
+        db.refresh(continuity_test)
 
-    return {"message": "Continuity test saved successfully"}
+        # ✅ 5) Guardar resultados
+        images_info = []
+        for i, r in enumerate(data_parsed):
+            image = images[i] if i < len(images) else None
+            filename = f"{equipment_code}_{r['test_point']}_{i}.png" if image else None
+            filepath = None
 
-    # ✅ Generate PDF
-    project = db.query(Project).filter_by(id=project_id).first()
-    equipment_details = {
-        "Project": project.name,
-        "Main Location": f"{location_1} Nº{location_number_1}",
-        "Secondary Location": f"{location_2} Nº{location_number_2}" if location_2 else "-",
-        "Equipment Type": f"{equipment_type} Nº{equipment_type_number}",
-        "Sub Equipment": f"{sub_equipment} Nº{sub_equipment_number}" if sub_equipment else "-",
-        "Power Type": power_type,
-        "Terminal": terminal
-    }
+            if image:
+                filepath = os.path.join(UPLOAD_DIR, filename)
+                with open(filepath, "wb") as buffer:
+                    shutil.copyfileobj(image.file, buffer)
+                images_info.append({
+                    "path": filepath,
+                    "test_point": r["test_point"],
+                    "cable_set": r.get("cable_set")
+                })
 
-    test_data = {
-        "equipment_id": equipment_code,
-        "test_type": test_type,
-        "date": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-        "equipment_details": equipment_details,
-        "images": images_info,
-        "client_logo": f"client_logo_{project.name}.png",
-        "subcontract_logo": f"subcontract_logo_{project.name}.png",
-        "user_name": "Technician"
-    }
+            result = ResultContinuity(
+                test_id=continuity_test.id,
+                test_point=r['test_point'],
+                result_value=None if r['result_value'] == "N/A" else float(r['result_value']),
+                unit=r.get('unit'),
+                observation=r.get('observation'),
+                image_url=filepath,
+                cable_set=r.get("cable_set")
+            )
+            db.add(result)
+        db.commit()
 
-    results_pdf = [
-        {
-            "test_point": r["test_point"],
-            "result_value": r["result_value"],
-            "unit": r["unit"],
-            "observations": r.get("observations", ""),
-            "cable_set": r.get("cable_set")
-        }
-        for r in data_parsed
-    ]
+        return {"message": "Continuity test saved successfully"}
 
-    output_pdf_path = f"output/{test_type}_{equipment_code}.pdf"
-    os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
-    generate_pdf_test(test_data, results_pdf, output_path=output_pdf_path)
-
-    # ✅ Send email
-    admin_emails = get_admin_emails(db, project_id)
-    send_email_with_pdf(
-        recipients=admin_emails,
-        subject=f"{test_type.capitalize()} - {equipment_code}",
-        body=f"{test_type} report for equipment {equipment_code}",
-        pdf_file=output_pdf_path
-    )
-
-    return {"message": "Form and results saved successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error saving continuity test: {str(e)}")
