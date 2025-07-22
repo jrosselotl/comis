@@ -9,7 +9,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const tableMyTest = document.getElementById("table-mytest");
   const chartCanvas = document.getElementById("chart-test");
-  let chartInstance = null; // 🔹 Para evitar superponer gráficos
+  let chartInstance = null;
+
+  const sidebar = document.getElementById("sidebar");
+  const hamburger = document.getElementById("hamburger");
 
   // ✅ Mostrar solo una sección
   function showSection(section) {
@@ -30,10 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const types = Object.keys(data);
       const quantities = Object.values(data);
 
-      // Evitar que se superpongan varios gráficos
-      if (chartInstance) {
-        chartInstance.destroy();
-      }
+      if (chartInstance) chartInstance.destroy();
 
       chartInstance = new Chart(chartCanvas, {
         type: "bar",
@@ -44,10 +44,10 @@ document.addEventListener("DOMContentLoaded", () => {
               label: "Completed Tests",
               data: quantities,
               backgroundColor: [
-                "rgba(52, 152, 219, 0.8)",  // Azul
-                "rgba(155, 89, 182, 0.8)",  // Morado
-                "rgba(230, 126, 34, 0.8)",  // Naranja
-                "rgba(39, 174, 96, 0.8)"    // Verde
+                "rgba(52, 152, 219, 0.8)",
+                "rgba(155, 89, 182, 0.8)",
+                "rgba(230, 126, 34, 0.8)",
+                "rgba(39, 174, 96, 0.8)"
               ],
               borderRadius: 8
             }
@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
             tooltip: {
@@ -62,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 label: (context) => `Total: ${context.raw}`
               }
             },
-            datalabels: { // ✅ Muestra los números encima de cada barra
+            datalabels: {
               anchor: "end",
               align: "top",
               color: "#2c3e50",
@@ -73,14 +74,9 @@ document.addEventListener("DOMContentLoaded", () => {
           scales: {
             y: {
               beginAtZero: true,
-              ticks: {
-                stepSize: 1,
-                color: "#2c3e50",
-              }
+              ticks: { stepSize: 1, color: "#2c3e50" }
             },
-            x: {
-              ticks: { color: "#2c3e50" }
-            }
+            x: { ticks: { color: "#2c3e50" } }
           }
         },
         plugins: [ChartDataLabels]
@@ -120,7 +116,6 @@ document.addEventListener("DOMContentLoaded", () => {
         tableMyTest.appendChild(tr);
       });
 
-      // ✅ Eventos botones
       document.querySelectorAll(".btn-continue").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
           const id = e.target.dataset.id;
@@ -161,7 +156,12 @@ document.addEventListener("DOMContentLoaded", () => {
     showSection(sectionNewTest);
   });
 
-  // ✅ Mostrar Dashboard al inicio
+  // ✅ Hamburguesa (Mobile)
+  hamburger.addEventListener("click", () => {
+    sidebar.style.display = sidebar.style.display === "block" ? "none" : "block";
+  });
+
+  // ✅ Inicio
   showSection(sectionDashboard);
   loadChart();
 });
