@@ -28,11 +28,6 @@ class Equipment(Base):
 
     # ✅ Relationships
     project = relationship("Project", back_populates="equipment")
-    location_1 = relationship("Location", foreign_keys=[location_1_id])
-    location_2 = relationship("Location", foreign_keys=[location_2_id])
-    equipment_type = relationship("EquipmentType", foreign_keys=[equipment_type_id])
-    sub_equipment_type = relationship("EquipmentType", foreign_keys=[sub_equipment_type_id])
-
     
     test_continuity = relationship("TestContinuity", back_populates="equipment")
     test_isolation = relationship("TestIsolation", back_populates="equipment")
