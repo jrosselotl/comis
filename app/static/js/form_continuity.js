@@ -40,7 +40,7 @@ function initFormContinuity(powerType) {
                 labelUnit.style.display = "block";
             }
         }
-
+        const selectedUnit = document.getElementById("unit")?.value || "";
         for (let i = 1; i <= quantity; i++) {
             const table = document.createElement("table");
             table.classList.add("test-table");
@@ -111,7 +111,6 @@ function initFormContinuity(powerType) {
         if (type !== "continuity") return;
 
         e.preventDefault();
-        const selectedUnit = document.getElementById("unit")?.value || "";
         const cableSets = parseInt(cableSetInput.value);
         if (!cableSets) {
             alert("Enter cable set quantity.");
