@@ -36,9 +36,9 @@ async def save_form(
     location_2: str = Form(None),
     number_location_2: str = Form(None),
     equipment_type: str = Form(...),
-    equipment_type_number: str = Form(...),
+    number_equipment_type: str = Form(...),
     sub_equipment: str = Form(None),
-    sub_equipment_number: str = Form(None),
+    number_sub_equipment: str = Form(None),
     test_type: str = Form(...),
     cable_set: int = Form(...),
     power_type: str = Form(...),
@@ -52,7 +52,7 @@ async def save_form(
     user_id = 1  # ✅ Will be dynamic (authenticated user)
 
     # --- EQUIPMENT ---
-    equipment_code = f"{location_1}-{equipment_type}-{equipment_type_number}".upper()
+    equipment_code = f"{location_1}-{equipment_type}-{number_equipment_type}".upper()
     equipment = db.query(Equipment).filter(Equipment.code == equipment_code).first()
     if not equipment:
         equipment = Equipment(
