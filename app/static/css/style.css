@@ -1,102 +1,149 @@
-/* GENERAL */
+/* ===========================
+   🎨 ESTILOS GENERALES
+=========================== */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
   padding: 0;
   background: #f4f6f9;
   color: #333;
+  box-sizing: border-box;
 }
 
-.hidden {
-  display: none;
-}
-
-h2 {
+h1, h2 {
+  color: #2c3e50;
   margin-top: 0;
 }
 
-/* SIDEBAR */
+.hidden {
+  display: none !important;
+}
+
+/* ===========================
+   📌 SIDEBAR (DESKTOP)
+=========================== */
 .sidebar {
-  width: 220px;
-  background: #004080;
-  color: white;
-  height: 100vh;
-  padding: 1rem;
   position: fixed;
-  top: 0;
   left: 0;
+  top: 0;
+  width: 220px;
+  height: 100vh;
+  background-color: #004080;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 1rem;
+  transition: all 0.3s ease-in-out;
 }
 
 .sidebar h2 {
-  font-size: 1.4rem;
-  text-align: center;
-  margin-bottom: 2rem;
+  color: white;
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
 }
 
 .sidebar button,
 .sidebar .logout-btn {
-  display: block;
-  width: 100%;
-  background: white;
-  color: #004080;
-  border: none;
+  width: 85%;
+  margin: 0.4rem 0;
   padding: 0.7rem;
-  margin-bottom: 1rem;
-  border-radius: 5px;
+  border: none;
+  background: #0059b3;
+  color: white;
+  font-size: 0.95rem;
   cursor: pointer;
-  font-weight: bold;
+  border-radius: 6px;
   text-align: center;
+  transition: background 0.3s;
 }
 
 .sidebar button:hover,
 .sidebar .logout-btn:hover {
-  background: #e0eafc;
+  background: #003366;
 }
 
-/* HAMBURGER MENU (Mobile) */
-.hamburger {
-  display: none;
-  font-size: 2rem;
-  background: #004080;
-  color: white;
-  padding: 0.5rem 1rem;
-  position: fixed;
-  top: 0;
-  left: 0;
-  cursor: pointer;
-  z-index: 1000;
+.logout-btn {
+  text-decoration: none;
 }
 
-/* CONTENT */
+/* ===========================
+   📌 CONTENIDO PRINCIPAL
+=========================== */
 .content {
-  margin-left: 240px;
+  margin-left: 240px; /* espacio para el sidebar */
   padding: 2rem;
+  max-width: 1100px;
 }
 
-@media (max-width: 768px) {
-  .sidebar {
-    display: none;
-    position: fixed;
-    width: 200px;
-    z-index: 999;
-  }
-
-  .hamburger {
-    display: block;
-  }
-
-  .content {
-    margin-left: 0;
-    padding-top: 4rem;
-  }
+/* Margen superior extra en desktop */
+.section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-bottom: 2rem;
 }
 
-/* FORM & TABLE */
+/* ===========================
+   📊 TABLA
+=========================== */
+.table-test {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+  margin: 1rem auto;
+  background: #f9f9f9;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table-test th, .table-test td {
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.table-test th {
+  background-color: #e0eafc;
+  color: #333;
+}
+
+.btn {
+  padding: 0.4rem 0.7rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.btn-continue {
+  background: #3498db;
+  color: white;
+}
+
+.btn-send {
+  background: #27ae60;
+  color: white;
+}
+
+.btn-continue:hover {
+  background: #2c80b4;
+}
+
+.btn-send:hover {
+  background: #1f8f4d;
+}
+
+/* ===========================
+   📝 FORMULARIO
+=========================== */
 form {
   max-width: 900px;
   margin: auto;
   background: white;
-  padding: 2rem;
+  padding: 1.5rem;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
@@ -110,13 +157,14 @@ fieldset {
 
 legend {
   font-weight: bold;
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #004080;
 }
 
 label {
   display: block;
   margin-bottom: 1rem;
+  font-weight: 500;
 }
 
 input[type="text"],
@@ -127,52 +175,78 @@ select {
   border: 1px solid #ccc;
   border-radius: 5px;
   margin-top: 0.3rem;
+  font-size: 0.9rem;
 }
 
-button[type="submit"] {
-  background-color: #004080;
+.field-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.camera-label {
+  display: inline-block;
+  background-color: #0077cc;
   color: white;
-  border: none;
-  padding: 0.75rem 2rem;
+  padding: 0.4rem 0.6rem;
   border-radius: 5px;
-  font-size: 1rem;
   cursor: pointer;
-  display: block;
-  margin: auto;
+  font-size: 0.85rem;
 }
 
-button[type="submit"]:hover {
-  background-color: #002f5f;
+.camera-label:hover {
+  background-color: #005fa3;
 }
 
-/* TABLE */
-.table-test {
-  max-width: 900px;
-  margin: auto;
-  width: 100%;
-  border-collapse: collapse;
-  background: #f9f9f9;
-  border-radius: 5px;
-  overflow: hidden;
+/* ===========================
+   📱 RESPONSIVE
+=========================== */
+
+/* --- Para tablets --- */
+@media (max-width: 1024px) {
+  .content {
+    margin-left: 0;
+    padding: 1rem;
+  }
+
+  .sidebar {
+    position: fixed;
+    width: 200px;
+    left: -200px;
+    z-index: 1000;
+  }
+
+  .sidebar.active {
+    left: 0;
+  }
+
+  .hamburger {
+    display: block;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background: #004080;
+    color: white;
+    border: none;
+    padding: 0.6rem 0.8rem;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1100;
+  }
 }
 
-.table-test th,
-.table-test td {
-  border: 1px solid #ddd;
-  padding: 0.75rem;
-  text-align: center;
-}
-
-.table-test th {
-  background-color: #e0eafc;
-  color: #333;
-}
-
-/* RESPONSIVE TABLE */
+/* --- Para móviles --- */
 @media (max-width: 768px) {
-  .table-test th,
-  .table-test td {
+  body {
+    font-size: 0.9rem;
+  }
+
+  .table-test th, .table-test td {
     font-size: 0.8rem;
     padding: 0.4rem;
+  }
+
+  form {
+    padding: 1rem;
   }
 }
