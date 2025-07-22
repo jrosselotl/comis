@@ -46,17 +46,27 @@ async def save_form(
     terminal: Optional[str] = Form(None),
     unit: Optional[str] = Form(None),
     data: str = Form(...),
-    images: list[UploadFile] = File(...),
+    images: Optional[list[UploadFile]] = File(None),  # ✅ AHORA OPCIONAL
     db: Session = Depends(get_db)
 ):
-    # ✅ --- DEBUG PARA VER QUÉ LLEGA ---
-    print("📥 FORM RECEIVED DATA:")
+    # ✅ DEBUG: Imprimir todo lo recibido antes de procesar
+    print("📥 FORM RECEIVED DATA ✅")
     print(f"project_id={project_id}, location_1={location_1}, number_location_1={number_location_1}, "
           f"location_2={location_2}, number_location_2={number_location_2}, "
           f"equipment_type={equipment_type}, number_equipment_type={number_equipment_type}, "
           f"sub_equipment={sub_equipment}, number_sub_equipment={number_sub_equipment}, "
           f"test_type={test_type}, cable_set={cable_set}, power_type={power_type}, terminal={terminal}")
 
+    # ✅ Si llegan strings vacíos, los convertimos a None
+    if location_2 == "":
+        location_2 = None
+    if number_location_2 in ["", 0]:
+        number_location_2 = None
+    if sub_equipment == "":
+        sub_equipment = None
+    if number_sub_equipment in ["", 0]:
+        number_sub_equipment = None
+    
     # ✅ --- EQUIPMENT (con código completo) ---
     equipment_code_parts = [f"{location_1}{number_location_1}"]
     
