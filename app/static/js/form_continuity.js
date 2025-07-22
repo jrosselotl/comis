@@ -143,7 +143,7 @@ function initFormContinuity(powerType) {
                     cable_set: i,
                     test_point: point,
                     result_value: result,
-                    unit: selectedUnit,
+                    unit: document.getElementById("unit")?.value || "",
                     observation: observation
                 });
 
