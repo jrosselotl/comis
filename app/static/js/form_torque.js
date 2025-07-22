@@ -2,7 +2,6 @@ function initFormTorque(powerType) {
     const cableSetInput = document.getElementById("cable_sets");
     const resultContainer = document.getElementById("result-container");
     const resultBlock = document.getElementById("result-block");
-    
 
     // ✅ Torque uses individual point, not combinations
     const conductors = powerType === "single_phase"
@@ -46,7 +45,7 @@ function initFormTorque(powerType) {
                     <th>Image</th>
                 </tr>`;
 
-            combination.forEach((point) => {
+            conductors.forEach((point) => {
                 const selectedUnit = document.getElementById("unit")?.value || "";
                 const row = document.createElement("tr");
                 const idNominal = `nominal_${i}_${point}`;
@@ -57,7 +56,7 @@ function initFormTorque(powerType) {
                     <td><input name="${idNominal}" type="text" /></td>
                     <td><input name="${idVerification}" type="text" /></td>
                     <td>
-                    <input type="text" value="${selectedUnit}" readonly name="unit_${i}_${point}" />
+                        <input type="text" value="${selectedUnit}" readonly name="unit_${i}_${point}" />
                     </td>
                     <td><input name="observation_${i}_${point}" type="text" /></td>
                     <td>
@@ -111,22 +110,21 @@ function initFormTorque(powerType) {
         const number_sub_equipment = document.getElementById("number_sub_equipment")?.value || "";
         const power_type = document.getElementById("power_type")?.value;
         const terminal = document.getElementById("terminal")?.value || "";
-        
 
         for (let i = 1; i <= cableSets; i++) {
             for (const point of conductors) {
-                const nominal = document.querySelector(`[name="nominal_${i}_${conductor}"]`)?.value || "";
-                const verification = document.querySelector(`[name="verification_${i}_${conductor}"]`)?.value || "";
-                const observation = document.querySelector(`[name="observation_${i}_${conductor}"]`)?.value || "";
-                const imageInput = document.querySelector(`[name="image_${i}_${conductor}"]`);
+                const nominal = document.querySelector(`[name="nominal_${i}_${point}"]`)?.value || "";
+                const verification = document.querySelector(`[name="verification_${i}_${point}"]`)?.value || "";
+                const observation = document.querySelector(`[name="observation_${i}_${point}"]`)?.value || "";
+                const imageInput = document.querySelector(`[name="image_${i}_${point}"]`);
                 const image = imageInput?.files[0];
 
                 data.push({
                     cable_set: i,
-                    test_point: conductor,
+                    test_point: point,
                     nominal_value: nominal,
                     verification_value: verification,
-                    unit: selectedUnit,
+                    unit: document.getElementById("unit")?.value || "",
                     observation: observation
                 });
 
