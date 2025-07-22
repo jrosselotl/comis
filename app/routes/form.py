@@ -49,14 +49,13 @@ async def save_form(
     images: list[UploadFile] = File(...),
     db: Session = Depends(get_db)
 ):
-print("📥 FORM RECEIVED DATA:")
-print(f"project_id={project_id}, location_1={location_1}, number_location_1={number_location_1}, "
-      f"location_2={location_2}, number_location_2={number_location_2}, "
-      f"equipment_type={equipment_type}, number_equipment_type={number_equipment_type}, "
-      f"sub_equipment={sub_equipment}, number_sub_equipment={number_sub_equipment}, "
-      f"test_type={test_type}, cable_set={cable_set}, power_type={power_type}, terminal={terminal}")
-    data_parsed = json.loads(data)
-    user_id = 1  # ✅ Will be dynamic (authenticated user)
+    # ✅ --- DEBUG PARA VER QUÉ LLEGA ---
+    print("📥 FORM RECEIVED DATA:")
+    print(f"project_id={project_id}, location_1={location_1}, number_location_1={number_location_1}, "
+          f"location_2={location_2}, number_location_2={number_location_2}, "
+          f"equipment_type={equipment_type}, number_equipment_type={number_equipment_type}, "
+          f"sub_equipment={sub_equipment}, number_sub_equipment={number_sub_equipment}, "
+          f"test_type={test_type}, cable_set={cable_set}, power_type={power_type}, terminal={terminal}")
 
     # ✅ --- EQUIPMENT (con código completo) ---
     equipment_code_parts = [f"{location_1}{number_location_1}"]
