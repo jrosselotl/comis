@@ -265,3 +265,10 @@ select {
     width: 100% !important;
     height: auto !important;
 }
+.chart-container {
+    position: relative;
+    width: 100%;
+    max-width: 900px; /* ajusta si quieres */
+    height: 400px; /* altura fija para evitar scroll infinito */
+    margin: 2rem auto;
+}
