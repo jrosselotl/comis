@@ -7,134 +7,112 @@
   <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
-  <!-- ✅ Sidebar -->
-  <div class="sidebar">
+  <!-- ✅ Sidebar / Hamburger -->
+  <div class="sidebar" id="sidebar">
     <h2>Panel</h2>
-    <button id="btnDashboard" class="sidebar-btn">📊 Dashboard</button>
-    <button id="btnMyTest" class="sidebar-btn">📂 My Test</button>
-    <button id="btnNewTest" class="sidebar-btn">➕ New Test</button>
+    <button id="btnDashboard" class="nav-btn">📊 Dashboard</button>
+    <button id="btnMyTest" class="nav-btn">📂 My Test</button>
+    <button id="btnNewTest" class="nav-btn">➕ New Test</button>
     <a href="/logout" class="logout-btn">Log out</a>
   </div>
 
+  <!-- ✅ Hamburger Button for Mobile -->
+  <div class="hamburger" id="hamburger">☰</div>
+
   <!-- ✅ Main Content -->
-  <div class="main-content">
-    <!-- DASHBOARD -->
-    <div id="section-dashboard" class="chart-container">
+  <div class="content">
+    <!-- Dashboard -->
+    <div id="section-dashboard" class="section">
       <h2>Test Statistics</h2>
-      <div class="chart-container">
-        <canvas id="chart-test"></canvas>
-      </div>
+      <canvas id="chart-test"></canvas>
     </div>
 
-    <!-- MY TEST -->
-    <div id="section-mytest" class="hidden">
+    <!-- My Test -->
+    <div id="section-mytest" class="section hidden">
       <h2>My Test</h2>
-      <div class="table-responsive">
-        <table class="table-test">
-          <thead>
-            <tr>
-              <th>Equipment</th>
-              <th>Test Name</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="table-mytest"></tbody>
-        </table>
-      </div>
+      <table class="table-test">
+        <thead>
+          <tr>
+            <th>Equipment</th>
+            <th>Test Name</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="table-mytest"></tbody>
+      </table>
     </div>
 
-    <!-- NEW TEST -->
-    <div id="section-newtest" class="hidden">
+    <!-- New Test -->
+    <div id="section-newtest" class="section hidden">
       <form id="form-test" enctype="multipart/form-data">
-        <!-- Step 1 -->
         <fieldset>
           <legend>1. Equipment Data</legend>
-          <div class="form-group">
-            <label>Project:</label>
+          <label>Project:
             <select id="project_id" name="project_id" required></select>
-          </div>
-
-          <div class="form-group">
-            <label>Main Location:</label>
+          </label>
+          <label>Main Location:
             <div class="field-group">
               <select id="location_1" name="location_1" required></select>
               <select id="number_location_1" name="number_location_1" required></select>
             </div>
-          </div>
-
-          <div class="form-group" id="label-location_2" style="display:none;">
+          </label>
+          <div id="label-location_2" style="display:none;">
             <label>Secondary Location:</label>
             <div class="field-group">
               <select id="location_2" name="location_2"></select>
               <select id="number_location_2" name="number_location_2"></select>
             </div>
           </div>
-
-          <div class="form-group">
-            <label>Equipment Type:</label>
+          <label>Equipment Type:
             <div class="field-group">
               <select id="equipment_type" name="equipment_type" required></select>
               <select id="number_equipment_type" name="number_equipment_type" required></select>
             </div>
-          </div>
-
-          <div class="form-group" id="label-sub_equipment" style="display:none;">
-            <label>Sub Equipment:</label>
+          </label>
+          <label id="label-sub_equipment" style="display:none;">Sub Equipment:
             <div class="field-group">
               <select id="sub_equipment" name="sub_equipment"></select>
               <select id="number_sub_equipment" name="number_sub_equipment"></select>
             </div>
-          </div>
-
-          <div class="form-group">
-            <label>Terminal:</label>
+          </label>
+          <label>Terminal:
             <input type="text" id="terminal" name="terminal" placeholder="Terminal Nº" />
-          </div>
+          </label>
         </fieldset>
 
-        <!-- Step 2 -->
         <fieldset>
           <legend>2. Test Type</legend>
-          <div class="form-group">
-            <label>Test Type:</label>
+          <label>Test Type:
             <select id="test-type" name="test_type" required>
               <option value="">Select test...</option>
             </select>
-          </div>
+          </label>
         </fieldset>
 
-        <!-- Step 3 -->
         <fieldset id="block-features" style="display:none;">
           <legend>3. Features</legend>
-          <div class="form-group">
-            <label for="cable_sets">Cable Set:</label>
+          <label for="cable_sets">Cable Set:
             <input type="number" id="cable_sets" name="cable_sets" min="1" value="1" required />
-          </div>
-
-          <div class="form-group">
-            <label>Power Type:</label>
+          </label>
+          <label>Power Type:
             <select id="power_type" name="power_type" required>
               <option value="three_phase">Three-phase (L1, L2, L3, N, PE)</option>
               <option value="single_phase">Single-phase (L, N, PE)</option>
             </select>
-          </div>
-
-          <div class="form-group" id="label-unit">
-            <label>Unit:</label>
+          </label>
+          <label id="label-unit">Unit:
             <select id="unit" name="unit"></select>
-          </div>
+          </label>
         </fieldset>
 
-        <!-- Step 4 -->
         <fieldset id="result-block" style="display:none;">
           <legend>4. Test Result</legend>
           <div id="result-container"></div>
         </fieldset>
 
         <button type="submit" class="btn-save">Save</button>
-        <button type="button" id="btn-send-pdf" class="btn-send hidden">Send PDF</button>
       </form>
     </div>
   </div>
