@@ -35,41 +35,60 @@ async def save_continuity_test(
     db: Session = Depends(get_db)
 ):
     data_parsed = json.loads(data)
-    user_id = 1  # ✅ Will be replaced by authenticated user later
+    user_id = 1  # ✅ Temporal (más adelante será dinámico)
 
-    # ✅ Generate unique equipment code
-    equipment_code = f"{location_1}-{equipment_type}-{sub_equipment or 'GEN'}{sub_equipment_number or ''}".upper()
-
-    # ✅ Check or create equipment
+    # ✅ 1) Verificar o crear equipo
+    equipment_code = f"{location_1}-{equipment_type}-{number_equipment_type}".upper()
     equipment = db.query(Equipment).filter_by(code=equipment_code).first()
     if not equipment:
         equipment = Equipment(
-            code=equipment_code,
-            type=equipment_type,
+            project_id=project_id,
+            location_1=location_1,
+            number_location_1=number_location_1,
+            location_2=location_2,
+            number_location_2=number_location_2,
+            equipment_type=equipment_type,
+            number_equipment_type=number_equipment_type,
             sub_equipment=sub_equipment,
-            project_id=project_id
+            number_sub_equipment=number_sub_equipment,
+            terminal=terminal,
+            power_type=power_type,
+            cable_set=cable_set,
+            code=equipment_code
         )
         db.add(equipment)
         db.commit()
         db.refresh(equipment)
 
-    # ✅ Create general test record
-    test = Test(test_type=test_type, equipment_id=equipment.id)
-    db.add(test)
-    db.commit()
-    db.refresh(test)
+    # ✅ 2) Buscar ID del test en la tabla fija `test`
+    test_fixed = db.query(Test).filter(Test.name == test_type).first()
+    if not test_fixed:
+        raise HTTPException(status_code=400, detail="Test type not found in fixed table")
 
-    # ✅ Create specific continuity test
+    # ✅ 3) Insertar en test_performed
+    test_performed = TestPerformed(
+        project_id=project_id,
+        equipment_id=equipment.id,
+        user_id=user_id,
+        test_id=test_fixed.id,
+        status="Incomplete"
+    )
+    db.add(test_performed)
+    db.commit()
+    db.refresh(test_performed)
+
+    # ✅ 4) Crear el test específico (test_continuity)
     continuity_test = TestContinuity(
         equipment_id=equipment.id,
         user_id=user_id,
-        test_id=test.id
+        project_id=project_id,
+        test_id=test_fixed.id
     )
     db.add(continuity_test)
     db.commit()
     db.refresh(continuity_test)
 
-    # ✅ Save results (without validations)
+    # ✅ 5) Guardar resultados
     images_info = []
     for i, r in enumerate(data_parsed):
         image = images[i] if i < len(images) else None
@@ -90,14 +109,15 @@ async def save_continuity_test(
             test_id=continuity_test.id,
             test_point=r['test_point'],
             result_value=None if r['result_value'] == "N/A" else float(r['result_value']),
-            unit=r['unit'],
-            observations=r.get('observations'),
-            image=filepath,
+            unit=r.get('unit'),
+            observation=r.get('observation'),
+            image_url=filepath,
             cable_set=r.get("cable_set")
         )
         db.add(result)
-
     db.commit()
+
+    return {"message": "Continuity test saved successfully"}
 
     # ✅ Generate PDF
     project = db.query(Project).filter_by(id=project_id).first()
