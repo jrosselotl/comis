@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
+from typing import Optional
 
 # Test models
 from app.models.test_continuity import TestContinuity, ResultContinuity
@@ -32,18 +33,18 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 async def save_form(
     project_id: int = Form(...),
     location_1: str = Form(...),
-    number_location_1: str = Form(...),
-    location_2: str = Form(None),
-    number_location_2: str = Form(None),
+    number_location_1: int = Form(...),
+    location_2: Optional[str] = Form(None),
+    number_location_2: Optional[int] = Form(None),
     equipment_type: str = Form(...),
-    number_equipment_type: str = Form(...),
-    sub_equipment: str = Form(None),
-    number_sub_equipment: str = Form(None),
+    number_equipment_type: int = Form(...),
+    sub_equipment: Optional[str] = Form(None),
+    number_sub_equipment: Optional[int] = Form(None),
     test_type: str = Form(...),
     cable_set: int = Form(...),
     power_type: str = Form(...),
-    terminal: str = Form(None),
-    unit: str = Form(None),  # ✅ Unidad global
+    terminal: Optional[str] = Form(None),
+    unit: Optional[str] = Form(None),
     data: str = Form(...),
     images: list[UploadFile] = File(...),
     db: Session = Depends(get_db)
