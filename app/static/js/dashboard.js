@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!chartCanvas) return;
 
     try {
-      const res = await fetch("/test_done/user_stats/1"); // Mock user id=1
+      const res = await fetch("/test_performed/list_user/1");
       const data = await res.json();
 
       const types = Object.keys(data);
