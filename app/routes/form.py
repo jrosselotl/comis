@@ -31,22 +31,22 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/save")
 async def save_form(
-    project_id: int = Form(...),
-    location_1: str = Form(...),
-    number_location_1: int = Form(...),
+    project_id: Optional[str] = Form(None),
+    location_1: Optional[str] = Form(None),
+    number_location_1: Optional[str] = Form(None),
     location_2: Optional[str] = Form(None),
-    number_location_2: Optional[int] = Form(None),
-    equipment_type: str = Form(...),
-    number_equipment_type: int = Form(...),
+    number_location_2: Optional[str] = Form(None),
+    equipment_type: Optional[str] = Form(None),
+    number_equipment_type: Optional[str] = Form(None),
     sub_equipment: Optional[str] = Form(None),
-    number_sub_equipment: Optional[int] = Form(None),
-    test_type: str = Form(...),
-    cable_set: int = Form(...),
-    power_type: str = Form(...),
+    number_sub_equipment: Optional[str] = Form(None),
+    test_type: Optional[str] = Form(None),
+    cable_set: Optional[str] = Form(None),
+    power_type: Optional[str] = Form(None),
     terminal: Optional[str] = Form(None),
     unit: Optional[str] = Form(None),
-    data: str = Form(...),
-    images: Optional[list[UploadFile]] = File(None),  # ✅ AHORA OPCIONAL
+    data: Optional[str] = Form(None),
+    images: Optional[list[UploadFile]] = File(None),
     db: Session = Depends(get_db)
 ):
     print("📥 RAW FORM DATA:")
