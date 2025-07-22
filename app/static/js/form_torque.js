@@ -46,7 +46,7 @@ function initFormTorque(powerType) {
                     <th>Image</th>
                 </tr>`;
 
-            point.forEach((point) => {
+            combination.forEach((point) => {
                 const selectedUnit = document.getElementById("unit")?.value || "";
                 const row = document.createElement("tr");
                 const idNominal = `nominal_${i}_${point}`;
