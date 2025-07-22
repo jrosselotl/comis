@@ -51,25 +51,44 @@ async def save_form(
     data_parsed = json.loads(data)
     user_id = 1  # ✅ Will be dynamic (authenticated user)
 
-    # --- EQUIPMENT ---
-    equipment_code = f"{location_1}-{equipment_type}-{number_equipment_type}".upper()
+    # ✅ --- EQUIPMENT (con código completo) ---
+    equipment_code_parts = [f"{location_1}{number_location_1}"]
+    
+    if location_2 and number_location_2:
+        equipment_code_parts.append(f"{location_2}{number_location_2}")
+    
+    equipment_code_parts.append(f"{equipment_type}{number_equipment_type}")
+    
+    if sub_equipment and number_sub_equipment:
+        equipment_code_parts.append(f"{sub_equipment}{number_sub_equipment}")
+    
+    equipment_code = "-".join(equipment_code_parts).upper()
+    
     equipment = db.query(Equipment).filter(Equipment.code == equipment_code).first()
     if not equipment:
         equipment = Equipment(
-            code=equipment_code,
+            project_id=project_id,
+            location_1=location_1,
+            number_location_1=number_location_1,
+            location_2=location_2,
+            number_location_2=number_location_2,
             equipment_type=equipment_type,
+            number_equipment_type=number_equipment_type,
             sub_equipment=sub_equipment,
-            project_id=project_id
+            number_sub_equipment=number_sub_equipment,
+            terminal=terminal,
+            power_type=power_type,
+            cable_set=cable_set,
+            code=equipment_code
         )
         db.add(equipment)
         db.commit()
         db.refresh(equipment)
-
-    # --- GENERAL TEST ---
-    test_general = Test(project_id=project_id)
-    db.add(test_general)
-    db.commit()
-    db.refresh(test_general)
+    
+    # ✅ --- TEST GENERAL (tabla fija) ---
+    test_fixed = db.query(Test).filter(Test.name == test_type).first()
+    if not test_fixed:
+        raise HTTPException(status_code=400, detail=f"Test '{test_type}' not found in fixed table")
 
     # ✅ --- REGISTER IN TEST_PERFORMED ---
     new_test_performed = TestPerformed(
