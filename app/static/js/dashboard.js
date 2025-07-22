@@ -62,13 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
               callbacks: {
                 label: (context) => `Total: ${context.raw}`
               }
-            },
-            datalabels: {
-              anchor: "end",
-              align: "top",
-              color: "#2c3e50",
-              font: { weight: "bold" },
-              formatter: (value) => value
             }
           },
           scales: {
@@ -78,8 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             x: { ticks: { color: "#2c3e50" } }
           }
-        },
-        plugins: [ChartDataLabels]
+        }
       });
     } catch (error) {
       console.error("Error loading stats:", error);
@@ -104,26 +96,40 @@ document.addEventListener("DOMContentLoaded", () => {
             ${
               t.status === "Incomplete"
                 ? `<button class="btn btn-continue" data-id="${t.id}">✏️ Edit</button>`
-                : ""
-            }
-            ${
-              t.status !== "Sent"
-                ? `<button class="btn btn-send" data-id="${t.id}">📧 Send</button>`
-                : ""
+                : `<button class="btn btn-send" data-id="${t.id}">📧 Send</button>`
             }
           </td>
         `;
         tableMyTest.appendChild(tr);
       });
 
+      // ✅ Evento Editar (cargar datos en el formulario)
       document.querySelectorAll(".btn-continue").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
           const id = e.target.dataset.id;
-          alert(`Loading form to continue test ID ${id}...`);
-          showSection(sectionNewTest);
+          console.log(`🔄 Cargando datos para test ID ${id}...`);
+
+          try {
+            const res = await fetch(`/form/load_test/${id}`);
+            if (!res.ok) throw new Error("No se pudo cargar el test");
+            const testData = await res.json();
+
+            // 👉 Aquí debes tener una función global que cargue los datos según el tipo de test
+            if (typeof window.loadExistingTest === "function") {
+              window.loadExistingTest(testData);
+            } else {
+              alert("⚠️ Falta implementar la función loadExistingTest en tu JS de formularios.");
+            }
+
+            showSection(sectionNewTest);
+          } catch (err) {
+            console.error("Error cargando datos del test:", err);
+            alert("Error cargando datos del test.");
+          }
         });
       });
 
+      // ✅ Evento Enviar PDF
       document.querySelectorAll(".btn-send").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
           const id = e.target.dataset.id;
