@@ -250,3 +250,18 @@ select {
     padding: 1rem;
   }
 }
+#section-dashboard {
+    max-width: 90%;
+    margin: 2rem auto;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 🔹 Limita el alto del canvas */
+#chart-test {
+    max-height: 400px; /* Puedes subirlo a 500px si lo necesitas más grande */
+    width: 100% !important;
+    height: auto !important;
+}
