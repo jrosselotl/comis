@@ -129,7 +129,7 @@ function initFormIsolation(powerType) {
                     cable_set: i,
                     test_point: point,
                     result_value: result,
-                    unit: unit,
+                    unit: document.getElementById("unit")?.value || "",
                     applied_time: time,
                     observation: observation
                 });
