@@ -155,18 +155,36 @@ function initFormContinuity(powerType) {
         formData.append("project_id", project_id);
         formData.append("location_1", location_1);
         formData.append("number_location_1", number_location_1);
-        formData.append("location_2", location_2);
-        formData.append("number_location_2", number_location_2);
+        
+        // ✅ Solo enviar si tienen valor
+        if (location_2) {
+            formData.append("location_2", location_2);
+        }
+        if (number_location_2) {
+            formData.append("number_location_2", number_location_2);
+        }
+        
         formData.append("equipment_type", equipment_type);
         formData.append("number_equipment_type", number_equipment_type);
-        formData.append("sub_equipment", sub_equipment);
-        formData.append("number_sub_equipment", number_sub_equipment);
+        
+        if (sub_equipment) {
+            formData.append("sub_equipment", sub_equipment);
+        }
+        if (number_sub_equipment) {
+            formData.append("number_sub_equipment", number_sub_equipment);
+        }
+        
         formData.append("test_type", "continuity");
         formData.append("cable_sets", cableSets);
         formData.append("power_type", power_type);
-        formData.append("terminal", terminal);
+        
+        if (terminal) {
+            formData.append("terminal", terminal);
+        }
+        
         formData.append("data", JSON.stringify(data));
         images.forEach((img) => formData.append("images", img));
+
 
         const response = await fetch("/form/continuity/save", {
             method: "POST",
