@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from app.database import get_db
+from app.models.user import User
 from app.routes.form import save_form  # ✅ Usamos la lógica existente de form.py
 from app.routes.auth import get_current_user
 
