@@ -22,6 +22,8 @@ from app.utils.email import send_email_with_pdf, get_admin_emails
 from app.routes.auth import get_current_user
 from app.models.user import User
 
+from app.database import get_db
+
 import os
 import shutil
 from datetime import datetime
