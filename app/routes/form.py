@@ -28,16 +28,24 @@ router = APIRouter(prefix="/form", tags=["Form"])
 UPLOAD_DIR = "static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+from fastapi import Request
+
+def get_current_user_id(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="User not authenticated")
+    return user_id
 
 @router.post("/save")
 async def save_form(
+    request: Request,  # ✅ para acceder a la sesión
     project_id: int = Form(...),
     location_1: str = Form(...),
     number_location_1: int = Form(...),
     location_2: Optional[str] = Form(None),
     number_location_2: Optional[int] = Form(None),
     equipment_type: str = Form(...),
-    number_equipment_type: int = Form(...),  # ✅ CAMBIA ESTO
+    number_equipment_type: Optional[int] = Form(None),
     sub_equipment: Optional[str] = Form(None),
     number_sub_equipment: Optional[int] = Form(None),
     test_type: str = Form(...),
@@ -47,11 +55,11 @@ async def save_form(
     unit: Optional[str] = Form(None),
     data: str = Form(...),
     images: list[UploadFile] = File(...),
-    user_id: int = 0,
     db: Session = Depends(get_db)
 ):
+    user_id = get_current_user_id(request)  # ✅ obtenemos el usuario autenticado
+    print(f"✅ Usuario que guarda la prueba: {user_id}")
     # ✅ LOGS PARA VER QUÉ LLEGA (BORRA LUEGO)
-    print(f"📥 FORM RECEIVED DATA: user_id={user_id}")
     print("📥 FORM RECEIVED DATA:", {
         "project_id": project_id,
         "location_1": location_1,
