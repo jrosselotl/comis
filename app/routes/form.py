@@ -132,7 +132,9 @@ async def save_form(
     # --- GENERIC FUNCTION TO SAVE RESULTS ---
     def save_results(test_model, result_model):
         test_instance = test_model(
-            equipment_id=equipment.id, test_id=test_fixed.id, user_id=user_id
+            equipment_id=equipment.id,
+            project_id=project_id,
+            user_id=user_id
         )
         db.add(test_instance)
         db.commit()
