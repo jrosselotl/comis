@@ -66,5 +66,5 @@ async def save_continuity_bridge(
         data=data,
         images=images,
         db=db
-        current_user=current_user
+        current_user=current_user,
     )
