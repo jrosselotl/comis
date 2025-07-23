@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, Request
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, Any
+
 
 # Test models
 from app.models.test_continuity import TestContinuity, ResultContinuity
@@ -54,7 +55,7 @@ async def save_form(
     data: str = Form(...),
     images: list[UploadFile] = File(...),
     db: Session = Depends(get_db),
-    current_user: User = None
+    current_user: Any = Depends(get_current_user)
 ):
     if not current_user:
         raise HTTPException(status_code=401, detail="User not authenticated")
