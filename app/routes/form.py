@@ -47,9 +47,11 @@ async def save_form(
     unit: Optional[str] = Form(None),
     data: str = Form(...),
     images: list[UploadFile] = File(...),
+    user_id: int = 0,
     db: Session = Depends(get_db)
 ):
     # ✅ LOGS PARA VER QUÉ LLEGA (BORRA LUEGO)
+    print(f"📥 FORM RECEIVED DATA: user_id={user_id}")
     print("📥 FORM RECEIVED DATA:", {
         "project_id": project_id,
         "location_1": location_1,
