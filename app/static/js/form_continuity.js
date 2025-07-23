@@ -1,5 +1,5 @@
 function initFormContinuity(powerType) {
-    const cableSetInput = document.getElementById("cable_sets");
+    const cableSetInput = document.getElementById("cable_set");
     const resultContainer = document.getElementById("result-container");
     const resultBlock = document.getElementById("result-block");
 
@@ -111,8 +111,8 @@ function initFormContinuity(powerType) {
         if (type !== "continuity") return;
 
         e.preventDefault();
-        const cableSets = parseInt(cableSetInput.value);
-        if (!cableSets) {
+        const cableSet = parseInt(cableSetInput.value);
+        if (!cableSet) {
             alert("Enter cable set quantity.");
             return;
         }
@@ -132,7 +132,7 @@ function initFormContinuity(powerType) {
         const power_type = document.getElementById("power_type")?.value;
         const terminal = document.getElementById("terminal")?.value || "";
 
-        for (let i = 1; i <= cableSets; i++) {
+        for (let i = 1; i <= cableSet; i++) {
             for (const point of combination) {
                 const result = document.querySelector(`[name="result_${i}_${point}"]`)?.value || "";
                 const observation = document.querySelector(`[name="observation_${i}_${point}"]`)?.value || "";
@@ -175,7 +175,7 @@ function initFormContinuity(powerType) {
         }
         
         formData.append("test_type", "continuity");
-        formData.append("cable_sets", cableSets);
+        formData.append("cable_set", cableSet);
         formData.append("power_type", power_type);
         
         if (terminal) {
