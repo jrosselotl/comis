@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Form, Depends
+from fastapi import APIRouter, Request, Form, Depends, HTTPException
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.status import HTTP_302_FOUND
@@ -56,3 +56,15 @@ def process_login(
 def logout(request: Request):
     request.session.clear()
     return RedirectResponse(url="/login", status_code=HTTP_302_FOUND)
+
+# ✅ Get current user (IMPORTANTE PARA GUARDAR USER_ID)
+def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
+    user_id = request.session.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+
+    return user
