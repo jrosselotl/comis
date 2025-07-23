@@ -22,6 +22,7 @@ async def save_continuity_bridge(
     terminal: str = Form(None),
     data: str = Form(...),
     images: list[UploadFile] = File(...),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     # ✅ DEBUG: imprime lo recibido para verificar que no venga None o mal tipado
@@ -61,5 +62,6 @@ async def save_continuity_bridge(
         terminal=terminal,
         data=data,
         images=images,
+        user_id=current_user.id,
         db=db
     )
