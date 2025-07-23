@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, UploadFile, File, Form, Request
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.routes.form import save_form  # ✅ Usamos la lógica existente de form.py
+from app.routes.auth import get_current_user
+from app.models.user import User
 
 router = APIRouter(prefix="/form/continuity", tags=["Continuity Form"])
 
@@ -65,6 +67,6 @@ async def save_continuity_bridge(
         terminal=terminal,
         data=data,
         images=images,
-        db=db,
-        current_user=current_user
+        current_user=current_user,
+        db=db
     )
