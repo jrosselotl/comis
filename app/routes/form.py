@@ -55,8 +55,7 @@ async def save_form(
     data: str = Form(...),
     images: list[UploadFile] = File(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-    user_id = current_user.id
+    current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         raise HTTPException(status_code=401, detail="User not authenticated")
