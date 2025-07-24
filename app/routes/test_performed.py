@@ -17,7 +17,7 @@ from app.models.result_torque import ResultTorque
 
 router = APIRouter(prefix="/test_performed", tags=["Test Performed"])
 
-# ✅ Carpeta para subir imágenes
+# ✅ Carpeta para guardar imágenes
 UPLOAD_DIR = "static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -26,10 +26,10 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 @router.post("/create")
 async def create_test_performed(request: Request, db: Session = Depends(get_db)):
     """
-    Recibe FormData con:
-    - Campos básicos: project_id, equipment_id, user_id, test_id, status
-    - results (JSON en string)
-    - Imágenes: con nombre igual a "image_${i}_${point}"
+    Recibe FormData:
+    - project_id, equipment_id, user_id, test_id, status
+    - results (JSON string)
+    - Imágenes con nombre image_${i}_${point}
     """
     form = await request.form()
     try:
@@ -67,24 +67,42 @@ async def create_test_performed(request: Request, db: Session = Depends(get_db))
                     shutil.copyfileobj(image_file.file, f)
                 image_path = f"/{file_location}"
 
+            # ✅ Datos comunes
             common_data = {
                 "test_performed_id": new_test.id,
                 "test_point": r["test_point"],
-                "result_value": r["result_value"],
-                "unit": r["unit"],
-                "observation": r["observation"],
-                "cable_set": r["cable_set"],
-                "image_url": image_path
+                "observation": r.get("observation"),
+                "cable_set": r.get("cable_set"),
+                "image_url": image_path,
+                "unit": r.get("unit")
             }
 
+            # ✅ Guardar según el tipo de test
             if test_type == "continuity":
-                db.add(ResultContinuity(**common_data))
+                db.add(ResultContinuity(
+                    **common_data,
+                    result_value=r.get("result_value")
+                ))
+
             elif test_type == "isolation":
-                db.add(ResultIsolation(**common_data))
+                db.add(ResultIsolation(
+                    **common_data,
+                    result_value=r.get("result_value"),
+                    time_applied=r.get("time_applied")
+                ))
+
             elif test_type == "contact_resistance":
-                db.add(ResultContactResistance(**common_data))
+                db.add(ResultContactResistance(
+                    **common_data,
+                    result_value=r.get("result_value")
+                ))
+
             elif test_type == "torque":
-                db.add(ResultTorque(**common_data))
+                db.add(ResultTorque(
+                    **common_data,
+                    nominal_value=r.get("nominal_value"),
+                    verification_value=r.get("verification_value")
+                ))
 
         db.commit()
         return {"message": f"✅ Test created successfully with ID {new_test.id}"}
