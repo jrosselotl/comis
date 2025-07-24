@@ -16,12 +16,9 @@ class User(Base):
     name = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
-    role = Column(String, default="technician")  # Can be admin, technician or project
+    role = Column(String, default="technician")  # admin, technician, or project
     registration_date = Column(DateTime, default=datetime.utcnow)
 
-    test_continuity = relationship("TestContinuity", back_populates="user")
-    test_isolation = relationship("TestIsolation", back_populates="user")
-    test_contact_resistance = relationship("TestContactResistance", back_populates="user")
-    test_torque = relationship("TestTorque", back_populates="user")
-
+    # ✅ Relaciones correctas
+    test_performed = relationship("TestPerformed", back_populates="user")
     user_project = relationship("UserProject", back_populates="user")
