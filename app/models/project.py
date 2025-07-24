@@ -13,6 +13,6 @@ class Project(Base):
 
     # ✅ Relaciones correctas
     equipment = relationship("Equipment", back_populates="project")
-    user_project = relationship("UserProject", back_populates="project")
+    user_project = relationship("UserProject", back_populates="project", cascade="all, delete-orphan")
     test_project = relationship("TestProject", back_populates="project")  # ✅ Tipos de tests asignados al proyecto
     test_performed = relationship("TestPerformed", back_populates="project", cascade="all, delete-orphan")  # ✅ Tests realizados
