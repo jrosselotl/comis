@@ -2,21 +2,17 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 from app.database import Base
 
-
 class Project(Base):
     __tablename__ = "project"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
 
-    equipment = relationship("Equipment", back_populates="project")
-    user_project = relationship("UserProject", back_populates="project")
-
     client_logo = Column(String, nullable=True)
     subcontractor_logo = Column(String, nullable=True)
 
-    # Tests
-    test_continuity = relationship("TestContinuity", back_populates="project")
-    test_isolation = relationship("TestIsolation", back_populates="project")
-    test_contact_resistance = relationship("TestContactResistance", back_populates="project")
-    test_torque = relationship("TestTorque", back_populates="project")
+    # ✅ Relaciones correctas
+    equipment = relationship("Equipment", back_populates="project")
+    user_project = relationship("UserProject", back_populates="project")
+    test_project = relationship("TestProject", back_populates="project")  # ✅ Tipos de tests asignados al proyecto
+    test_performed = relationship("TestPerformed", back_populates="project", cascade="all, delete-orphan")  # ✅ Tests realizados
