@@ -8,10 +8,6 @@ from passlib.context import CryptContext
 # Models
 from app.database import get_db
 from app.models.user import User
-from app.models.test_continuity import TestContinuity
-from app.models.test_isolation import TestIsolation
-from app.models.test_contact_resistance import TestContactResistance
-from app.models.test_torque import TestTorque
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
