@@ -10,6 +10,6 @@ class TestProject(Base):
     test_id = Column(Integer, ForeignKey("test.id", ondelete="CASCADE"), nullable=False)
     active = Column(Boolean, default=True)
 
-    # Relaciones (opcionales si las usas en queries con join)
-    project = relationship("Project", back_populates="tests")
-    test = relationship("Test")
+    # ✅ Relaciones correctas
+    project = relationship("Project", back_populates="test_project")
+    test = relationship("Test", back_populates="test_project")
