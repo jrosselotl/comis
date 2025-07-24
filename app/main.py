@@ -11,6 +11,7 @@ from starlette.templating import Jinja2Templates
 
 # ✅ Database y modelos
 from app.database import get_db
+from app.models import *
 from app.models.user import User
 
 # ✅ Routers activos (ya revisados y corregidos)
