@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from datetime import datetime
-from app.database import get_db
+import shutil, os, json
 
+from app.database import get_db
 from app.models.test_performed import TestPerformed
 from app.models.equipment import Equipment
 from app.models.test import Test
@@ -16,56 +17,74 @@ from app.models.result_torque import ResultTorque
 
 router = APIRouter(prefix="/test_performed", tags=["Test Performed"])
 
+# ✅ Carpeta para subir imágenes
+UPLOAD_DIR = "static/uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# ✅ 1. Crear un test_performed + resultados
+
+# ✅ 1. Crear un test_performed + resultados + imágenes
 @router.post("/create")
-def create_test_performed(data: dict, db: Session = Depends(get_db)):
+async def create_test_performed(request: Request, db: Session = Depends(get_db)):
     """
-    Crea un nuevo test_performed y sus resultados.
-    Espera un JSON:
-    {
-        "project_id": 1,
-        "equipment_id": 10,
-        "user_id": 3,
-        "test_id": 2,
-        "status": "completed",
-        "results": [
-            {
-              "test_point": "L-N",
-              "result_value": 0.3,
-              "unit": "Ohm",
-              "observation": "OK",
-              "image_url": "img1.jpg",
-              "cable_set": 1
-            }
-        ]
-    }
+    Recibe FormData con:
+    - Campos básicos: project_id, equipment_id, user_id, test_id, status
+    - results (JSON en string)
+    - Imágenes: con nombre igual a "image_${i}_${point}"
     """
+    form = await request.form()
     try:
+        project_id = int(form["project_id"])
+        equipment_id = int(form["equipment_id"])
+        user_id = int(form["user_id"])
+        test_id = int(form["test_id"])
+        status = form.get("status", "incomplete")
+
         # ✅ Crear test_performed
         new_test = TestPerformed(
-            project_id=data["project_id"],
-            equipment_id=data["equipment_id"],
-            user_id=data["user_id"],
-            test_id=data["test_id"],
-            status=data.get("status", "incomplete"),
+            project_id=project_id,
+            equipment_id=equipment_id,
+            user_id=user_id,
+            test_id=test_id,
+            status=status,
             date=datetime.utcnow()
         )
         db.add(new_test)
-        db.flush()  # Obtener ID antes de insertar resultados
+        db.flush()
 
-        # ✅ Determinar tipo de test
-        test_type = db.query(Test).filter(Test.id == data["test_id"]).first().test_type.lower()
+        # ✅ Procesar resultados
+        results = json.loads(form["results"])
+        test_type = db.query(Test).filter(Test.id == test_id).first().test_type.lower()
 
-        for r in data["results"]:
+        for r in results:
+            image_field = r.get("image_field")
+            image_file = form.get(image_field)
+            image_path = None
+
+            if image_file and hasattr(image_file, "filename") and image_file.filename:
+                filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{image_file.filename}"
+                file_location = os.path.join(UPLOAD_DIR, filename)
+                with open(file_location, "wb") as f:
+                    shutil.copyfileobj(image_file.file, f)
+                image_path = f"/{file_location}"
+
+            common_data = {
+                "test_performed_id": new_test.id,
+                "test_point": r["test_point"],
+                "result_value": r["result_value"],
+                "unit": r["unit"],
+                "observation": r["observation"],
+                "cable_set": r["cable_set"],
+                "image_url": image_path
+            }
+
             if test_type == "continuity":
-                db.add(ResultContinuity(test_performed_id=new_test.id, **r))
+                db.add(ResultContinuity(**common_data))
             elif test_type == "isolation":
-                db.add(ResultIsolation(test_performed_id=new_test.id, **r))
+                db.add(ResultIsolation(**common_data))
             elif test_type == "contact_resistance":
-                db.add(ResultContactResistance(test_performed_id=new_test.id, **r))
+                db.add(ResultContactResistance(**common_data))
             elif test_type == "torque":
-                db.add(ResultTorque(test_performed_id=new_test.id, **r))
+                db.add(ResultTorque(**common_data))
 
         db.commit()
         return {"message": f"✅ Test created successfully with ID {new_test.id}"}
@@ -95,11 +114,9 @@ def list_user_tests(user_id: int, db: Session = Depends(get_db)):
                     None,
                     [
                         f"{t.Equipment.location_1}{t.Equipment.number_location_1 or ''}",
-                        f"{t.Equipment.location_2}{t.Equipment.number_location_2 or ''}"
-                        if t.Equipment.location_2 else None,
+                        f"{t.Equipment.location_2}{t.Equipment.number_location_2 or ''}" if t.Equipment.location_2 else None,
                         f"{t.Equipment.equipment_type}{t.Equipment.number_equipment_type or ''}",
-                        f"{t.Equipment.sub_equipment}{t.Equipment.number_sub_equipment or ''}"
-                        if t.Equipment.sub_equipment else None,
+                        f"{t.Equipment.sub_equipment}{t.Equipment.number_sub_equipment or ''}" if t.Equipment.sub_equipment else None,
                     ],
                 )
             ),
