@@ -148,9 +148,9 @@ async def save_form(
             observation=r.get("observation", ""),
             image_url=path,
             cable_set=r.get("cable_set"),
-            time_applied=r.get("applied_time"),              # solo isolation
-            nominal_value=r.get("nominal_value"),            # solo torque
-            check_value=r.get("check_value")                 # solo torque
+            time_applied=r.get("applied_time"),                 # isolation
+            nominal_value=r.get("nominal_value"),               # torque
+            verification_value=r.get("verification_value")      # ✅ torque corregido
         ))
 
     db.commit()
@@ -184,7 +184,7 @@ async def save_form(
             "observation": r.get("observation", ""),
             "cable_set": r.get("cable_set"),
             "nominal_value": r.get("nominal_value"),
-            "check_value": r.get("check_value")
+            "verification_value": r.get("verification_value")
         }
         for r in data_parsed
     ]
