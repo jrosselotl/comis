@@ -13,25 +13,20 @@ from starlette.templating import Jinja2Templates
 from app.database import get_db
 from app.models.user import User
 
-# Main routers
+# Routers (solo los nuevos y necesarios)
 from app.routes import (
     auth,
     user,
     project,
     equipment,
-    test,
-    continuity,
-    isolation,
-    contact_resistance,
-    torque,
-    test_performed,     # ✅ Dashboard and My Tests
-    location,           # ✅ Dynamic dropdowns for locations
-    equipment_type      # ✅ Dynamic dropdowns for equipment
+    test_performed,     # ✅ My Tests & Dashboard (nuevo flujo)
+    location,           # ✅ Dropdowns dinámicos
+    equipment_type      # ✅ Dropdowns dinámicos
 )
 
 app = FastAPI()
 
-# Session and CORS middleware
+# ✅ Session y CORS middleware
 app.add_middleware(SessionMiddleware, secret_key="w97k8Zj9B4fD1VmL3zXeT5GqNpHs0YuA")
 app.add_middleware(
     CORSMiddleware,
@@ -41,15 +36,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Base directories
+# ✅ Directorios base
 BASE_DIR = pathlib.Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 TEMPLATES_DIR = BASE_DIR / "templates"
 
-# Jinja2 configuration
+# ✅ Configuración Jinja2
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
-# Root page: redirect based on user role
+# ✅ Página raíz: redirección según rol
 @app.get("/", response_class=HTMLResponse)
 async def render_index(request: Request, db: Session = Depends(get_db)):
     user_id = request.session.get("user_id")
@@ -66,7 +61,7 @@ async def render_index(request: Request, db: Session = Depends(get_db)):
 
     return templates.TemplateResponse("index.html", {"request": request})
 
-# Page for users with "project" role
+# ✅ Página para usuarios con rol "project"
 @app.get("/admin", response_class=HTMLResponse)
 async def render_admin(request: Request, db: Session = Depends(get_db)):
     user_id = request.session.get("user_id")
@@ -79,22 +74,17 @@ async def render_admin(request: Request, db: Session = Depends(get_db)):
 
     return templates.TemplateResponse("index_admin.html", {"request": request})
 
-# Mount /static folder for CSS/JS
+# ✅ Montar carpeta estática (CSS, JS)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-# Include all routers
+# ✅ Incluir routers activos
 app.include_router(auth.router)
 app.include_router(user.router)
 app.include_router(project.router)
 app.include_router(equipment.router)
-app.include_router(test.router)
-app.include_router(continuity.router)
-app.include_router(isolation.router)
-app.include_router(contact_resistance.router)
-app.include_router(torque.router)
-app.include_router(test_performed.router)  # ✅ My Tests and Dashboard
-app.include_router(location.router)        # ✅ Dynamic location dropdowns
-app.include_router(equipment_type.router)  # ✅ Dynamic equipment dropdowns
+app.include_router(test_performed.router)  # ✅ Nuevo flujo de tests
+app.include_router(location.router)        # ✅ Dropdown dinámico location
+app.include_router(equipment_type.router)  # ✅ Dropdown dinámico equipment
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
