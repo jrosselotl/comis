@@ -1,5 +1,5 @@
 function initFormIsolation(powerType) {
-    const cableSetInput = document.getElementById("cable_sets");
+    const cableSetInput = document.getElementById("cable_set");
     const resultContainer = document.getElementById("result-container");
     const resultBlock = document.getElementById("result-block");
 
@@ -23,6 +23,7 @@ function initFormIsolation(powerType) {
         const quantity = parseInt(cableSetInput.value) || 0;
         resultContainer.innerHTML = "";
         resultBlock.style.display = quantity > 0 ? "block" : "none";
+
         const selectedUnit = document.getElementById("unit")?.value || "";
         for (let i = 1; i <= quantity; i++) {
             const table = document.createElement("table");
@@ -53,9 +54,7 @@ function initFormIsolation(powerType) {
                             <input type="text" name="${idResult}" id="${idResult}" />
                         </div>
                     </td>
-                    <td>
-                    <input type="text" value="${selectedUnit}" readonly name="unit_${i}_${point}" />
-                    </td>
+                    <td><input type="text" value="${selectedUnit}" readonly name="unit_${i}_${point}" /></td>
                     <td><input name="${idTime}" type="number" /></td>
                     <td><input name="observation_${i}_${point}" type="text" /></td>
                     <td>
@@ -69,6 +68,7 @@ function initFormIsolation(powerType) {
 
                 const inputResult = row.querySelector(`#${idResult}`);
                 const buttonNA = row.querySelector(`#${idNA}`);
+
                 buttonNA.addEventListener("click", () => {
                     inputResult.disabled = !inputResult.disabled;
                     inputResult.value = inputResult.disabled ? "N/A" : "";
@@ -101,70 +101,60 @@ function initFormIsolation(powerType) {
             return;
         }
 
-        const data = [];
-        const images = [];
+        const results = [];
+        const formData = new FormData();
 
         const project_id = document.getElementById("project_id").value;
-        const location_1 = document.getElementById("location_1").value;
-        const number_location_1 = document.getElementById("number_location_1").value;
-        const location_2 = document.getElementById("location_2")?.value || "";
-        const number_location_2 = document.getElementById("number_location_2")?.value || "";
-        const equipment_type = document.getElementById("equipment_type").value;
-        const number_equipment_type = document.getElementById("number_equipment_type").value;
-        const sub_equipment = document.getElementById("sub_equipment")?.value || "";
-        const number_sub_equipment = document.getElementById("number_sub_equipment")?.value || "";
-        const power_type = document.getElementById("power_type")?.value;
-        const terminal = document.getElementById("terminal")?.value || "";
+        const equipment_id = document.getElementById("equipment_id")?.value || 0;
+        const user_id = window.CURRENT_USER_ID || 1;
+        const test_id = document.getElementById("test-type").value;
 
         for (let i = 1; i <= cableSets; i++) {
             for (const point of combination) {
                 const result = document.querySelector(`[name="result_${i}_${point}"]`)?.value || "";
-                const unit = document.querySelector(`[name="unit_${i}_${point}"]`)?.value || "";
-                const time = document.querySelector(`[name="time_${i}_${point}"]`)?.value || "";
+                const time_applied = document.querySelector(`[name="time_${i}_${point}"]`)?.value || "";
                 const observation = document.querySelector(`[name="observation_${i}_${point}"]`)?.value || "";
                 const imageInput = document.querySelector(`[name="image_${i}_${point}"]`);
                 const image = imageInput?.files[0];
 
-                data.push({
+                results.push({
                     cable_set: i,
                     test_point: point,
-                    result_value: result,
+                    result_value: result === "N/A" ? null : parseFloat(result) || null,
+                    time_applied: time_applied ? parseFloat(time_applied) : null,
                     unit: document.getElementById("unit")?.value || "",
-                    applied_time: time,
-                    observation: observation
+                    observation: observation,
+                    image_field: `image_${i}_${point}`
                 });
 
-                images.push(image || new File([], ""));
+                if (image) {
+                    formData.append(`image_${i}_${point}`, image);
+                }
             }
         }
 
-        const formData = new FormData();
         formData.append("project_id", project_id);
-        formData.append("location_1", location_1);
-        formData.append("number_location_1", number_location_1);
-        formData.append("location_2", location_2);
-        formData.append("number_location_2", number_location_2);
-        formData.append("equipment_type", equipment_type);
-        formData.append("number_equipment_type", number_equipment_type);
-        formData.append("sub_equipment", sub_equipment);
-        formData.append("number_sub_equipment", number_sub_equipment);
-        formData.append("test_type", "isolation");
-        formData.append("cable_sets", cableSets);
-        formData.append("power_type", power_type);
-        formData.append("terminal", terminal);
-        formData.append("data", JSON.stringify(data));
-        images.forEach((img) => formData.append("images", img));
+        formData.append("equipment_id", equipment_id);
+        formData.append("user_id", user_id);
+        formData.append("test_id", test_id);
+        formData.append("status", "completed");
+        formData.append("results", JSON.stringify(results));
 
-        const response = await fetch("/form/isolation/save", {
-            method: "POST",
-            body: formData
-        });
+        try {
+            const response = await fetch("/test_performed/create", {
+                method: "POST",
+                body: formData
+            });
 
-        const res = await response.json().catch(() => null);
-        if (response.ok && res?.message) {
-            alert(res.message);
-        } else {
-            alert(res?.detail || "Error saving form.");
+            const res = await response.json();
+            if (response.ok) {
+                alert(res.message || "✅ Isolation test saved successfully");
+            } else {
+                alert(res.detail || "❌ Error saving isolation test");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("❌ Error connecting to server");
         }
     });
 }
