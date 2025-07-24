@@ -4,6 +4,7 @@ from app.database import get_db
 from app.models.test_performed import TestPerformed
 from app.models.equipment import Equipment
 from app.models.test import Test
+from app.models.test_project import TestProject
 
 router = APIRouter(prefix="/test_performed", tags=["Test Performed"])
 
@@ -21,8 +22,7 @@ def list_user_tests(user_id: int, db: Session = Depends(get_db)):
     return [
         {
             "id": t.TestPerformed.id,
-            "test_type": t.Test.name,
-            # ✅ Asset completo concatenado (COLO1-CE1-PDU1-BSW1)
+            "test_type": t.Test.name,  # ✅ Usa "name" para la base actual
             "asset": "-".join(
                 filter(
                     None,
@@ -53,3 +53,36 @@ def mark_test_as_sent(test_id: int, db: Session = Depends(get_db)):
     test.status = "Sent"
     db.commit()
     return {"message": f"Test {test_id} marked as Sent"}
+
+
+# ✅ Stats for Dashboard (for current user and project)
+@router.get("/list_user_stats/{user_id}")
+def list_user_stats(user_id: int, project_id: int = 1, db: Session = Depends(get_db)):
+    """
+    Devuelve un diccionario con {nombre_test: cantidad_realizada_por_usuario}
+    Solo para tests asignados al proyecto actual y activos en test_project.
+    """
+    assigned_tests = (
+        db.query(Test)
+        .join(TestProject, TestProject.test_id == Test.id)
+        .filter(TestProject.project_id == project_id, TestProject.active == True)
+        .all()
+    )
+
+    if not assigned_tests:
+        raise HTTPException(status_code=404, detail="No hay tests asignados a este proyecto")
+
+    results = {}
+    for test in assigned_tests:
+        total = (
+            db.query(TestPerformed)
+            .filter(
+                TestPerformed.test_id == test.id,
+                TestPerformed.project_id == project_id,
+                TestPerformed.user_id == user_id
+            )
+            .count()
+        )
+        results[test.name] = total
+
+    return results
