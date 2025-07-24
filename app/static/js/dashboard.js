@@ -22,14 +22,15 @@ document.addEventListener("DOMContentLoaded", () => {
     section.classList.remove("hidden");
   }
 
-  // ✅ Cargar el gráfico dinámico
+  // ✅ Cargar el gráfico dinámico (con base actual)
   async function loadChart() {
     if (!chartCanvas) return;
 
     try {
-      const res = await fetch("/test_performed/list_user/1");
+      const res = await fetch("/test_performed/list_user/1"); // ✅ Usa el endpoint actual
       const data = await res.json();
 
+      // ✅ Estructura esperada: { "continuity": 5, "torque": 2, ... }
       const types = Object.keys(data);
       const quantities = Object.values(data);
 
@@ -78,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ Cargar lista de tests
+  // ✅ Cargar lista de tests (sin tocar nada)
   async function loadMyTest() {
     tableMyTest.innerHTML = "";
     try {
@@ -89,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${t.asset}</td>
-          <td>${t.test_type}</td>
+          <td>${t.test_type || t.name}</td>
           <td>${new Date(t.date).toLocaleDateString()}</td>
           <td>${t.status}</td>
           <td>
@@ -103,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tableMyTest.appendChild(tr);
       });
 
-      // ✅ Evento Editar (cargar datos en el formulario)
+      // ✅ Evento Editar
       document.querySelectorAll(".btn-continue").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
           const id = e.target.dataset.id;
@@ -114,7 +115,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!res.ok) throw new Error("No se pudo cargar el test");
             const testData = await res.json();
 
-            // 👉 Aquí debes tener una función global que cargue los datos según el tipo de test
             if (typeof window.loadExistingTest === "function") {
               window.loadExistingTest(testData);
             } else {
