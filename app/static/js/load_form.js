@@ -50,8 +50,8 @@ document.addEventListener("DOMContentLoaded", () => {
       testTypeSelect.innerHTML = "<option value=''>Select test...</option>";
       testData.forEach((t) => {
         const opt = document.createElement("option");
-        opt.value = t.name;
-        opt.textContent = t.name.charAt(0).toUpperCase() + t.name.slice(1);
+        opt.value = t.test_type;
+        opt.textContent = t.test_type.charAt(0).toUpperCase() + t.test_type(1);
         testTypeSelect.appendChild(opt);
       });
 
