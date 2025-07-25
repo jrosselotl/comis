@@ -11,9 +11,9 @@ def list_equipment_type(db: Session = Depends(get_db)):
     return [
         {
             "equipment_type": t.equipment_type,
-            "number_equipment_type": t.number_equipment_type if hasattr(t, "number_equipment_type") else [],
-            "sub_equipment": t.sub_equipment if hasattr(t, "sub_equipment") else "",
-            "number_sub_equipment": t.number_sub_equipment if hasattr(t, "number_sub_equipment") else []
+            "number_equipment_type": t.number_equipment_type or [],
+            "sub_equipment": t.sub_equipment or "",
+            "number_sub_equipment": t.number_sub_equipment or []
         }
         for t in equipment_types
     ]
