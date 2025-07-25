@@ -49,6 +49,6 @@ def create_equipment(equipment: EquipmentCreate, db: Session = Depends(get_db)):
     return new_equipment
 
 
-@router.get("/", response_model=list[EquipmentOut])
+@router.get("/list", response_model=list[EquipmentOut])
 def list_equipment(db: Session = Depends(get_db)):
     return db.query(Equipment).all()
