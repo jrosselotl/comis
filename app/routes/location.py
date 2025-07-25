@@ -12,9 +12,9 @@ def list_location(project_id: int, db: Session = Depends(get_db)):
         {
             "id": l.id,
             "location_1": l.location_1,
-            "number_location_1": l.number_location_1,
+            "number_location_1": l.number_location_1 or [],
             "location_2": l.location_2,
-            "number_location_2": l.number_location_2,
+            "number_location_2": l.number_location_2 or [],
         }
         for l in locations
     ]
