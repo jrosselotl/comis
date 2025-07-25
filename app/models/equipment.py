@@ -27,10 +27,6 @@ class Equipment(Base):
     code = Column(String(255), unique=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    # ✅ Relaciones actualizadas
     project = relationship("Project", back_populates="equipment")
-
-    # ✅ Relación lógica con las tablas de test
-    test_continuity = relationship("TestContinuity", back_populates="equipment")
-    test_isolation = relationship("TestIsolation", back_populates="equipment")
-    test_contact_resistance = relationship("TestContactResistance", back_populates="equipment")
-    test_torque = relationship("TestTorque", back_populates="equipment")
+    test_performed = relationship("TestPerformed", back_populates="equipment", cascade="all, delete-orphan")
