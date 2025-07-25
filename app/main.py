@@ -9,12 +9,12 @@ from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session
 from starlette.templating import Jinja2Templates
 
-# ✅ Database y modelos
+# Database y modelos
 from app.database import get_db
 from app.models import *
 from app.models.user import User
 
-# ✅ Routers activos (ya revisados y corregidos)
+# Routers activos (ya revisados y corregidos)
 from app.routes import (
     auth,                # Login, logout, autenticación
     user,                # CRUD usuarios
@@ -23,12 +23,13 @@ from app.routes import (
     test_performed,      # Dashboard y mis pruebas
     location,            # Dropdown dinámico
     equipment_type,      # Dropdown dinámico
-    test_project         # Activación/desactivación de tests por proyecto (NUEVO)
+    test_project,        # Activación/desactivación de tests por proyecto (NUEVO)
+    test
 )
 
 app = FastAPI()
 
-# ✅ Session y CORS middleware
+# Session y CORS middleware
 app.add_middleware(SessionMiddleware, secret_key="w97k8Zj9B4fD1VmL3zXeT5GqNpHs0YuA")
 app.add_middleware(
     CORSMiddleware,
@@ -38,15 +39,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Directorios base
+# Directorios base
 BASE_DIR = pathlib.Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 TEMPLATES_DIR = BASE_DIR / "templates"
 
-# ✅ Configuración Jinja2
+# Configuración Jinja2
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
-# ✅ Página raíz: redirección según rol
+# Página raíz: redirección según rol
 @app.get("/", response_class=HTMLResponse)
 async def render_index(request: Request, db: Session = Depends(get_db)):
     user_id = request.session.get("user_id")
@@ -63,7 +64,7 @@ async def render_index(request: Request, db: Session = Depends(get_db)):
 
     return templates.TemplateResponse("index.html", {"request": request})
 
-# ✅ Página para usuarios con rol "project"
+# Página para usuarios con rol "project"
 @app.get("/admin", response_class=HTMLResponse)
 async def render_admin(request: Request, db: Session = Depends(get_db)):
     user_id = request.session.get("user_id")
@@ -76,10 +77,10 @@ async def render_admin(request: Request, db: Session = Depends(get_db)):
 
     return templates.TemplateResponse("index_admin.html", {"request": request})
 
-# ✅ Montar carpeta estática (CSS, JS, imágenes)
+# Montar carpeta estática (CSS, JS, imágenes)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-# ✅ Incluir routers activos
+# Incluir routers activos
 app.include_router(auth.router)
 app.include_router(user.router)
 app.include_router(project.router)
@@ -87,7 +88,8 @@ app.include_router(equipment.router)
 app.include_router(test_performed.router)
 app.include_router(location.router)
 app.include_router(equipment_type.router)
-app.include_router(test_project.router)  # ✅ NUEVO, ahora activo
+app.include_router(test_project.router)
+app.include_router(test.router)
 
 # ✅ Ejecución
 if __name__ == "__main__":
