@@ -91,6 +91,6 @@ app.include_router(equipment_type.router)
 app.include_router(test_project.router)
 app.include_router(test.router)
 
-# ✅ Ejecución
+# Ejecución
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
