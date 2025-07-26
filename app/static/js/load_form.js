@@ -29,45 +29,63 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ✅ Load project and test types
-  async function loadProjectAndTestType() {
-    try {
-      const [projectRes, testRes] = await Promise.all([
-        fetch("/project/list"),
-        fetch("/test/list"),
-      ]);
-      const projectData = await projectRes.json();
-      const testData = await testRes.json();
+  async function loadLocation(projectId) {
+  try {
+    const res = await fetch(`/location/list?project_id=${projectId}`);
+    const locationData = await res.json();
 
-      const projectSelect = document.getElementById("project_id");
-      projectSelect.innerHTML = "<option value=''>Select...</option>";
-      projectData.forEach((p) => {
-        const opt = document.createElement("option");
-        opt.value = p.id;
-        opt.textContent = p.name;
-        projectSelect.appendChild(opt);
-      });
+    // ✅ SOLO reiniciamos los campos secundarios
+    location1Select.innerHTML = "<option value=''>Select</option>";
+    location1Select.parentElement.style.display = "block"; // 🔥 SIEMPRE visible
 
-      testTypeSelect.innerHTML = "<option value=''>Select test...</option>";
-      testData.forEach((t) => {
-        const opt = document.createElement("option");
-        opt.value = t.test_type;
-        opt.textContent = t.test_type.charAt(0).toUpperCase() + t.test_type.slice(1);
-        testTypeSelect.appendChild(opt);
-      });
+    location2Container.style.display = "none";
+    toggleSelectVisibility(numberLocation1Select, false);
+    toggleSelectVisibility(numberLocation2Select, false);
 
-      projectSelect.addEventListener("change", () => {
-        if (projectSelect.value) {
-          // 🔥 Reinicia visibilidad: location_1 y equipment_type siempre visibles
-          location1Select.parentElement.style.display = "block";
-          equipmentTypeSelect.parentElement.style.display = "block";
-          loadLocation(projectSelect.value);
-          loadEquipment();
+    locationData.forEach((l) => {
+      const opt = document.createElement("option");
+      opt.value = l.location_1;
+      opt.textContent = l.location_1;
+      opt.dataset.number = JSON.stringify(l.number_location_1 || []);
+      opt.dataset.location2 = l.location_2 || "";
+      opt.dataset.number2 = JSON.stringify(l.number_location_2 || []);
+      location1Select.appendChild(opt);
+    });
+
+    location1Select.addEventListener("change", () => {
+      const selected = location1Select.selectedOptions[0];
+      if (!selected) return;
+
+      const numbers1 = JSON.parse(selected.dataset.number || "[]");
+      const location2 = selected.dataset.location2;
+      const numbers2 = JSON.parse(selected.dataset.number2 || []);
+
+      // ✅ Reglas según tus casos
+      toggleSelectVisibility(numberLocation1Select, numbers1.length > 0);
+
+      if (location2) {
+        location2Container.style.display = "block";
+        location2Select.innerHTML = `<option value="${location2}">${location2}</option>`;
+        toggleSelectVisibility(numberLocation2Select, numbers2.length > 0);
+        if (numbers2.length > 0) {
+          numberLocation2Select.innerHTML = "";
+          numbers2.forEach((n) => {
+            const opt = document.createElement("option");
+            opt.value = n;
+            opt.textContent = n;
+            numberLocation2Select.appendChild(opt);
+          });
         }
-      });
-    } catch (error) {
-      console.error("Error loading project and test type:", error);
-    }
+      } else {
+        location2Container.style.display = "none";
+        toggleSelectVisibility(numberLocation2Select, false);
+      }
+    });
+  } catch (error) {
+    console.error("Error loading location:", error);
   }
+}
+
 
   // ✅ Load locations (con reglas específicas)
   async function loadLocation(projectId) {
