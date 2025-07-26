@@ -24,6 +24,23 @@ function initFormIsolation(powerType) {
         resultContainer.innerHTML = "";
         resultBlock.style.display = quantity > 0 ? "block" : "none";
 
+        // ✅ Cargar unidades globales
+        if (window.UNIT_BY_TEST && window.UNIT_BY_TEST["isolation"]) {
+            const unitSelect = document.getElementById("unit");
+            const labelUnit = document.getElementById("label-unit");
+
+            if (unitSelect && labelUnit) {
+                unitSelect.innerHTML = '<option value="">Select unit...</option>';
+                window.UNIT_BY_TEST["isolation"].forEach((u) => {
+                    const opt = document.createElement("option");
+                    opt.value = u;
+                    opt.textContent = u;
+                    unitSelect.appendChild(opt);
+                });
+                labelUnit.style.display = "block";
+            }
+        }
+
         const selectedUnit = document.getElementById("unit")?.value || "";
         for (let i = 1; i <= quantity; i++) {
             const table = document.createElement("table");
@@ -78,6 +95,7 @@ function initFormIsolation(powerType) {
                 const label = row.querySelector("label");
                 const inputFile = label.querySelector("input[type='file']");
                 const attachText = label.querySelector(".attach-text");
+
                 inputFile.addEventListener("change", () => {
                     attachText.textContent = inputFile.files.length ? "📎 File attached" : "";
                 });
@@ -104,11 +122,23 @@ function initFormIsolation(powerType) {
         const results = [];
         const formData = new FormData();
 
-        const project_id = document.getElementById("project_id").value;
-        const equipment_id = document.getElementById("equipment_id")?.value || 0;
-        const user_id = window.CURRENT_USER_ID || 1;
-        const test_id = document.getElementById("test-type").value;
+        // ✅ Campos generales que espera el backend
+        formData.append("project_id", document.getElementById("project_id").value);
+        formData.append("location_1", document.getElementById("location_1").value);
+        formData.append("number_location_1", document.getElementById("number_location_1")?.value || 0);
+        formData.append("location_2", document.getElementById("location_2")?.value || "");
+        formData.append("number_location_2", document.getElementById("number_location_2")?.value || "");
+        formData.append("equipment_type", document.getElementById("equipment_type").value);
+        formData.append("number_equipment_type", document.getElementById("number_equipment_type")?.value || "");
+        formData.append("sub_equipment", document.getElementById("sub_equipment")?.value || "");
+        formData.append("number_sub_equipment", document.getElementById("number_sub_equipment")?.value || "");
+        formData.append("terminal", document.getElementById("terminal")?.value || "");
+        formData.append("power_type", document.getElementById("power_type").value);
+        formData.append("cable_set", cableSets);
+        formData.append("test_type", type);
+        formData.append("unit", document.getElementById("unit")?.value || "");
 
+        // ✅ Recorremos los puntos
         for (let i = 1; i <= cableSets; i++) {
             for (const point of combination) {
                 const result = document.querySelector(`[name="result_${i}_${point}"]`)?.value || "";
@@ -120,28 +150,23 @@ function initFormIsolation(powerType) {
                 results.push({
                     cable_set: i,
                     test_point: point,
-                    result_value: result === "N/A" ? null : parseFloat(result) || null,
-                    time_applied: time_applied ? parseFloat(time_applied) : null,
+                    result_value: result === "N/A" ? "N/A" : result,
+                    time_applied: time_applied || null,
                     unit: document.getElementById("unit")?.value || "",
                     observation: observation,
-                    image_field: `image_${i}_${point}`
                 });
 
                 if (image) {
-                    formData.append(`image_${i}_${point}`, image);
+                    formData.append("images", image);
                 }
             }
         }
 
-        formData.append("project_id", project_id);
-        formData.append("equipment_id", equipment_id);
-        formData.append("user_id", user_id);
-        formData.append("test_id", test_id);
-        formData.append("status", "completed");
-        formData.append("results", JSON.stringify(results));
+        // ✅ El backend espera un único campo `data` con todos los resultados
+        formData.append("data", JSON.stringify(results));
 
         try {
-            const response = await fetch("/test_performed/create", {
+            const response = await fetch("/form/save", {
                 method: "POST",
                 body: formData
             });
