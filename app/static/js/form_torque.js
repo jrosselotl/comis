@@ -12,6 +12,7 @@ function initFormTorque(powerType) {
         resultContainer.innerHTML = "";
         resultBlock.style.display = quantity > 0 ? "block" : "none";
 
+        // ✅ Cargar unidades globales
         if (window.UNIT_BY_TEST && window.UNIT_BY_TEST["torque"]) {
             const unitSelect = document.getElementById("unit");
             const labelUnit = document.getElementById("label-unit");
@@ -51,8 +52,8 @@ function initFormTorque(powerType) {
 
                 row.innerHTML = `
                     <td>${point}</td>
-                    <td><input name="${idNominal}" type="text" /></td>
-                    <td><input name="${idVerification}" type="text" /></td>
+                    <td><input name="${idNominal}" type="number" step="0.01" /></td>
+                    <td><input name="${idVerification}" type="number" step="0.01" /></td>
                     <td><input type="text" value="${selectedUnit}" readonly name="unit_${i}_${point}" /></td>
                     <td><input name="observation_${i}_${point}" type="text" /></td>
                     <td>
@@ -85,7 +86,6 @@ function initFormTorque(powerType) {
         if (type !== "torque") return;
 
         e.preventDefault();
-
         const cableSets = parseInt(cableSetInput.value);
         if (!cableSets) {
             alert("Enter cable set quantity.");
@@ -95,11 +95,23 @@ function initFormTorque(powerType) {
         const results = [];
         const formData = new FormData();
 
-        const project_id = document.getElementById("project_id").value;
-        const equipment_id = document.getElementById("equipment_id")?.value || 0;
-        const user_id = window.CURRENT_USER_ID || 1;
-        const test_id = document.getElementById("test-type").value;
+        // ✅ Campos generales que espera el backend
+        formData.append("project_id", document.getElementById("project_id").value);
+        formData.append("location_1", document.getElementById("location_1").value);
+        formData.append("number_location_1", document.getElementById("number_location_1")?.value || 0);
+        formData.append("location_2", document.getElementById("location_2")?.value || "");
+        formData.append("number_location_2", document.getElementById("number_location_2")?.value || "");
+        formData.append("equipment_type", document.getElementById("equipment_type").value);
+        formData.append("number_equipment_type", document.getElementById("number_equipment_type")?.value || "");
+        formData.append("sub_equipment", document.getElementById("sub_equipment")?.value || "");
+        formData.append("number_sub_equipment", document.getElementById("number_sub_equipment")?.value || "");
+        formData.append("terminal", document.getElementById("terminal")?.value || "");
+        formData.append("power_type", document.getElementById("power_type").value);
+        formData.append("cable_set", cableSets);
+        formData.append("test_type", type);
+        formData.append("unit", document.getElementById("unit")?.value || "");
 
+        // ✅ Resultados torque: nominal + verificación
         for (let i = 1; i <= cableSets; i++) {
             for (const point of conductors) {
                 const nominal = document.querySelector(`[name="nominal_${i}_${point}"]`)?.value || "";
@@ -114,25 +126,20 @@ function initFormTorque(powerType) {
                     nominal_value: nominal ? parseFloat(nominal) : null,
                     verification_value: verification ? parseFloat(verification) : null,
                     unit: document.getElementById("unit")?.value || "",
-                    observation: observation,
-                    image_field: `image_${i}_${point}`
+                    observation: observation
                 });
 
                 if (image) {
-                    formData.append(`image_${i}_${point}`, image);
+                    formData.append("images", image);
                 }
             }
         }
 
-        formData.append("project_id", project_id);
-        formData.append("equipment_id", equipment_id);
-        formData.append("user_id", user_id);
-        formData.append("test_id", test_id);
-        formData.append("status", "completed");
-        formData.append("results", JSON.stringify(results));
+        // ✅ El backend espera un único campo `data`
+        formData.append("data", JSON.stringify(results));
 
         try {
-            const response = await fetch("/test_performed/create", {
+            const response = await fetch("/form/save", {
                 method: "POST",
                 body: formData
             });
