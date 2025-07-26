@@ -50,13 +50,16 @@ document.addEventListener("DOMContentLoaded", () => {
       testTypeSelect.innerHTML = "<option value=''>Select test...</option>";
       testData.forEach((t) => {
         const opt = document.createElement("option");
-        opt.value = t.test_type; // Usamos el tipo, no el ID, para la lógica
+        opt.value = t.test_type;
         opt.textContent = t.test_type.charAt(0).toUpperCase() + t.test_type.slice(1);
         testTypeSelect.appendChild(opt);
       });
 
       projectSelect.addEventListener("change", () => {
         if (projectSelect.value) {
+          // 🔥 Reinicia visibilidad: location_1 y equipment_type siempre visibles
+          location1Select.parentElement.style.display = "block";
+          equipmentTypeSelect.parentElement.style.display = "block";
           loadLocation(projectSelect.value);
           loadEquipment();
         }
@@ -66,85 +69,87 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ Load locations
+  // ✅ Load locations (con reglas específicas)
   async function loadLocation(projectId) {
-  try {
-    const res = await fetch(`/location/list?project_id=${projectId}`);
-    const locationData = await res.json();
+    try {
+      const res = await fetch(`/location/list?project_id=${projectId}`);
+      const locationData = await res.json();
 
-    // 🔥 Reinicia solo con location_1 visible
-    location1Select.innerHTML = "<option value=''>Select</option>";
-    location2Container.style.display = "none";
-    toggleSelectVisibility(numberLocation1Select, false);
-    toggleSelectVisibility(numberLocation2Select, false);
+      // 🔥 Reset inicial
+      location1Select.innerHTML = "<option value=''>Select</option>";
+      toggleSelectVisibility(numberLocation1Select, false);
+      location2Container.style.display = "none";
+      toggleSelectVisibility(numberLocation2Select, false);
 
-    locationData.forEach((l) => {
-      const opt = document.createElement("option");
-      opt.value = l.location_1;
-      opt.textContent = l.location_1;
-      opt.dataset.number = JSON.stringify(l.number_location_1 || []);
-      opt.dataset.location2 = l.location_2 || "";
-      opt.dataset.number2 = JSON.stringify(l.number_location_2 || []);
-      location1Select.appendChild(opt);
-    });
+      locationData.forEach((l) => {
+        const opt = document.createElement("option");
+        opt.value = l.location_1;
+        opt.textContent = l.location_1;
+        opt.dataset.number = JSON.stringify(l.number_location_1 || []);
+        opt.dataset.location2 = l.location_2 || "";
+        opt.dataset.number2 = JSON.stringify(l.number_location_2 || []);
+        location1Select.appendChild(opt);
+      });
 
-    location1Select.addEventListener("change", () => {
-      const selected = location1Select.selectedOptions[0];
-      if (!selected) return;
+      location1Select.addEventListener("change", () => {
+        const selected = location1Select.selectedOptions[0];
+        if (!selected) return;
 
-      const numbers1 = JSON.parse(selected.dataset.number || "[]");
-      const location2 = selected.dataset.location2;
-      const numbers2 = JSON.parse(selected.dataset.number2 || "[]");
+        const numbers1 = JSON.parse(selected.dataset.number || "[]");
+        const location2 = selected.dataset.location2;
+        const numbers2 = JSON.parse(selected.dataset.number2 || "[]");
 
-      // 🔥 Lógica EXACTA según tus reglas
-      // --- Number Location 1
-      if (numbers1.length > 0) {
-        toggleSelectVisibility(numberLocation1Select, true);
-        numberLocation1Select.innerHTML = "";
-        numbers1.forEach((n) => {
-          const opt = document.createElement("option");
-          opt.value = n;
-          opt.textContent = n;
-          numberLocation1Select.appendChild(opt);
-        });
-      } else {
-        toggleSelectVisibility(numberLocation1Select, false);
-      }
-
-      // --- Location 2 y su número
-      if (location2) {
-        location2Container.style.display = "block";
-        location2Select.innerHTML = `<option value="${location2}">${location2}</option>`;
-
-        if (numbers2.length > 0) {
-          toggleSelectVisibility(numberLocation2Select, true);
-          numberLocation2Select.innerHTML = "";
-          numbers2.forEach((n) => {
+        // --- Location 1 number
+        if (numbers1.length > 0) {
+          toggleSelectVisibility(numberLocation1Select, true);
+          numberLocation1Select.innerHTML = "";
+          numbers1.forEach((n) => {
             const opt = document.createElement("option");
             opt.value = n;
             opt.textContent = n;
-            numberLocation2Select.appendChild(opt);
+            numberLocation1Select.appendChild(opt);
           });
         } else {
+          toggleSelectVisibility(numberLocation1Select, false);
+        }
+
+        // --- Location 2
+        if (location2) {
+          location2Container.style.display = "block";
+          location2Select.innerHTML = `<option value="${location2}">${location2}</option>`;
+          if (numbers2.length > 0) {
+            toggleSelectVisibility(numberLocation2Select, true);
+            numberLocation2Select.innerHTML = "";
+            numbers2.forEach((n) => {
+              const opt = document.createElement("option");
+              opt.value = n;
+              opt.textContent = n;
+              numberLocation2Select.appendChild(opt);
+            });
+          } else {
+            toggleSelectVisibility(numberLocation2Select, false);
+          }
+        } else {
+          location2Container.style.display = "none";
           toggleSelectVisibility(numberLocation2Select, false);
         }
-      } else {
-        location2Container.style.display = "none";
-        toggleSelectVisibility(numberLocation2Select, false);
-      }
-    });
-  } catch (error) {
-    console.error("Error loading location:", error);
+      });
+    } catch (error) {
+      console.error("Error loading location:", error);
+    }
   }
-}
 
-  // ✅ Load equipment types
+  // ✅ Load equipment types (sin cambios, ya funcionaba bien)
   async function loadEquipment() {
     try {
       const res = await fetch(`/equipment_type/list`);
       const equipmentData = await res.json();
 
       equipmentTypeSelect.innerHTML = "<option value=''>Select</option>";
+      toggleSelectVisibility(numberEquipmentTypeSelect, false);
+      subEquipmentContainer.style.display = "none";
+      toggleSelectVisibility(numberSubEquipmentSelect, false);
+
       equipmentData.forEach((e) => {
         const opt = document.createElement("option");
         opt.value = e.equipment_type;
@@ -206,10 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
     featureBlock.style.display = type ? "block" : "none";
     resultBlock.style.display = "none";
 
-    // 🔥 Aquí usamos la función estática
-    if (type) {
-      loadUnitByTest(type);
-    }
+    if (type) loadUnitByTest(type);
 
     if (type === "continuity") initFormContinuity(powerTypeSelect.value);
     if (type === "isolation") initFormIsolation(powerTypeSelect.value);
