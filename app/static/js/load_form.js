@@ -19,10 +19,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // ✅ Mostrar u ocultar un select
   function toggleSelectVisibility(select, show) {
     if (show) {
-      select.parentElement.style.display = "block";
+      select.style.display = "inline-block";
       select.required = true;
     } else {
-      select.parentElement.style.display = "none";
+      select.style.display = "none";
       select.required = false;
       select.innerHTML = "";
     }
@@ -65,13 +65,13 @@ document.addEventListener("DOMContentLoaded", () => {
         testTypeSelect.appendChild(opt);
       });
 
-      projectSelect.addEventListener("change", () => {
+      projectSelect.onchange = () => {
         resetInitialState();
         if (projectSelect.value) {
           loadLocation(projectSelect.value);
           loadEquipment();
         }
-      });
+      };
     } catch (error) {
       console.error("Error loading project and test type:", error);
     }
@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
         location1Select.appendChild(opt);
       });
 
-      location1Select.addEventListener("change", () => {
+      location1Select.onchange = () => {
         const selected = location1Select.selectedOptions[0];
         if (!selected) return;
 
@@ -136,7 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
           location2Container.style.display = "none";
           toggleSelectVisibility(numberLocation2Select, false);
         }
-      });
+      };
     } catch (error) {
       console.error("Error loading location:", error);
     }
@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
         equipmentTypeSelect.appendChild(opt);
       });
 
-      equipmentTypeSelect.addEventListener("change", () => {
+      equipmentTypeSelect.onchange = () => {
         const selected = equipmentTypeSelect.selectedOptions[0];
         if (!selected) return;
 
@@ -198,14 +198,14 @@ document.addEventListener("DOMContentLoaded", () => {
           subEquipmentContainer.style.display = "none";
           toggleSelectVisibility(numberSubEquipmentSelect, false);
         }
-      });
+      };
     } catch (error) {
       console.error("Error loading equipment:", error);
     }
   }
 
   // ✅ Cambio test type → usando unit_by_test.js
-  testTypeSelect.addEventListener("change", () => {
+  testTypeSelect.onchange = () => {
     const type = testTypeSelect.value;
     featureBlock.style.display = type ? "block" : "none";
     resultBlock.style.display = "none";
@@ -218,11 +218,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (type === "isolation") initFormIsolation(powerTypeSelect.value);
     if (type === "contact_resistance") initFormContactResistance(powerTypeSelect.value);
     if (type === "torque") initFormTorque(powerTypeSelect.value);
-  });
+  };
 
-  powerTypeSelect.addEventListener("change", () => {
+  powerTypeSelect.onchange = () => {
     testTypeSelect.dispatchEvent(new Event("change"));
-  });
+  };
 
   resetInitialState();
   loadProjectAndTestType();
