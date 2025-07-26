@@ -59,13 +59,12 @@
 
           <div class="form-grid">
             <div class="form-group">
-              <label>Project:
-                <select id="project_id" name="project_id" required></select>
-              </label>
+              <label for="project_id">Project:</label>
+              <select id="project_id" name="project_id" required></select>
             </div>
 
             <div class="form-group">
-              <label>Main Location:</label>
+              <label for="location_1">Main Location:</label>
               <div class="field-group">
                 <select id="location_1" name="location_1" required></select>
                 <select id="number_location_1" name="number_location_1" style="display:none;"></select>
@@ -73,7 +72,7 @@
             </div>
 
             <div class="form-group" id="label-location_2" style="display:none;">
-              <label>Secondary Location:</label>
+              <label for="location_2">Secondary Location:</label>
               <div class="field-group">
                 <select id="location_2" name="location_2"></select>
                 <select id="number_location_2" name="number_location_2"></select>
@@ -81,7 +80,7 @@
             </div>
 
             <div class="form-group">
-              <label>Equipment Type:</label>
+              <label for="equipment_type">Equipment Type:</label>
               <div class="field-group">
                 <select id="equipment_type" name="equipment_type" required></select>
                 <select id="number_equipment_type" name="number_equipment_type" style="display:none;"></select>
@@ -89,7 +88,7 @@
             </div>
 
             <div class="form-group" id="label-sub_equipment" style="display:none;">
-              <label>Sub Equipment:</label>
+              <label for="sub_equipment">Sub Equipment:</label>
               <div class="field-group">
                 <select id="sub_equipment" name="sub_equipment"></select>
                 <select id="number_sub_equipment" name="number_sub_equipment"></select>
@@ -97,9 +96,8 @@
             </div>
 
             <div class="form-group">
-              <label>Terminal:
-                <input type="text" id="terminal" name="terminal" placeholder="Terminal Nº" />
-              </label>
+              <label for="terminal">Terminal:</label>
+              <input type="text" id="terminal" name="terminal" placeholder="Terminal Nº" />
             </div>
           </div>
         </fieldset>
@@ -107,31 +105,27 @@
         <!-- Step 2: Test Type -->
         <fieldset>
           <legend>2. Test Type</legend>
-          <label>Test Type:
-            <select id="test-type" name="test_type" required>
-              <option value="">Select test...</option>
-            </select>
-          </label>
+          <label for="test-type">Test Type:</label>
+          <select id="test-type" name="test_type" required>
+            <option value="">Select test...</option>
+          </select>
         </fieldset>
 
         <!-- Step 3: Features -->
         <fieldset id="block-features" style="display:none;">
           <legend>3. Features</legend>
 
-          <label for="cable_set">Cable Set:
-            <input type="number" id="cable_set" name="cable_set" min="1" value="1" required />
-          </label>
+          <label for="cable_set">Cable Set:</label>
+          <input type="number" id="cable_set" name="cable_set" min="1" value="1" required />
 
-          <label>Power Type:
-            <select id="power_type" name="power_type" required>
-              <option value="three_phase">Three-phase (L1, L2, L3, N, PE)</option>
-              <option value="single_phase">Single-phase (L, N, PE)</option>
-            </select>
-          </label>
+          <label for="power_type">Power Type:</label>
+          <select id="power_type" name="power_type" required>
+            <option value="three_phase">Three-phase (L1, L2, L3, N, PE)</option>
+            <option value="single_phase">Single-phase (L, N, PE)</option>
+          </select>
 
-          <label id="label-unit">Unit:
-            <select id="unit" name="unit"></select>
-          </label>
+          <label for="unit" id="label-unit">Unit:</label>
+          <select id="unit" name="unit"></select>
         </fieldset>
 
         <!-- Step 4: Test Result -->
