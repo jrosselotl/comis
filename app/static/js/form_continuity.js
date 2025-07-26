@@ -3,7 +3,7 @@ function initFormContinuity(powerType) {
     const resultContainer = document.getElementById("result-container");
     const resultBlock = document.getElementById("result-block");
 
-    const point = powerType === "single_phase"
+    const points = powerType === "single_phase"
         ? ["L", "N", "PE"]
         : ["L1", "L2", "L3", "N", "PE"];
 
@@ -17,14 +17,14 @@ function initFormContinuity(powerType) {
         return combo;
     }
 
-    const combination = generateCombination(point);
+    const combination = generateCombination(points);
 
     function generateFields() {
         const quantity = parseInt(cableSetInput.value) || 0;
         resultContainer.innerHTML = "";
         resultBlock.style.display = quantity > 0 ? "block" : "none";
 
-        // ✅ Cargar unidades globales
+        // ✅ Cargar unidades
         if (window.UNIT_BY_TEST && window.UNIT_BY_TEST["continuity"]) {
             const unitSelect = document.getElementById("unit");
             const labelUnit = document.getElementById("label-unit");
@@ -69,7 +69,7 @@ function initFormContinuity(powerType) {
                             <input type="text" name="${idResult}" id="${idResult}" />
                         </div>
                     </td>
-                    <td><input type="text" value="${selectedUnit}" readonly name="unit_${i}_${point}" /></td>
+                    <td><input type="text" value="${selectedUnit}" readonly /></td>
                     <td><input name="observation_${i}_${point}" type="text" /></td>
                     <td>
                         <label class="camera-label">
@@ -119,10 +119,21 @@ function initFormContinuity(powerType) {
         const results = [];
         const formData = new FormData();
 
-        const project_id = document.getElementById("project_id").value;
-        const equipment_id = document.getElementById("equipment_id")?.value || 0;
-        const user_id = window.CURRENT_USER_ID || 1; // Ajusta según login real
-        const test_id = document.getElementById("test-type").value;
+        // ✅ Campos obligatorios según form.py
+        formData.append("project_id", document.getElementById("project_id").value);
+        formData.append("location_1", document.getElementById("location_1").value);
+        formData.append("number_location_1", document.getElementById("number_location_1").value || 0);
+        formData.append("location_2", document.getElementById("location_2").value || "");
+        formData.append("number_location_2", document.getElementById("number_location_2").value || 0);
+        formData.append("equipment_type", document.getElementById("equipment_type").value);
+        formData.append("number_equipment_type", document.getElementById("number_equipment_type").value || 0);
+        formData.append("sub_equipment", document.getElementById("sub_equipment").value || "");
+        formData.append("number_sub_equipment", document.getElementById("number_sub_equipment").value || 0);
+        formData.append("test_type", type);
+        formData.append("cable_set", cableSet);
+        formData.append("power_type", document.getElementById("power_type").value);
+        formData.append("terminal", document.getElementById("terminal").value || "");
+        formData.append("unit", document.getElementById("unit").value || "");
 
         for (let i = 1; i <= cableSet; i++) {
             for (const point of combination) {
@@ -134,27 +145,20 @@ function initFormContinuity(powerType) {
                 results.push({
                     cable_set: i,
                     test_point: point,
-                    result_value: result === "N/A" ? null : parseFloat(result) || null,
-                    unit: document.getElementById("unit")?.value || "",
-                    observation: observation,
-                    image_field: `image_${i}_${point}`
+                    result_value: result === "N/A" ? "N/A" : result,
+                    observation: observation
                 });
 
                 if (image) {
-                    formData.append(`image_${i}_${point}`, image);
+                    formData.append("images", image);
                 }
             }
         }
 
-        formData.append("project_id", project_id);
-        formData.append("equipment_id", equipment_id);
-        formData.append("user_id", user_id);
-        formData.append("test_id", test_id);
-        formData.append("status", "completed");
-        formData.append("results", JSON.stringify(results));
+        formData.append("data", JSON.stringify(results));
 
         try {
-            const response = await fetch("/test_performed/create", {
+            const response = await fetch("/form/save", {
                 method: "POST",
                 body: formData
             });
