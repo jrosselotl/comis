@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const resultBlock = document.getElementById("result-block");
   const powerTypeSelect = document.getElementById("power_type");
 
+  // ✅ Helper para mostrar/ocultar selects con required
   function toggleSelectVisibility(select, show) {
     if (show) {
       select.parentElement.style.display = "block";
@@ -27,6 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // ✅ Load project and test types
   async function loadProjectAndTestType() {
     try {
       const [projectRes, testRes] = await Promise.all([
@@ -48,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
       testTypeSelect.innerHTML = "<option value=''>Select test...</option>";
       testData.forEach((t) => {
         const opt = document.createElement("option");
-        opt.value = t.id;
+        opt.value = t.test_type; // Usamos el tipo, no el ID, para la lógica
         opt.textContent = t.test_type.charAt(0).toUpperCase() + t.test_type.slice(1);
         testTypeSelect.appendChild(opt);
       });
@@ -60,10 +62,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     } catch (error) {
-      console.error("Error loading project and test types:", error);
+      console.error("Error loading project and test type:", error);
     }
   }
 
+  // ✅ Load locations
   async function loadLocation(projectId) {
     try {
       const res = await fetch(`/location/list?project_id=${projectId}`);
@@ -123,6 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // ✅ Load equipment types
   async function loadEquipment() {
     try {
       const res = await fetch(`/equipment_type/list`);
@@ -184,14 +188,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ Change test type (usando unit_by_test.js)
+  // ✅ Change test type → USANDO unit_by_test.js
   testTypeSelect.addEventListener("change", () => {
     const type = testTypeSelect.value;
     featureBlock.style.display = type ? "block" : "none";
     resultBlock.style.display = "none";
 
-    // 👉 Aquí cargamos las unidades directamente del JS, NO desde el backend
-    loadUnitByTest(type);
+    // 🔥 Aquí usamos la función estática
+    if (type) {
+      loadUnitByTest(type);
+    }
 
     if (type === "continuity") initFormContinuity(powerTypeSelect.value);
     if (type === "isolation") initFormIsolation(powerTypeSelect.value);
