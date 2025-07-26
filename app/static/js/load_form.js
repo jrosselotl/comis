@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const resultBlock = document.getElementById("result-block");
   const powerTypeSelect = document.getElementById("power_type");
 
-  // ✅ Helper para mostrar/ocultar selects con required
+  // ✅ Mostrar u ocultar un select
   function toggleSelectVisibility(select, show) {
     if (show) {
       select.parentElement.style.display = "block";
@@ -28,7 +28,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ Load project and test types
+  // ✅ Estado inicial → solo location_1 y equipment_type visibles
+  function resetInitialState() {
+    toggleSelectVisibility(numberLocation1Select, false);
+    location2Container.style.display = "none";
+    toggleSelectVisibility(numberLocation2Select, false);
+    toggleSelectVisibility(numberEquipmentTypeSelect, false);
+    subEquipmentContainer.style.display = "none";
+    toggleSelectVisibility(numberSubEquipmentSelect, false);
+  }
+
+  // ✅ Cargar proyectos y test types
   async function loadProjectAndTestType() {
     try {
       const [projectRes, testRes] = await Promise.all([
@@ -56,6 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       projectSelect.addEventListener("change", () => {
+        resetInitialState();
         if (projectSelect.value) {
           loadLocation(projectSelect.value);
           loadEquipment();
@@ -66,19 +77,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ Load locations
+  // ✅ Cargar locations con lógica exacta
   async function loadLocation(projectId) {
     try {
       const res = await fetch(`/location/list?project_id=${projectId}`);
       const locationData = await res.json();
 
-      // 🔥 Al cargar siempre muestra solo location_1
       location1Select.innerHTML = "<option value=''>Select</option>";
-      location1Select.parentElement.style.display = "block";
-      toggleSelectVisibility(numberLocation1Select, false);
-      location2Container.style.display = "none";
-      toggleSelectVisibility(numberLocation2Select, false);
-
       locationData.forEach((l) => {
         const opt = document.createElement("option");
         opt.value = l.location_1;
@@ -95,18 +100,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const numbers1 = JSON.parse(selected.dataset.number || "[]");
         const location2 = selected.dataset.location2;
-        const numbers2 = JSON.parse(selected.dataset.number2 || []);
+        const numbers2 = JSON.parse(selected.dataset.number2 || "[]");
 
         // --- Number Location 1
-        toggleSelectVisibility(numberLocation1Select, numbers1.length > 0);
+        if (numbers1.length > 0) {
+          toggleSelectVisibility(numberLocation1Select, true);
+          numberLocation1Select.innerHTML = "";
+          numbers1.forEach((n) => {
+            const opt = document.createElement("option");
+            opt.value = n;
+            opt.textContent = n;
+            numberLocation1Select.appendChild(opt);
+          });
+        } else {
+          toggleSelectVisibility(numberLocation1Select, false);
+        }
 
-        // --- Location 2
+        // --- Location 2 y su número
         if (location2) {
           location2Container.style.display = "block";
           location2Select.innerHTML = `<option value="${location2}">${location2}</option>`;
-          toggleSelectVisibility(numberLocation2Select, numbers2.length > 0);
-
           if (numbers2.length > 0) {
+            toggleSelectVisibility(numberLocation2Select, true);
             numberLocation2Select.innerHTML = "";
             numbers2.forEach((n) => {
               const opt = document.createElement("option");
@@ -114,6 +129,8 @@ document.addEventListener("DOMContentLoaded", () => {
               opt.textContent = n;
               numberLocation2Select.appendChild(opt);
             });
+          } else {
+            toggleSelectVisibility(numberLocation2Select, false);
           }
         } else {
           location2Container.style.display = "none";
@@ -125,18 +142,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ Load equipment types
+  // ✅ Cargar equipment con lógica exacta
   async function loadEquipment() {
     try {
       const res = await fetch(`/equipment_type/list`);
       const equipmentData = await res.json();
 
       equipmentTypeSelect.innerHTML = "<option value=''>Select</option>";
-      equipmentTypeSelect.parentElement.style.display = "block";
-      toggleSelectVisibility(numberEquipmentTypeSelect, false);
-      subEquipmentContainer.style.display = "none";
-      toggleSelectVisibility(numberSubEquipmentSelect, false);
-
       equipmentData.forEach((e) => {
         const opt = document.createElement("option");
         opt.value = e.equipment_type;
@@ -151,17 +163,27 @@ document.addEventListener("DOMContentLoaded", () => {
         const selected = equipmentTypeSelect.selectedOptions[0];
         if (!selected) return;
 
-        const numbers = JSON.parse(selected.dataset.number || []);
-        toggleSelectVisibility(numberEquipmentTypeSelect, numbers.length > 0);
+        const numbers = JSON.parse(selected.dataset.number || "[]");
+        if (numbers.length > 0) {
+          toggleSelectVisibility(numberEquipmentTypeSelect, true);
+          numberEquipmentTypeSelect.innerHTML = "";
+          numbers.forEach((n) => {
+            const opt = document.createElement("option");
+            opt.value = n;
+            opt.textContent = n;
+            numberEquipmentTypeSelect.appendChild(opt);
+          });
+        } else {
+          toggleSelectVisibility(numberEquipmentTypeSelect, false);
+        }
 
         const sub = selected.dataset.sub;
         if (sub) {
           subEquipmentContainer.style.display = "block";
           subEquipmentSelect.innerHTML = `<option value="${sub}">${sub}</option>`;
-          const numbersSub = JSON.parse(selected.dataset.numberSub || []);
-          toggleSelectVisibility(numberSubEquipmentSelect, numbersSub.length > 0);
-
+          const numbersSub = JSON.parse(selected.dataset.numberSub || "[]");
           if (numbersSub.length > 0) {
+            toggleSelectVisibility(numberSubEquipmentSelect, true);
             numberSubEquipmentSelect.innerHTML = "";
             numbersSub.forEach((n) => {
               const opt = document.createElement("option");
@@ -169,6 +191,8 @@ document.addEventListener("DOMContentLoaded", () => {
               opt.textContent = n;
               numberSubEquipmentSelect.appendChild(opt);
             });
+          } else {
+            toggleSelectVisibility(numberSubEquipmentSelect, false);
           }
         } else {
           subEquipmentContainer.style.display = "none";
@@ -180,7 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ Change test type
+  // ✅ Cambio test type → usando unit_by_test.js
   testTypeSelect.addEventListener("change", () => {
     const type = testTypeSelect.value;
     featureBlock.style.display = type ? "block" : "none";
@@ -200,6 +224,6 @@ document.addEventListener("DOMContentLoaded", () => {
     testTypeSelect.dispatchEvent(new Event("change"));
   });
 
-  // ✅ INICIALIZACIÓN
+  resetInitialState();
   loadProjectAndTestType();
 });
