@@ -24,7 +24,7 @@ function initFormContinuity(powerType) {
         resultContainer.innerHTML = "";
         resultBlock.style.display = quantity > 0 ? "block" : "none";
 
-        // ✅ Cargar unidades
+        // ✅ Cargar unidades en el select global
         if (window.UNIT_BY_TEST && window.UNIT_BY_TEST["continuity"]) {
             const unitSelect = document.getElementById("unit");
             const labelUnit = document.getElementById("label-unit");
@@ -69,7 +69,7 @@ function initFormContinuity(powerType) {
                             <input type="text" name="${idResult}" id="${idResult}" />
                         </div>
                     </td>
-                    <td><input type="text" value="${selectedUnit}" readonly /></td>
+                    <td><input type="text" value="${selectedUnit}" readonly name="unit_${i}_${point}" /></td>
                     <td><input name="observation_${i}_${point}" type="text" /></td>
                     <td>
                         <label class="camera-label">
@@ -80,19 +80,19 @@ function initFormContinuity(powerType) {
                 `;
                 table.appendChild(row);
 
+                // ✅ Botón N/A
                 const inputResult = row.querySelector(`#${idResult}`);
                 const buttonNA = row.querySelector(`#${idNA}`);
-
                 buttonNA.addEventListener("click", () => {
                     inputResult.disabled = !inputResult.disabled;
                     inputResult.value = inputResult.disabled ? "N/A" : "";
                     buttonNA.classList.toggle("active");
                 });
 
+                // ✅ Vista previa adjunto
                 const label = row.querySelector("label");
                 const inputFile = label.querySelector("input[type='file']");
                 const textAttach = label.querySelector(".attach-text");
-
                 inputFile.addEventListener("change", () => {
                     textAttach.textContent = inputFile.files.length ? "📎 File attached" : "";
                 });
@@ -104,6 +104,13 @@ function initFormContinuity(powerType) {
 
     cableSetInput.addEventListener("input", generateFields);
     generateFields();
+
+    // ✅ Cuando cambie la unidad global, actualizar todas las filas
+    document.getElementById("unit").addEventListener("change", () => {
+        document.querySelectorAll("input[name^='unit_']").forEach(input => {
+            input.value = document.getElementById("unit").value;
+        });
+    });
 
     document.getElementById("form-test").addEventListener("submit", async function (e) {
         const type = document.getElementById("test-type")?.value;
@@ -119,7 +126,7 @@ function initFormContinuity(powerType) {
         const results = [];
         const formData = new FormData();
 
-        // ✅ Campos obligatorios según form.py
+        // ✅ Campos que exige form.py
         formData.append("project_id", document.getElementById("project_id").value);
         formData.append("location_1", document.getElementById("location_1").value);
         formData.append("number_location_1", document.getElementById("number_location_1").value || 0);
@@ -145,8 +152,9 @@ function initFormContinuity(powerType) {
                 results.push({
                     cable_set: i,
                     test_point: point,
-                    result_value: result === "N/A" ? "N/A" : result,
-                    observation: observation
+                    result_value: result === "N/A" ? "N/A" : parseFloat(result) || null,
+                    observation: observation,
+                    unit: document.getElementById("unit").value || ""
                 });
 
                 if (image) {
