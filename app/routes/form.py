@@ -53,7 +53,7 @@ async def save_form(
     user_id = current_user.id
     print(f"✅ Usuario autenticado que guarda la prueba: {user_id}")
 
-    # --- NORMALIZAMOS VACÍOS ---
+    # --- NORMALIZAMOS CAMPOS VACÍOS ---
     location_2 = location_2 or None
     number_location_2 = number_location_2 or None
     sub_equipment = sub_equipment or None
@@ -99,7 +99,7 @@ async def save_form(
         equipment_id=equipment.id,
         user_id=user_id,
         test_id=test_fixed.id,
-        status="incomplete"
+        status="completed"  # ✅ Puedes dejarlo "completed" directo si ya se completó
     )
     db.add(new_test_performed)
     db.commit()
@@ -121,7 +121,6 @@ async def save_form(
         "contact_resistance": ResultContactResistance,
         "torque": ResultTorque
     }
-
     ResultModel = MODEL_MAP.get(test_type)
     if not ResultModel:
         raise HTTPException(status_code=400, detail="Invalid test type")
@@ -148,14 +147,14 @@ async def save_form(
             observation=r.get("observation", ""),
             image_url=path,
             cable_set=r.get("cable_set"),
-            time_applied=r.get("applied_time"),                 # isolation
-            nominal_value=r.get("nominal_value"),               # torque
-            verification_value=r.get("verification_value")      # ✅ torque corregido
+            time_applied=r.get("applied_time"),           # isolation
+            nominal_value=r.get("nominal_value"),         # torque
+            verification_value=r.get("verification_value")# torque
         ))
 
     db.commit()
 
-    # --- PDF ---
+    # --- GENERACIÓN PDF ---
     project = db.query(Project).filter(Project.id == project_id).first()
     equipment_details = {
         "Project": project.name,
