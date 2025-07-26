@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
       testData.forEach((t) => {
         const opt = document.createElement("option");
         opt.value = t.test_type;
-        opt.textContent = t.test_type.charAt(0).toUpperCase() + t.slice(1);
+        opt.textContent = t.test_type.charAt(0).toUpperCase() + t.test_type.slice  (1);
         testTypeSelect.appendChild(opt);
       });
 
