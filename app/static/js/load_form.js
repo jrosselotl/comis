@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const resultBlock = document.getElementById("result-block");
   const powerTypeSelect = document.getElementById("power_type");
 
-  // ✅ Helper para mostrar/ocultar selects con required
   function toggleSelectVisibility(select, show) {
     if (show) {
       select.parentElement.style.display = "block";
@@ -28,7 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ Load project and test types
   async function loadProjectAndTestType() {
     try {
       const [projectRes, testRes] = await Promise.all([
@@ -50,8 +48,8 @@ document.addEventListener("DOMContentLoaded", () => {
       testTypeSelect.innerHTML = "<option value=''>Select test...</option>";
       testData.forEach((t) => {
         const opt = document.createElement("option");
-        opt.value = t.test_type;
-        opt.textContent = t.test_type.charAt(0).toUpperCase() + t.test_type.slice  (1);
+        opt.value = t.id;
+        opt.textContent = t.test_type.charAt(0).toUpperCase() + t.test_type.slice(1);
         testTypeSelect.appendChild(opt);
       });
 
@@ -66,7 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ Load locations
   async function loadLocation(projectId) {
     try {
       const res = await fetch(`/location/list?project_id=${projectId}`);
@@ -126,7 +123,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ Load equipment types
   async function loadEquipment() {
     try {
       const res = await fetch(`/equipment_type/list`);
@@ -188,34 +184,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ Change test type
-  testTypeSelect.addEventListener("change", async () => {
+  // ✅ Change test type (usando unit_by_test.js)
+  testTypeSelect.addEventListener("change", () => {
     const type = testTypeSelect.value;
     featureBlock.style.display = type ? "block" : "none";
     resultBlock.style.display = "none";
 
-    if (type) {
-      try {
-        const res = await fetch(`/test/unit?test_type=${type}`);
-        const data = await res.json();
-        const unitSelect = document.getElementById("unit");
-        const labelUnit = document.getElementById("label-unit");
-        unitSelect.innerHTML = "<option value=''>Select unit...</option>";
-        if (data.unit && data.unit.length > 0) {
-          data.unit.forEach((u) => {
-            const opt = document.createElement("option");
-            opt.value = u;
-            opt.textContent = u;
-            unitSelect.appendChild(opt);
-          });
-          labelUnit.style.display = "block";
-        } else {
-          labelUnit.style.display = "none";
-        }
-      } catch (error) {
-        console.error("Error loading unit:", error);
-      }
-    }
+    // 👉 Aquí cargamos las unidades directamente del JS, NO desde el backend
+    loadUnitByTest(type);
 
     if (type === "continuity") initFormContinuity(powerTypeSelect.value);
     if (type === "isolation") initFormIsolation(powerTypeSelect.value);
