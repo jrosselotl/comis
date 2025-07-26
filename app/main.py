@@ -16,15 +16,16 @@ from app.models.user import User
 
 # Routers activos (ya revisados y corregidos)
 from app.routes import (
-    auth,                # Login, logout, autenticación
-    user,                # CRUD usuarios
-    project,             # CRUD proyectos
-    equipment,           # CRUD equipos
-    test_performed,      # Dashboard y mis pruebas
-    location,            # Dropdown dinámico
-    equipment_type,      # Dropdown dinámico
-    test_project,        # Activación/desactivación de tests por proyecto (NUEVO)
-    test
+    auth,
+    user,
+    project,
+    equipment,
+    test_performed,
+    location,
+    equipment_type,
+    test_project,
+    test,
+    form
 )
 
 app = FastAPI()
@@ -90,6 +91,7 @@ app.include_router(location.router)
 app.include_router(equipment_type.router)
 app.include_router(test_project.router)
 app.include_router(test.router)
+app.include_router(form.router)
 
 # Ejecución
 if __name__ == "__main__":
