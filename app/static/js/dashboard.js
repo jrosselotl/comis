@@ -24,60 +24,67 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ✅ Cargar el gráfico dinámico (con base actual)
   async function loadChart() {
-    if (!chartCanvas) return;
+  if (!chartCanvas) return;
 
-    try {
-      const res = await fetch("/test_performed/list_user/1"); // ✅ Usa el endpoint actual
-      const data = await res.json();
+  try {
+    const res = await fetch("/test_performed/list_user/1");
+    const tests = await res.json();
 
-      // ✅ Estructura esperada: { "continuity": 5, "torque": 2, ... }
-      const types = Object.keys(data);
-      const quantities = Object.values(data);
+    // ✅ Agrupamos por test_type
+    const stats = {};
+    tests.forEach((t) => {
+      const type = t.test_type || t.name;
+      stats[type] = (stats[type] || 0) + 1;
+    });
 
-      if (chartInstance) chartInstance.destroy();
+    const types = Object.keys(stats);      // → ["continuity", "torque", ...]
+    const quantities = Object.values(stats); // → [5, 2, ...]
 
-      chartInstance = new Chart(chartCanvas, {
-        type: "bar",
-        data: {
-          labels: types,
-          datasets: [
-            {
-              label: "Completed Tests",
-              data: quantities,
-              backgroundColor: [
-                "rgba(52, 152, 219, 0.8)",
-                "rgba(155, 89, 182, 0.8)",
-                "rgba(230, 126, 34, 0.8)",
-                "rgba(39, 174, 96, 0.8)"
-              ],
-              borderRadius: 8
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: (context) => `Total: ${context.raw}`
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { stepSize: 1, color: "#2c3e50" }
-            },
-            x: { ticks: { color: "#2c3e50" } }
+    if (chartInstance) chartInstance.destroy();
+
+    chartInstance = new Chart(chartCanvas, {
+      type: "bar",
+      data: {
+        labels: types.map((t) => t.charAt(0).toUpperCase() + t.slice(1)), // ✅ Bonito en X
+        datasets: [
+          {
+            label: "Completed Tests",
+            data: quantities,
+            backgroundColor: [
+              "rgba(52, 152, 219, 0.8)",
+              "rgba(155, 89, 182, 0.8)",
+              "rgba(230, 126, 34, 0.8)",
+              "rgba(39, 174, 96, 0.8)"
+            ],
+            borderRadius: 8
           }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (context) => `Total: ${context.raw}`
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { stepSize: 1, color: "#2c3e50" }
+          },
+          x: { ticks: { color: "#2c3e50" } }
         }
-      });
-    } catch (error) {
-      console.error("Error loading stats:", error);
-    }
+      }
+    });
+  } catch (error) {
+    console.error("Error loading stats:", error);
   }
+}
+
 
   // ✅ Cargar lista de tests (sin tocar nada)
   async function loadMyTest() {
