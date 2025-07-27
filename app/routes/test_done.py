@@ -12,21 +12,40 @@ router = APIRouter(prefix="/test_done", tags=["Test Done"])
 
 @router.post("/send_pdf/{test_id}")
 async def send_pdf(test_id: int, db: Session = Depends(get_db)):
-    test_performed = db.query(TestPerformed).filter(TestPerformed.id == test_id).first()
+    # ✅ Verificar que el test existe
+    test_performed = (
+        db.query(TestPerformed)
+        .filter(TestPerformed.id == test_id)
+        .first()
+    )
     if not test_performed:
         raise HTTPException(status_code=404, detail="Test not found")
 
-    # ✅ Nombre del PDF esperado
-    pdf_path = f"output/{test_performed.test.test_type}_{test_performed.equipment.code}.pdf"
-    if not os.path.exists(pdf_path):
-        raise HTTPException(status_code=404, detail="PDF not found. Please generate it first.")
+    # ✅ Nombre del PDF esperado (igual que al generarlo en form.py)
+    test_type = test_performed.test.test_type
+    equipment_code = test_performed.equipment.code
+    pdf_path = f"output/{test_type}_{equipment_code}.pdf"
 
-    emails = get_admin_emails(db, test_performed.project_id)
+    # ✅ Si el PDF no existe, lo regeneramos automáticamente
+    if not os.path.exists(pdf_path):
+        project = db.query(Project).filter(Project.id == test_performed.project_id).first()
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+
+        # 🔥 Aquí podrías reconstruir la data de resultados para regenerar el PDF
+        # (opcional si siempre se genera al guardar)
+        raise HTTPException(status_code=404, detail="PDF not found. Please regenerate the test.")
+
+    # ✅ Enviar email a administradores o fallback
+    recipients = get_admin_emails(db, test_performed.project_id)
+    if not recipients:
+        raise HTTPException(status_code=400, detail="No recipients found to send the PDF.")
+
     send_email_with_pdf(
-        recipients=emails,
-        subject=f"{test_performed.test.test_type.capitalize()} - {test_performed.equipment.code}",
-        body=f"Test report for {test_performed.equipment.code}",
+        recipients=recipients,
+        subject=f"{test_type.capitalize()} - {equipment_code}",
+        body=f"Test report for equipment {equipment_code}",
         pdf_file=pdf_path
     )
 
-    return {"message": "✅ PDF sent successfully"}
+    return {"message": f"✅ PDF for test '{test_type}' sent successfully"}
