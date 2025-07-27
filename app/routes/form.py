@@ -42,6 +42,7 @@ async def save_form(
     unit: Optional[str] = Form(None),
     data: str = Form(...),
     images: list[UploadFile] = File(...),
+    completed: bool = Form(False),  # ✅ nuevo: permite marcar finalizado
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -104,11 +105,13 @@ async def save_form(
             equipment_id=equipment.id,
             user_id=user_id,
             test_id=test_fixed.id,
-            status="incomplete"
+            status="completed" if completed else "incomplete"
         )
         db.add(test_performed)
         db.commit()
         db.refresh(test_performed)
+    else:
+        test_performed.status = "completed" if completed else "incomplete"
 
     # --- PARSEAMOS DATA ---
     try:
@@ -145,7 +148,7 @@ async def save_form(
             "result_value": None if r.get("result_value") == "N/A" else r.get("result_value"),
             "unit": r.get("unit") or unit,
             "observation": r.get("observation", ""),
-            "image_url": path,
+            "image_url": path if path else None,
             "cable_set": r.get("cable_set")
         }
 
@@ -160,4 +163,7 @@ async def save_form(
 
     db.commit()
 
-    return {"message": "✅ Form saved successfully", "test_id": test_performed.id}
+    return {
+        "message": f"✅ Test {'completed' if completed else 'saved as draft'} successfully",
+        "test_id": test_performed.id
+    }
