@@ -135,9 +135,9 @@ async def save_form(
     ResultModel = MODEL_MAP.get(test_type)
     if not ResultModel:
         raise HTTPException(status_code=400, detail="Invalid test type")
-
+    
     db.query(ResultModel).filter(ResultModel.test_performed_id == test_performed.id).delete()
-
+    
     img_iter = iter(images or [])
     for r in data_parsed:
         image = next(img_iter, None)
@@ -147,26 +147,34 @@ async def save_form(
             path = os.path.join(UPLOAD_DIR, filename)
             with open(path, "wb") as f:
                 shutil.copyfileobj(image.file, f)
-
+    
+        # ✅ Construimos result_data dinámico según test_type
         result_data = {
             "test_performed_id": test_performed.id,
             "test_point": r["test_point"],
-            "result_value": None if r.get("result_value") == "N/A" else r.get("result_value"),
             "unit": r.get("unit") or unit,
             "observation": r.get("observation", ""),
             "image_url": path if path else None,
             "cable_set": r.get("cable_set")
         }
-
+    
+        if test_type == "continuity" or test_type == "contact_resistance":
+            result_data["result_value"] = (
+                None if r.get("result_value") == "N/A" else r.get("result_value")
+            )
+    
         if test_type == "isolation":
+            result_data["result_value"] = (
+                None if r.get("result_value") == "N/A" else r.get("result_value")
+            )
             result_data["time_applied"] = r.get("time_applied")
-
+    
         if test_type == "torque":
             result_data["nominal_value"] = r.get("nominal_value")
             result_data["verification_value"] = r.get("verification_value")
-
+    
         db.add(ResultModel(**result_data))
-
+    
     db.commit()
 
     return {
