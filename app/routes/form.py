@@ -42,7 +42,7 @@ async def save_form(
     unit: Optional[str] = Form(None),
     data: str = Form(...),
     images: Optional[list[UploadFile]] = File(None),
-    completed: bool = Form(False),  # ✅ nuevo: permite marcar finalizado
+    completed: bool = Form(False),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -105,19 +105,25 @@ async def save_form(
             equipment_id=equipment.id,
             user_id=user_id,
             test_id=test_fixed.id,
-            status="completed" if completed else "incomplete"
+            status="incomplete"
         )
         db.add(test_performed)
         db.commit()
         db.refresh(test_performed)
-    else:
-        test_performed.status = "completed" if completed else "incomplete"
 
     # --- PARSEAMOS DATA ---
     try:
         data_parsed = json.loads(data)
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Invalid data format")
+
+    # --- LÓGICA PARA STATUS AUTOMÁTICO ---
+    all_filled = all(
+        (r.get("result_value") is not None and r.get("result_value") != "")
+        or r.get("result_value") == "N/A"
+        for r in data_parsed
+    )
+    test_performed.status = "completed" if completed and all_filled else "incomplete"
 
     # --- GUARDAMOS RESULTADOS (eliminamos anteriores para evitar duplicados) ---
     MODEL_MAP = {
@@ -164,6 +170,42 @@ async def save_form(
     db.commit()
 
     return {
-        "message": f"✅ Test {'completed' if completed else 'saved as draft'} successfully",
+        "message": f"✅ Test {'completed' if test_performed.status == 'completed' else 'saved as draft'} successfully",
         "test_id": test_performed.id
+    }
+
+
+# ✅ NUEVO: Cargar datos de un test para el botón Editar
+@router.get("/load_test/{test_id}")
+async def load_test(test_id: int, db: Session = Depends(get_db)):
+    test_performed = db.query(TestPerformed).filter(TestPerformed.id == test_id).first()
+    if not test_performed:
+        raise HTTPException(status_code=404, detail="Test not found")
+
+    test_type = test_performed.test.test_type
+    MODEL_MAP = {
+        "continuity": ResultContinuity,
+        "isolation": ResultIsolation,
+        "contact_resistance": ResultContactResistance,
+        "torque": ResultTorque
+    }
+    ResultModel = MODEL_MAP.get(test_type)
+    if not ResultModel:
+        raise HTTPException(status_code=400, detail="Invalid test type")
+
+    results = db.query(ResultModel).filter(ResultModel.test_performed_id == test_id).all()
+
+    return {
+        "project_id": test_performed.project_id,
+        "test_type": test_type,
+        "results": [
+            {
+                "cable_set": r.cable_set,
+                "test_point": r.test_point,
+                "result_value": r.result_value,
+                "observation": r.observation,
+                "unit": r.unit
+            }
+            for r in results
+        ]
     }
