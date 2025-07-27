@@ -3,7 +3,7 @@ function initFormContactResistance(powerType) {
     const resultContainer = document.getElementById("result-container");
     const resultBlock = document.getElementById("result-block");
 
-    const pointList = powerType === "single_phase"
+    const points = powerType === "single_phase"
         ? ["L", "N", "PE"]
         : ["L1", "L2", "L3", "N", "PE"];
 
@@ -17,14 +17,14 @@ function initFormContactResistance(powerType) {
         return combo;
     }
 
-    const combination = generateCombination(pointList);
+    const combination = generateCombination(points);
 
     function generateFields() {
         const quantity = parseInt(cableSetInput.value) || 0;
         resultContainer.innerHTML = "";
         resultBlock.style.display = quantity > 0 ? "block" : "none";
 
-        // ✅ Cargar unidades globales
+        // ✅ Cargar unidades en el select global
         if (window.UNIT_BY_TEST && window.UNIT_BY_TEST["contact_resistance"]) {
             const unitSelect = document.getElementById("unit");
             const labelUnit = document.getElementById("label-unit");
@@ -80,19 +80,19 @@ function initFormContactResistance(powerType) {
                 `;
                 table.appendChild(row);
 
+                // ✅ Botón N/A
                 const inputResult = row.querySelector(`#${idResult}`);
                 const buttonNA = row.querySelector(`#${idNA}`);
-
                 buttonNA.addEventListener("click", () => {
                     inputResult.disabled = !inputResult.disabled;
                     inputResult.value = inputResult.disabled ? "N/A" : "";
                     buttonNA.classList.toggle("active");
                 });
 
+                // ✅ Vista previa adjunto
                 const label = row.querySelector("label");
                 const inputFile = label.querySelector("input[type='file']");
                 const attachText = label.querySelector(".attach-text");
-
                 inputFile.addEventListener("change", () => {
                     attachText.textContent = inputFile.files.length ? "📎 File attached" : "";
                 });
@@ -105,12 +105,18 @@ function initFormContactResistance(powerType) {
     cableSetInput.addEventListener("input", generateFields);
     generateFields();
 
+    // ✅ Cuando cambie la unidad global, actualizar todas las filas
+    document.getElementById("unit").addEventListener("change", () => {
+        document.querySelectorAll("input[name^='unit_']").forEach(input => {
+            input.value = document.getElementById("unit").value;
+        });
+    });
+
     document.getElementById("form-test").addEventListener("submit", async function (e) {
         const type = document.getElementById("test-type")?.value;
         if (type !== "contact_resistance") return;
 
         e.preventDefault();
-        const selectedUnit = document.getElementById("unit")?.value || "";
         const cableSets = parseInt(cableSetInput.value);
         if (!cableSets) {
             alert("Enter cable set quantity.");
@@ -120,21 +126,21 @@ function initFormContactResistance(powerType) {
         const results = [];
         const formData = new FormData();
 
-        // ✅ Campos generales que espera el backend
+        // ✅ Campos generales que espera form.py
         formData.append("project_id", document.getElementById("project_id").value);
         formData.append("location_1", document.getElementById("location_1").value);
         formData.append("number_location_1", document.getElementById("number_location_1")?.value || 0);
         formData.append("location_2", document.getElementById("location_2")?.value || "");
-        formData.append("number_location_2", document.getElementById("number_location_2")?.value || "");
+        formData.append("number_location_2", document.getElementById("number_location_2")?.value || 0);
         formData.append("equipment_type", document.getElementById("equipment_type").value);
-        formData.append("number_equipment_type", document.getElementById("number_equipment_type")?.value || "");
+        formData.append("number_equipment_type", document.getElementById("number_equipment_type")?.value || 0);
         formData.append("sub_equipment", document.getElementById("sub_equipment")?.value || "");
-        formData.append("number_sub_equipment", document.getElementById("number_sub_equipment")?.value || "");
+        formData.append("number_sub_equipment", document.getElementById("number_sub_equipment")?.value || 0);
         formData.append("terminal", document.getElementById("terminal")?.value || "");
         formData.append("power_type", document.getElementById("power_type").value);
         formData.append("cable_set", cableSets);
         formData.append("test_type", type);
-        formData.append("unit", selectedUnit);
+        formData.append("unit", document.getElementById("unit").value || "");
 
         // ✅ Recorremos los puntos
         for (let i = 1; i <= cableSets; i++) {
@@ -147,8 +153,8 @@ function initFormContactResistance(powerType) {
                 results.push({
                     cable_set: i,
                     test_point: point,
-                    result_value: result === "N/A" ? "N/A" : result,
-                    unit: selectedUnit,
+                    result_value: result === "N/A" ? "N/A" : parseFloat(result) || null,
+                    unit: document.getElementById("unit").value || "",
                     observation: observation
                 });
 
@@ -158,7 +164,6 @@ function initFormContactResistance(powerType) {
             }
         }
 
-        // ✅ El backend espera un único campo `data`
         formData.append("data", JSON.stringify(results));
 
         try {
