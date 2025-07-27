@@ -65,10 +65,10 @@ function initFormTorque(powerType) {
                 `;
                 table.appendChild(row);
 
+                // ✅ Vista previa adjunto
                 const label = row.querySelector("label");
                 const inputFile = label.querySelector("input[type='file']");
                 const attachText = label.querySelector(".attach-text");
-
                 inputFile.addEventListener("change", () => {
                     attachText.textContent = inputFile.files.length ? "📎 File attached" : "";
                 });
@@ -80,6 +80,13 @@ function initFormTorque(powerType) {
 
     cableSetInput.addEventListener("input", generateFields);
     generateFields();
+
+    // ✅ Cuando cambie la unidad global, actualizar todas las filas
+    document.getElementById("unit").addEventListener("change", () => {
+        document.querySelectorAll("input[name^='unit_']").forEach(input => {
+            input.value = document.getElementById("unit").value;
+        });
+    });
 
     document.getElementById("form-test").addEventListener("submit", async function (e) {
         const type = document.getElementById("test-type")?.value;
@@ -95,16 +102,16 @@ function initFormTorque(powerType) {
         const results = [];
         const formData = new FormData();
 
-        // ✅ Campos generales que espera el backend
+        // ✅ Campos generales que espera form.py
         formData.append("project_id", document.getElementById("project_id").value);
         formData.append("location_1", document.getElementById("location_1").value);
         formData.append("number_location_1", document.getElementById("number_location_1")?.value || 0);
         formData.append("location_2", document.getElementById("location_2")?.value || "");
-        formData.append("number_location_2", document.getElementById("number_location_2")?.value || "");
+        formData.append("number_location_2", document.getElementById("number_location_2")?.value || 0);
         formData.append("equipment_type", document.getElementById("equipment_type").value);
-        formData.append("number_equipment_type", document.getElementById("number_equipment_type")?.value || "");
+        formData.append("number_equipment_type", document.getElementById("number_equipment_type")?.value || 0);
         formData.append("sub_equipment", document.getElementById("sub_equipment")?.value || "");
-        formData.append("number_sub_equipment", document.getElementById("number_sub_equipment")?.value || "");
+        formData.append("number_sub_equipment", document.getElementById("number_sub_equipment")?.value || 0);
         formData.append("terminal", document.getElementById("terminal")?.value || "");
         formData.append("power_type", document.getElementById("power_type").value);
         formData.append("cable_set", cableSets);
@@ -135,7 +142,6 @@ function initFormTorque(powerType) {
             }
         }
 
-        // ✅ El backend espera un único campo `data`
         formData.append("data", JSON.stringify(results));
 
         try {
