@@ -99,7 +99,7 @@ async def save_form(
         equipment_id=equipment.id,
         user_id=user_id,
         test_id=test_fixed.id,
-        status="completed"  # ✅ Puedes dejarlo "completed" directo si ya se completó
+        status="completed"
     )
     db.add(new_test_performed)
     db.commit()
@@ -139,18 +139,25 @@ async def save_form(
                 "path": path
             })
 
-        db.add(ResultModel(
-            test_performed_id=new_test_performed.id,
-            test_point=r["test_point"],
-            result_value=None if r.get("result_value") == "N/A" else r.get("result_value"),
-            unit=r.get("unit") or unit,
-            observation=r.get("observation", ""),
-            image_url=path,
-            cable_set=r.get("cable_set"),
-            time_applied=r.get("applied_time"),           # isolation
-            nominal_value=r.get("nominal_value"),         # torque
-            verification_value=r.get("verification_value")# torque
-        ))
+        # ✅ SOLO PASAMOS LOS CAMPOS QUE EXISTEN EN CADA MODELO
+        result_data = {
+            "test_performed_id": new_test_performed.id,
+            "test_point": r["test_point"],
+            "result_value": None if r.get("result_value") == "N/A" else r.get("result_value"),
+            "unit": r.get("unit") or unit,
+            "observation": r.get("observation", ""),
+            "image_url": path,
+            "cable_set": r.get("cable_set")
+        }
+
+        if test_type == "isolation":
+            result_data["time_applied"] = r.get("time_applied")
+
+        if test_type == "torque":
+            result_data["nominal_value"] = r.get("nominal_value")
+            result_data["verification_value"] = r.get("verification_value")
+
+        db.add(ResultModel(**result_data))
 
     db.commit()
 
