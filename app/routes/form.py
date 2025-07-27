@@ -12,8 +12,6 @@ from app.models.result_contact_resistance import ResultContactResistance
 from app.models.result_torque import ResultTorque
 from app.routes.auth import get_current_user
 from app.models.user import User
-from app.utils.pdf_generator import generate_test_pdf
-from app.utils.email import send_email_with_pdf, get_admin_emails
 
 import os
 import shutil
@@ -53,7 +51,7 @@ async def save_form(
     user_id = current_user.id
     print(f"✅ Usuario autenticado que guarda la prueba: {user_id}")
 
-    # --- NORMALIZAMOS CAMPOS VACÍOS ---
+    # --- Normalización de campos ---
     location_2 = location_2 or None
     number_location_2 = number_location_2 or None
     sub_equipment = sub_equipment or None
@@ -89,21 +87,28 @@ async def save_form(
         db.commit()
         db.refresh(equipment)
 
-    # --- TEST_PERFORMED ---
+    # --- TEST_PERFORMED (si existe lo actualizamos, sino lo creamos) ---
     test_fixed = db.query(Test).filter(Test.test_type == test_type).first()
     if not test_fixed:
         raise HTTPException(status_code=400, detail=f"Test '{test_type}' not found")
 
-    new_test_performed = TestPerformed(
-        project_id=project_id,
-        equipment_id=equipment.id,
-        user_id=user_id,
-        test_id=test_fixed.id,
-        status="incomplete"  # ✅ SIEMPRE INCOMPLETE HASTA QUE EL TÉCNICO FINALICE
+    test_performed = (
+        db.query(TestPerformed)
+        .filter(TestPerformed.equipment_id == equipment.id, TestPerformed.test_id == test_fixed.id)
+        .first()
     )
-    db.add(new_test_performed)
-    db.commit()
-    db.refresh(new_test_performed)
+
+    if not test_performed:
+        test_performed = TestPerformed(
+            project_id=project_id,
+            equipment_id=equipment.id,
+            user_id=user_id,
+            test_id=test_fixed.id,
+            status="incomplete"
+        )
+        db.add(test_performed)
+        db.commit()
+        db.refresh(test_performed)
 
     # --- PARSEAMOS DATA ---
     try:
@@ -111,10 +116,7 @@ async def save_form(
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Invalid data format")
 
-    img_iter = iter(images)
-    images_info = []
-
-    # --- GUARDADO DE RESULTADOS ---
+    # --- GUARDAMOS RESULTADOS (eliminamos anteriores para evitar duplicados) ---
     MODEL_MAP = {
         "continuity": ResultContinuity,
         "isolation": ResultIsolation,
@@ -125,6 +127,9 @@ async def save_form(
     if not ResultModel:
         raise HTTPException(status_code=400, detail="Invalid test type")
 
+    db.query(ResultModel).filter(ResultModel.test_performed_id == test_performed.id).delete()
+
+    img_iter = iter(images)
     for r in data_parsed:
         image = next(img_iter, None)
         path = None
@@ -133,14 +138,9 @@ async def save_form(
             path = os.path.join(UPLOAD_DIR, filename)
             with open(path, "wb") as f:
                 shutil.copyfileobj(image.file, f)
-            images_info.append({
-                "cable_set": r.get("cable_set"),
-                "test_point": r["test_point"],
-                "path": path
-            })
 
         result_data = {
-            "test_performed_id": new_test_performed.id,
+            "test_performed_id": test_performed.id,
             "test_point": r["test_point"],
             "result_value": None if r.get("result_value") == "N/A" else r.get("result_value"),
             "unit": r.get("unit") or unit,
@@ -160,48 +160,4 @@ async def save_form(
 
     db.commit()
 
-    return {"message": "Form saved successfully", "test_id": new_test_performed.id}
-
-
-@router.get("/load_test/{test_id}")
-async def load_test(test_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    """
-    Devuelve todos los datos guardados de un test para edición.
-    """
-    test_performed = db.query(TestPerformed).filter(TestPerformed.id == test_id).first()
-    if not test_performed:
-        raise HTTPException(status_code=404, detail="Test not found")
-
-    test_type = test_performed.test.test_type
-    MODEL_MAP = {
-        "continuity": ResultContinuity,
-        "isolation": ResultIsolation,
-        "contact_resistance": ResultContactResistance,
-        "torque": ResultTorque
-    }
-    ResultModel = MODEL_MAP.get(test_type)
-    if not ResultModel:
-        raise HTTPException(status_code=400, detail="Invalid test type")
-
-    results = db.query(ResultModel).filter(ResultModel.test_performed_id == test_id).all()
-
-    return {
-        "test_id": test_performed.id,
-        "test_type": test_type,
-        "equipment_id": test_performed.equipment_id,
-        "status": test_performed.status,
-        "results": [
-            {
-                "cable_set": r.cable_set,
-                "test_point": r.test_point,
-                "result_value": r.result_value,
-                "unit": r.unit,
-                "observation": r.observation,
-                "time_applied": getattr(r, "time_applied", None),
-                "nominal_value": getattr(r, "nominal_value", None),
-                "verification_value": getattr(r, "verification_value", None),
-                "image_url": r.image_url
-            }
-            for r in results
-        ]
-    }
+    return {"message": "✅ Form saved successfully", "test_id": test_performed.id}
