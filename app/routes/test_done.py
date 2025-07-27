@@ -14,9 +14,10 @@ from datetime import datetime
 
 router = APIRouter(prefix="/test_done", tags=["Test Done"])
 
+
 @router.post("/send_pdf/{test_id}")
 async def send_pdf(test_id: int, db: Session = Depends(get_db)):
-    # ✅ 1. Verificar Test
+    # ✅ 1. Verify Test
     test_performed = db.query(TestPerformed).filter(TestPerformed.id == test_id).first()
     if not test_performed:
         raise HTTPException(status_code=404, detail="Test not found")
@@ -25,7 +26,7 @@ async def send_pdf(test_id: int, db: Session = Depends(get_db)):
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    # ✅ 2. Determinar modelo según tipo de test
+    # ✅ 2. Determine model according to test type
     test_type = test_performed.test.test_type
     MODEL_MAP = {
         "continuity": ResultContinuity,
@@ -41,7 +42,7 @@ async def send_pdf(test_id: int, db: Session = Depends(get_db)):
     if not results:
         raise HTTPException(status_code=400, detail="No results found for this test")
 
-    # ✅ 3. Preparar datos del PDF
+    # ✅ 3. Prepare PDF data
     equipment = test_performed.equipment
     equipment_details = {
         "Project": project.name,
@@ -85,12 +86,12 @@ async def send_pdf(test_id: int, db: Session = Depends(get_db)):
         "subcontractor_logo": project.subcontractor_logo
     }
 
-    # ✅ 4. Generar PDF SIEMPRE antes de enviar
+    # ✅ 4. Generate PDF always before sending
     pdf_path = f"output/{test_type}_{equipment.code}.pdf"
     os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
     generate_test_pdf(test_data, pdf_results, output_path=pdf_path)
 
-    # ✅ 5. Enviar email
+    # ✅ 5. Send email
     recipients = get_admin_emails(db, test_performed.project_id)
     if not recipients:
         raise HTTPException(status_code=400, detail="No recipients found to send the PDF.")
