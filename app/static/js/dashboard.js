@@ -14,7 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const sidebar = document.getElementById("sidebar");
   const hamburger = document.getElementById("hamburger");
 
-  // ✅ Mostrar solo una sección
   function showSection(section) {
     [sectionDashboard, sectionMyTest, sectionNewTest].forEach((s) =>
       s.classList.add("hidden")
@@ -22,71 +21,66 @@ document.addEventListener("DOMContentLoaded", () => {
     section.classList.remove("hidden");
   }
 
-  // ✅ Cargar el gráfico dinámico (con base actual)
   async function loadChart() {
-  if (!chartCanvas) return;
+    if (!chartCanvas) return;
+    try {
+      const res = await fetch("/test_performed/list_user/1");
+      const tests = await res.json();
 
-  try {
-    const res = await fetch("/test_performed/list_user/1");
-    const tests = await res.json();
+      const stats = {};
+      tests.forEach((t) => {
+        const type = t.test_type || t.name;
+        stats[type] = (stats[type] || 0) + 1;
+      });
 
-    // ✅ Agrupamos por test_type
-    const stats = {};
-    tests.forEach((t) => {
-      const type = t.test_type || t.name;
-      stats[type] = (stats[type] || 0) + 1;
-    });
+      const types = Object.keys(stats);
+      const quantities = Object.values(stats);
 
-    const types = Object.keys(stats);      // → ["continuity", "torque", ...]
-    const quantities = Object.values(stats); // → [5, 2, ...]
+      if (chartInstance) chartInstance.destroy();
 
-    if (chartInstance) chartInstance.destroy();
-
-    chartInstance = new Chart(chartCanvas, {
-      type: "bar",
-      data: {
-        labels: types.map((t) => t.charAt(0).toUpperCase() + t.slice(1)), // ✅ Bonito en X
-        datasets: [
-          {
-            label: "Completed Tests",
-            data: quantities,
-            backgroundColor: [
-              "rgba(52, 152, 219, 0.8)",
-              "rgba(155, 89, 182, 0.8)",
-              "rgba(230, 126, 34, 0.8)",
-              "rgba(39, 174, 96, 0.8)"
-            ],
-            borderRadius: 8
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: (context) => `Total: ${context.raw}`
+      chartInstance = new Chart(chartCanvas, {
+        type: "bar",
+        data: {
+          labels: types.map((t) => t.charAt(0).toUpperCase() + t.slice(1)),
+          datasets: [
+            {
+              label: "Completed Tests",
+              data: quantities,
+              backgroundColor: [
+                "rgba(52, 152, 219, 0.8)",
+                "rgba(155, 89, 182, 0.8)",
+                "rgba(230, 126, 34, 0.8)",
+                "rgba(39, 174, 96, 0.8)"
+              ],
+              borderRadius: 8
             }
-          }
+          ]
         },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { stepSize: 1, color: "#2c3e50" }
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (context) => `Total: ${context.raw}`
+              }
+            }
           },
-          x: { ticks: { color: "#2c3e50" } }
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1, color: "#2c3e50" }
+            },
+            x: { ticks: { color: "#2c3e50" } }
+          }
         }
-      }
-    });
-  } catch (error) {
-    console.error("Error loading stats:", error);
+      });
+    } catch (error) {
+      console.error("Error loading stats:", error);
+    }
   }
-}
 
-
-  // ✅ Cargar lista de tests (sin tocar nada)
   async function loadMyTest() {
     tableMyTest.innerHTML = "";
     try {
@@ -95,23 +89,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
       tests.forEach((t) => {
         const tr = document.createElement("tr");
+        const isCompleted = t.status?.toLowerCase() === "completed";
         tr.innerHTML = `
           <td>${t.asset}</td>
           <td>${t.test_type || t.name}</td>
           <td>${new Date(t.date).toLocaleDateString()}</td>
           <td>${t.status}</td>
           <td>
-            ${
-              t.status === "Incomplete"
-                ? `<button class="btn btn-continue" data-id="${t.id}">✏️ Edit</button>`
-                : `<button class="btn btn-send" data-id="${t.id}">📧 Send</button>`
-            }
+            <button class="btn btn-continue" data-id="${t.id}">✏️ Edit</button>
+            ${isCompleted ? `<button class="btn btn-send" data-id="${t.id}">📧 Send</button>` : ""}
           </td>
         `;
         tableMyTest.appendChild(tr);
       });
 
-      // ✅ Evento Editar
       document.querySelectorAll(".btn-continue").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
           const id = e.target.dataset.id;
@@ -125,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (typeof window.loadExistingTest === "function") {
               window.loadExistingTest(testData);
             } else {
-              alert("⚠️ Falta implementar la función loadExistingTest en tu JS de formularios.");
+              alert("⚠️ Falta implementar la función loadExistingTest en tus JS de formularios.");
             }
 
             showSection(sectionNewTest);
@@ -136,7 +127,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       });
 
-      // ✅ Evento Enviar PDF
       document.querySelectorAll(".btn-send").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
           const id = e.target.dataset.id;
@@ -154,7 +144,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ Eventos Sidebar
   btnDashboard.addEventListener("click", () => {
     showSection(sectionDashboard);
     loadChart();
@@ -169,12 +158,10 @@ document.addEventListener("DOMContentLoaded", () => {
     showSection(sectionNewTest);
   });
 
-  // ✅ Hamburguesa (Mobile)
   hamburger.addEventListener("click", () => {
     sidebar.style.display = sidebar.style.display === "block" ? "none" : "block";
   });
 
-  // ✅ Inicio
   showSection(sectionDashboard);
   loadChart();
 });
