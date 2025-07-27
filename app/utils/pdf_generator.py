@@ -2,27 +2,22 @@ from fpdf import FPDF
 import os
 from datetime import datetime
 
-# ✅ Ruta absoluta segura
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FONTS_DIR = os.path.join(BASE_DIR, "..", "static", "fonts")
 IMG_DIR = os.path.join(BASE_DIR, "..", "static", "img", "logos")
 
-# ✅ Color corporativo azul
 CORPORATE_BLUE = (0, 51, 102)  # Azul oscuro
 
 class PDF(FPDF):
     def header(self):
-        # ✅ Franja azul completa
         self.set_fill_color(*CORPORATE_BLUE)
         self.rect(0, 0, 210, 20, "F")
 
-        # ✅ Logos
         if hasattr(self, 'client_logo') and self.client_logo and os.path.exists(self.client_logo):
             self.image(self.client_logo, 10, 4, 25)
         if hasattr(self, 'subcontractor_logo') and self.subcontractor_logo and os.path.exists(self.subcontractor_logo):
             self.image(self.subcontractor_logo, 175, 4, 25)
 
-        # ✅ Título blanco
         self.set_font("DejaVu", "B", 14)
         self.set_text_color(255, 255, 255)
         self.cell(0, 10, "Technical Test Report", align="C", ln=True)
@@ -38,13 +33,13 @@ class PDF(FPDF):
 def generate_test_pdf(test_data, pdf_results, output_path):
     pdf = PDF()
 
-    # ✅ Fuente con soporte UTF-8
+    # ✅ Fuente UTF-8
     pdf.add_font("DejaVu", "", os.path.join(FONTS_DIR, "DejaVuSans.ttf"), uni=True)
     pdf.add_font("DejaVu", "B", os.path.join(FONTS_DIR, "DejaVuSans-Bold.ttf"), uni=True)
     pdf.add_font("DejaVu", "I", os.path.join(FONTS_DIR, "DejaVuSans-Oblique.ttf"), uni=True)
     pdf.set_font("DejaVu", "B", 14)
 
-    # ✅ Logos absolutos
+    # ✅ Logos
     client_logo_name = test_data.get("client_logo", "")
     subcontractor_logo_name = test_data.get("subcontractor_logo", "")
     pdf.client_logo = os.path.join(IMG_DIR, client_logo_name) if client_logo_name else None
@@ -52,7 +47,7 @@ def generate_test_pdf(test_data, pdf_results, output_path):
 
     pdf.add_page()
 
-    # ✅ Título completo
+    # ✅ Título
     project_name = test_data["equipment_details"].get("Project", "")
     equipment_code = test_data.get("equipment_id", "")
     test_type = test_data.get("test_type", "").capitalize()
@@ -62,7 +57,7 @@ def generate_test_pdf(test_data, pdf_results, output_path):
     pdf.multi_cell(0, 10, title, align="C")
     pdf.ln(5)
 
-    # ✅ Equipment details con estilo
+    # ✅ Detalles del equipo
     pdf.set_font("DejaVu", "B", 12)
     pdf.cell(0, 10, "Equipment Details:", ln=True)
     pdf.set_font("DejaVu", "", 11)
@@ -74,13 +69,21 @@ def generate_test_pdf(test_data, pdf_results, output_path):
         pdf.cell(0, 8, str(value), border=1, ln=True)
     pdf.ln(5)
 
-    # ✅ Test results con cabecera azul
+    # ✅ Tabla de resultados adaptativa según test
     pdf.set_font("DejaVu", "B", 12)
     pdf.cell(0, 10, "Results:", ln=True)
     pdf.set_font("DejaVu", "B", 10)
 
-    headers = ["Cable Set", "Test Point", "Result", "Unit", "Observations"]
-    col_widths = [25, 40, 30, 25, 70]
+    t_type = test_data.get("test_type", "")
+    if t_type == "isolation":
+        headers = ["Cable Set", "Test Point", "Result", "Unit", "Time (s)", "Observations"]
+        col_widths = [20, 35, 25, 20, 20, 70]
+    elif t_type == "torque":
+        headers = ["Cable Set", "Test Point", "Nominal", "Check", "Unit", "Observations"]
+        col_widths = [20, 35, 25, 25, 20, 65]
+    else:
+        headers = ["Cable Set", "Test Point", "Result", "Unit", "Observations"]
+        col_widths = [25, 40, 30, 25, 70]
 
     pdf.set_fill_color(*CORPORATE_BLUE)
     pdf.set_text_color(255, 255, 255)
@@ -90,19 +93,40 @@ def generate_test_pdf(test_data, pdf_results, output_path):
 
     pdf.set_font("DejaVu", "", 10)
     pdf.set_text_color(0, 0, 0)
+
     for r in pdf_results:
-        row = [
-            str(r.get("cable_set", "")),
-            r.get("test_point", ""),
-            str(r.get("result_value", "")),
-            r.get("unit", ""),
-            r.get("observation", "")
-        ]
+        if t_type == "isolation":
+            row = [
+                str(r.get("cable_set", "")),
+                r.get("test_point", ""),
+                str(r.get("result_value", "")),
+                r.get("unit", ""),
+                str(r.get("time_applied", "")),
+                r.get("observation", "")
+            ]
+        elif t_type == "torque":
+            row = [
+                str(r.get("cable_set", "")),
+                r.get("test_point", ""),
+                str(r.get("nominal_value", "")),
+                str(r.get("check_value", "")),
+                r.get("unit", ""),
+                r.get("observation", "")
+            ]
+        else:
+            row = [
+                str(r.get("cable_set", "")),
+                r.get("test_point", ""),
+                str(r.get("result_value", "")),
+                r.get("unit", ""),
+                r.get("observation", "")
+            ]
+
         for i, value in enumerate(row):
             pdf.cell(col_widths[i], 8, str(value)[:40], border=1)
         pdf.ln()
 
-    # ✅ Anexos con imágenes al final
+    # ✅ Anexos con imágenes
     images = test_data.get("images", [])
     if images:
         pdf.add_page()
