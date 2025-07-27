@@ -84,8 +84,9 @@ function initFormContactResistance(powerType) {
                 const inputResult = row.querySelector(`#${idResult}`);
                 const buttonNA = row.querySelector(`#${idNA}`);
                 buttonNA.addEventListener("click", () => {
-                    inputResult.disabled = !inputResult.disabled;
-                    inputResult.value = inputResult.disabled ? "N/A" : "";
+                    const isActive = !inputResult.disabled;
+                    inputResult.disabled = isActive;
+                    inputResult.value = isActive ? "N/A" : "";
                     buttonNA.classList.toggle("active");
                 });
 
@@ -123,6 +124,11 @@ function initFormContactResistance(powerType) {
             return;
         }
 
+        if (!document.getElementById("unit").value) {
+            alert("Select a unit before saving.");
+            return;
+        }
+
         const results = [];
         const formData = new FormData();
 
@@ -140,7 +146,8 @@ function initFormContactResistance(powerType) {
         formData.append("power_type", document.getElementById("power_type").value);
         formData.append("cable_set", cableSets);
         formData.append("test_type", type);
-        formData.append("unit", document.getElementById("unit").value || "");
+        formData.append("unit", document.getElementById("unit")?.value || "");
+        formData.append("completed", true);
 
         // ✅ Recorremos los puntos
         for (let i = 1; i <= cableSets; i++) {
@@ -153,8 +160,8 @@ function initFormContactResistance(powerType) {
                 results.push({
                     cable_set: i,
                     test_point: point,
-                    result_value: result === "N/A" ? "N/A" : parseFloat(result) || null,
-                    unit: document.getElementById("unit").value || "",
+                    result_value: result === "N/A" ? null : parseFloat(result) || null,
+                    unit: document.getElementById("unit").value,
                     observation: observation
                 });
 
@@ -186,3 +193,31 @@ function initFormContactResistance(powerType) {
 }
 
 window.initFormContactResistance = initFormContactResistance;
+
+// ✅ Cargar datos existentes al editar
+window.loadExistingTest = function (testData) {
+    document.getElementById("project_id").value = testData.project_id;
+    document.getElementById("test-type").value = testData.test_type;
+    document.getElementById("cable_set").value = testData.results.length
+        ? Math.max(...testData.results.map(r => r.cable_set))
+        : 0;
+
+    initFormContactResistance(document.getElementById("power_type").value);
+
+    testData.results.forEach(r => {
+        const resultInput = document.querySelector(`[name="result_${r.cable_set}_${r.test_point}"]`);
+        const obsInput = document.querySelector(`[name="observation_${r.cable_set}_${r.test_point}"]`);
+        const unitInput = document.querySelector(`[name="unit_${r.cable_set}_${r.test_point}"]`);
+
+        if (resultInput) resultInput.value = r.result_value || "";
+        if (obsInput) obsInput.value = r.observation || "";
+        if (unitInput) unitInput.value = r.unit || "";
+
+        if (r.result_value === null) {
+            resultInput.disabled = true;
+            resultInput.value = "N/A";
+            const naBtn = document.getElementById(`na_${r.cable_set}_${r.test_point}`);
+            if (naBtn) naBtn.classList.add("active");
+        }
+    });
+};
