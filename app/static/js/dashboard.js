@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const sidebar = document.getElementById("sidebar");
   const hamburger = document.getElementById("hamburger");
 
+  // ✅ Mostrar solo una sección
   function showSection(section) {
     [sectionDashboard, sectionMyTest, sectionNewTest].forEach((s) =>
       s.classList.add("hidden")
@@ -21,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     section.classList.remove("hidden");
   }
 
+  // ✅ Cargar gráfico dinámico
   async function loadChart() {
     if (!chartCanvas) return;
     try {
@@ -81,6 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // ✅ Cargar lista de tests (My Tests)
   async function loadMyTest() {
     tableMyTest.innerHTML = "";
     try {
@@ -103,6 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tableMyTest.appendChild(tr);
       });
 
+      // ✅ Evento Editar (siempre disponible)
       document.querySelectorAll(".btn-continue").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
           const id = e.target.dataset.id;
@@ -116,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (typeof window.loadExistingTest === "function") {
               window.loadExistingTest(testData);
             } else {
-              alert("⚠️ Falta implementar la función loadExistingTest en tus JS de formularios.");
+              alert("⚠️ Falta implementar la función loadExistingTest en tu JS de formularios.");
             }
 
             showSection(sectionNewTest);
@@ -127,15 +131,20 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       });
 
+      // ✅ Evento Enviar PDF (regenera siempre antes de enviar)
       document.querySelectorAll(".btn-send").forEach((btn) => {
         btn.addEventListener("click", async (e) => {
           const id = e.target.dataset.id;
-          if (confirm(`Do you want to send the PDF by email for test ID ${id}?`)) {
-            const resp = await fetch(`/test_done/send_pdf/${id}`, {
-              method: "POST"
-            });
-            const data = await resp.json();
-            alert(data.message || "PDF sent successfully.");
+          if (confirm(`Do you want to generate and send the PDF for test ID ${id}?`)) {
+            try {
+              const resp = await fetch(`/test_done/send_pdf/${id}`, { method: "POST" });
+              if (!resp.ok) throw new Error("Error sending PDF");
+              const data = await resp.json();
+              alert(data.message || "✅ PDF sent successfully.");
+            } catch (err) {
+              console.error("Error sending PDF:", err);
+              alert("❌ Error sending PDF.");
+            }
           }
         });
       });
@@ -144,6 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // ✅ Eventos Sidebar
   btnDashboard.addEventListener("click", () => {
     showSection(sectionDashboard);
     loadChart();
@@ -162,6 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
     sidebar.style.display = sidebar.style.display === "block" ? "none" : "block";
   });
 
+  // ✅ Inicio
   showSection(sectionDashboard);
   loadChart();
 });
