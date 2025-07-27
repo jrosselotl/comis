@@ -195,17 +195,24 @@ async def load_test(test_id: int, db: Session = Depends(get_db)):
 
     results = db.query(ResultModel).filter(ResultModel.test_performed_id == test_id).all()
 
+    response_results = []
+    for r in results:
+        base = {
+            "cable_set": r.cable_set,
+            "test_point": r.test_point,
+            "result_value": r.result_value,
+            "observation": r.observation,
+            "unit": r.unit
+        }
+        if test_type == "isolation":
+            base["time_applied"] = getattr(r, "time_applied", None)
+        if test_type == "torque":
+            base["nominal_value"] = getattr(r, "nominal_value", None)
+            base["verification_value"] = getattr(r, "verification_value", None)
+        response_results.append(base)
+
     return {
         "project_id": test_performed.project_id,
         "test_type": test_type,
-        "results": [
-            {
-                "cable_set": r.cable_set,
-                "test_point": r.test_point,
-                "result_value": r.result_value,
-                "observation": r.observation,
-                "unit": r.unit
-            }
-            for r in results
-        ]
+        "results": response_results
     }
