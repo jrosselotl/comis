@@ -71,7 +71,7 @@ h1, h2 {
    📌 CONTENIDO PRINCIPAL
 =========================== */
 .content {
-  margin-left: 240px;
+  margin-left: 240px; /* espacio para el sidebar */
   padding: 2rem;
   max-width: 1100px;
 }
@@ -107,6 +107,32 @@ h1, h2 {
 .table-test th {
   background-color: #e0eafc;
   color: #333;
+}
+
+.btn {
+  padding: 0.4rem 0.7rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.btn-continue {
+  background: #3498db;
+  color: white;
+}
+
+.btn-send {
+  background: #27ae60;
+  color: white;
+}
+
+.btn-continue:hover {
+  background: #2c80b4;
+}
+
+.btn-send:hover {
+  background: #1f8f4d;
 }
 
 /* ===========================
@@ -169,6 +195,90 @@ select {
 
 .camera-label:hover {
   background-color: #005fa3;
+}
+
+/* ===========================
+   📱 RESPONSIVE SIDEBAR (Hamburger)
+=========================== */
+@media (max-width: 1024px) {
+  .content {
+    margin-left: 0;
+    padding: 1rem;
+  }
+
+  .sidebar {
+    position: fixed;
+    width: 200px;
+    left: -200px;
+    z-index: 1000;
+    height: 100vh;
+    transition: left 0.3s ease-in-out;
+  }
+
+  .sidebar.active {
+    left: 0;
+  }
+
+  .hamburger {
+    display: block;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background: #004080;
+    color: white;
+    border: none;
+    padding: 0.6rem 0.8rem;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1100;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 0.9rem;
+  }
+
+  form {
+    padding: 1rem;
+  }
+}
+
+#section-dashboard {
+  max-width: 90%;
+  margin: 2rem auto;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#chart-test {
+  max-height: 400px;
+  width: 100% !important;
+  height: auto !important;
+}
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  height: 400px;
+  margin: 2rem auto;
+}
+
+/* ✅ Grid Paso 1 */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
 }
 
 /* ===========================
@@ -235,18 +345,9 @@ select {
 }
 
 /* ===========================
-   ✅ RESPONSIVE (TESTS COMO CARDS)
+   ✅ RESPONSIVE: TESTS COMO CARDS
 =========================== */
 @media (max-width: 768px) {
-  .content {
-    margin-left: 0;
-    padding: 1rem;
-  }
-
-  form {
-    padding: 1rem;
-  }
-
   .test-table,
   .test-table thead,
   .test-table tbody,
@@ -283,44 +384,4 @@ select {
     color: #555;
     flex: 1;
   }
-}
-
-/* ===========================
-   📊 DASHBOARD
-=========================== */
-#section-dashboard {
-  max-width: 90%;
-  margin: 2rem auto;
-  background: white;
-  padding: 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-#chart-test {
-  max-height: 400px;
-  width: 100% !important;
-  height: auto !important;
-}
-
-.chart-container {
-  position: relative;
-  width: 100%;
-  max-width: 900px;
-  height: 400px;
-  margin: 2rem auto;
-}
-
-/* ✅ Grid Paso 1 */
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 0.3rem;
 }
