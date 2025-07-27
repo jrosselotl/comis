@@ -49,10 +49,16 @@ function initFormTorque(powerType) {
                 const row = document.createElement("tr");
                 const idNominal = `nominal_${i}_${point}`;
                 const idVerification = `verification_${i}_${point}`;
+                const idNA = `na_${i}_${point}`;
 
                 row.innerHTML = `
                     <td>${point}</td>
-                    <td><input name="${idNominal}" type="number" step="0.01" /></td>
+                    <td>
+                        <div class="result-combined">
+                            <button type="button" class="na-btn" id="${idNA}">N/A</button>
+                            <input name="${idNominal}" type="number" step="0.01" />
+                        </div>
+                    </td>
                     <td><input name="${idVerification}" type="number" step="0.01" /></td>
                     <td><input type="text" value="${selectedUnit}" readonly name="unit_${i}_${point}" /></td>
                     <td><input name="observation_${i}_${point}" type="text" /></td>
@@ -64,6 +70,21 @@ function initFormTorque(powerType) {
                     </td>
                 `;
                 table.appendChild(row);
+
+                // ✅ Botón N/A desactiva ambos valores
+                const inputNominal = row.querySelector(`[name="${idNominal}"]`);
+                const inputVerification = row.querySelector(`[name="${idVerification}"]`);
+                const buttonNA = row.querySelector(`#${idNA}`);
+                buttonNA.addEventListener("click", () => {
+                    const isActive = !inputNominal.disabled;
+                    inputNominal.disabled = isActive;
+                    inputVerification.disabled = isActive;
+                    if (isActive) {
+                        inputNominal.value = "";
+                        inputVerification.value = "";
+                    }
+                    buttonNA.classList.toggle("active");
+                });
 
                 // ✅ Vista previa adjunto
                 const label = row.querySelector("label");
@@ -99,6 +120,11 @@ function initFormTorque(powerType) {
             return;
         }
 
+        if (!document.getElementById("unit").value) {
+            alert("Select a unit before saving.");
+            return;
+        }
+
         const results = [];
         const formData = new FormData();
 
@@ -117,12 +143,13 @@ function initFormTorque(powerType) {
         formData.append("cable_set", cableSets);
         formData.append("test_type", type);
         formData.append("unit", document.getElementById("unit")?.value || "");
+        formData.append("completed", true);
 
         // ✅ Resultados torque: nominal + verificación
         for (let i = 1; i <= cableSets; i++) {
             for (const point of conductors) {
-                const nominal = document.querySelector(`[name="nominal_${i}_${point}"]`)?.value || "";
-                const verification = document.querySelector(`[name="verification_${i}_${point}"]`)?.value || "";
+                const nominal = document.querySelector(`[name="nominal_${i}_${point}"]`);
+                const verification = document.querySelector(`[name="verification_${i}_${point}"]`);
                 const observation = document.querySelector(`[name="observation_${i}_${point}"]`)?.value || "";
                 const imageInput = document.querySelector(`[name="image_${i}_${point}"]`);
                 const image = imageInput?.files[0];
@@ -130,9 +157,9 @@ function initFormTorque(powerType) {
                 results.push({
                     cable_set: i,
                     test_point: point,
-                    nominal_value: nominal ? parseFloat(nominal) : null,
-                    verification_value: verification ? parseFloat(verification) : null,
-                    unit: document.getElementById("unit")?.value || "",
+                    nominal_value: (nominal && !nominal.disabled) ? parseFloat(nominal.value) || null : null,
+                    verification_value: (verification && !verification.disabled) ? parseFloat(verification.value) || null : null,
+                    unit: document.getElementById("unit").value,
                     observation: observation
                 });
 
@@ -164,3 +191,35 @@ function initFormTorque(powerType) {
 }
 
 window.initFormTorque = initFormTorque;
+
+// ✅ Cargar datos existentes al editar
+window.loadExistingTest = function (testData) {
+    document.getElementById("project_id").value = testData.project_id;
+    document.getElementById("test-type").value = testData.test_type;
+    document.getElementById("cable_set").value = testData.results.length
+        ? Math.max(...testData.results.map(r => r.cable_set))
+        : 0;
+
+    initFormTorque(document.getElementById("power_type").value);
+
+    testData.results.forEach(r => {
+        const nominalInput = document.querySelector(`[name="nominal_${r.cable_set}_${r.test_point}"]`);
+        const verificationInput = document.querySelector(`[name="verification_${r.cable_set}_${r.test_point}"]`);
+        const obsInput = document.querySelector(`[name="observation_${r.cable_set}_${r.test_point}"]`);
+        const unitInput = document.querySelector(`[name="unit_${r.cable_set}_${r.test_point}"]`);
+        const naBtn = document.getElementById(`na_${r.cable_set}_${r.test_point}`);
+
+        if (nominalInput) nominalInput.value = r.nominal_value || "";
+        if (verificationInput) verificationInput.value = r.verification_value || "";
+        if (obsInput) obsInput.value = r.observation || "";
+        if (unitInput) unitInput.value = r.unit || "";
+
+        if (r.nominal_value === null && r.verification_value === null && naBtn) {
+            nominalInput.disabled = true;
+            verificationInput.disabled = true;
+            nominalInput.value = "";
+            verificationInput.value = "";
+            naBtn.classList.add("active");
+        }
+    });
+};
