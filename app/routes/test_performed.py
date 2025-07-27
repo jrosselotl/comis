@@ -120,6 +120,7 @@ def list_user_tests(user_id: int, db: Session = Depends(get_db)):
         .join(Equipment, TestPerformed.equipment_id == Equipment.id)
         .join(Test, TestPerformed.test_id == Test.id)
         .filter(TestPerformed.user_id == user_id)
+        .order_by(TestPerformed.date.desc())
         .all()
     )
 
