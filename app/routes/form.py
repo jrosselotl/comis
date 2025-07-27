@@ -99,7 +99,7 @@ async def save_form(
         equipment_id=equipment.id,
         user_id=user_id,
         test_id=test_fixed.id,
-        status="completed"
+        status="incomplete"  # ✅ SIEMPRE INCOMPLETE HASTA QUE EL TÉCNICO FINALICE
     )
     db.add(new_test_performed)
     db.commit()
@@ -139,7 +139,6 @@ async def save_form(
                 "path": path
             })
 
-        # ✅ SOLO PASAMOS LOS CAMPOS QUE EXISTEN EN CADA MODELO
         result_data = {
             "test_performed_id": new_test_performed.id,
             "test_point": r["test_point"],
@@ -161,51 +160,48 @@ async def save_form(
 
     db.commit()
 
-    # --- GENERACIÓN PDF ---
-    project = db.query(Project).filter(Project.id == project_id).first()
-    equipment_details = {
-        "Project": project.name,
-        "Main Location": f"{location_1} Nº{number_location_1}",
-        "Secondary Location": f"{location_2} Nº{number_location_2}" if location_2 else "-",
-        "Equipment Type": f"{equipment_type} Nº{number_equipment_type}",
-        "Sub Equipment": f"{sub_equipment} Nº{number_sub_equipment}" if sub_equipment else "-",
-        "Power Type": power_type,
-        "Terminal": terminal
+    return {"message": "Form saved successfully", "test_id": new_test_performed.id}
+
+
+@router.get("/load_test/{test_id}")
+async def load_test(test_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Devuelve todos los datos guardados de un test para edición.
+    """
+    test_performed = db.query(TestPerformed).filter(TestPerformed.id == test_id).first()
+    if not test_performed:
+        raise HTTPException(status_code=404, detail="Test not found")
+
+    test_type = test_performed.test.test_type
+    MODEL_MAP = {
+        "continuity": ResultContinuity,
+        "isolation": ResultIsolation,
+        "contact_resistance": ResultContactResistance,
+        "torque": ResultTorque
     }
-    test_data = {
-        "equipment_id": equipment_code,
+    ResultModel = MODEL_MAP.get(test_type)
+    if not ResultModel:
+        raise HTTPException(status_code=400, detail="Invalid test type")
+
+    results = db.query(ResultModel).filter(ResultModel.test_performed_id == test_id).all()
+
+    return {
+        "test_id": test_performed.id,
         "test_type": test_type,
-        "date": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-        "equipment_details": equipment_details,
-        "images": images_info,
-        "user_name": current_user.name,
-        "client_logo": project.client_logo,
-        "subcontractor_logo": project.subcontractor_logo
+        "equipment_id": test_performed.equipment_id,
+        "status": test_performed.status,
+        "results": [
+            {
+                "cable_set": r.cable_set,
+                "test_point": r.test_point,
+                "result_value": r.result_value,
+                "unit": r.unit,
+                "observation": r.observation,
+                "time_applied": getattr(r, "time_applied", None),
+                "nominal_value": getattr(r, "nominal_value", None),
+                "verification_value": getattr(r, "verification_value", None),
+                "image_url": r.image_url
+            }
+            for r in results
+        ]
     }
-    pdf_results = [
-        {
-            "test_point": r["test_point"],
-            "result_value": r.get("result_value"),
-            "unit": r.get("unit") or unit,
-            "observation": r.get("observation", ""),
-            "cable_set": r.get("cable_set"),
-            "nominal_value": r.get("nominal_value"),
-            "verification_value": r.get("verification_value")
-        }
-        for r in data_parsed
-    ]
-
-    output_pdf_path = f"output/{test_type}_{equipment_code}.pdf"
-    os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
-    generate_test_pdf(test_data, pdf_results, output_path=output_pdf_path)
-
-    # --- EMAIL ---
-    emails = get_admin_emails(db, project_id)
-    send_email_with_pdf(
-        recipients=emails,
-        subject=f"{test_type.capitalize()} - {equipment_code}",
-        body=f"Test report: {test_type} for equipment {equipment_code}",
-        pdf_file=output_pdf_path
-    )
-
-    return {"message": "Form and results saved successfully"}
