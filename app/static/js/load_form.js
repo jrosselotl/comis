@@ -214,10 +214,22 @@ document.addEventListener("DOMContentLoaded", () => {
       loadUnitByTest(type);
     }
 
-    if (type === "continuity") initFormContinuity(powerTypeSelect.value);
-    if (type === "isolation") initFormIsolation(powerTypeSelect.value);
-    if (type === "contact_resistance") initFormContactResistance(powerTypeSelect.value);
-    if (type === "torque") initFormTorque(powerTypeSelect.value);
+    if (type === "continuity") {
+      initFormContinuity(powerTypeSelect.value);
+      applyResponsiveLabels();
+    }
+    if (type === "isolation") {
+      initFormIsolation(powerTypeSelect.value);
+      applyResponsiveLabels();
+    }
+    if (type === "contact_resistance") {
+      initFormContactResistance(powerTypeSelect.value);
+      applyResponsiveLabels();
+    }
+    if (type === "torque") {
+      initFormTorque(powerTypeSelect.value);
+      applyResponsiveLabels();
+    }
   };
 
   powerTypeSelect.onchange = () => {
@@ -227,3 +239,18 @@ document.addEventListener("DOMContentLoaded", () => {
   resetInitialState();
   loadProjectAndTestType();
 });
+
+/* ✅ FUNCION GLOBAL: SOLO APLICA EN MÓVILES */
+function applyResponsiveLabels() {
+  if (window.innerWidth > 768) return; // ✅ solo si es responsive
+  document.querySelectorAll(".test-table").forEach(table => {
+    const headers = Array.from(table.querySelectorAll("th")).map(th => th.innerText.trim());
+    table.querySelectorAll("tr").forEach(row => {
+      row.querySelectorAll("td").forEach((td, index) => {
+        if (headers[index]) {
+          td.setAttribute("data-label", headers[index]);
+        }
+      });
+    });
+  });
+}
