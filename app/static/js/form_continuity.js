@@ -141,6 +141,7 @@ function initFormContinuity(powerType) {
         formData.append("power_type", document.getElementById("power_type").value);
         formData.append("terminal", document.getElementById("terminal").value || "");
         formData.append("unit", document.getElementById("unit").value || "");
+        formData.append("completed", true);
 
         for (let i = 1; i <= cableSet; i++) {
             for (const point of combination) {
@@ -185,3 +186,38 @@ function initFormContinuity(powerType) {
 }
 
 window.initFormContinuity = initFormContinuity;
+window.loadExistingTest = function (testData) {
+    document.getElementById("project_id").value = testData.project_id;
+    document.getElementById("test-type").value = testData.test_type;
+    document.getElementById("cable_set").value = testData.results.length 
+        ? Math.max(...testData.results.map(r => r.cable_set)) 
+        : 0;
+    
+    initFormContinuity(document.getElementById("power_type").value);
+
+    testData.results.forEach(r => {
+        const resultInput = document.querySelector(
+            `[name="result_${r.cable_set}_${r.test_point}"]`
+        );
+        const obsInput = document.querySelector(
+            `[name="observation_${r.cable_set}_${r.test_point}"]`
+        );
+        const unitInput = document.querySelector(
+            `[name="unit_${r.cable_set}_${r.test_point}"]`
+        );
+
+        if (resultInput) resultInput.value = r.result_value || "";
+        if (obsInput) obsInput.value = r.observation || "";
+        if (unitInput) unitInput.value = r.unit || "";
+
+        // Si era N/A
+        if (r.result_value === null) {
+            resultInput.disabled = true;
+            resultInput.value = "N/A";
+            const naBtn = document.getElementById(
+                `na_${r.cable_set}_${r.test_point}`
+            );
+            if (naBtn) naBtn.classList.add("active");
+        }
+    });
+};
