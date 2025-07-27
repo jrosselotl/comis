@@ -1,4 +1,3 @@
-# app/utils/email.py
 import smtplib
 from email.message import EmailMessage
 import os
@@ -18,9 +17,7 @@ SMTP_PASS = os.getenv("SMTP_PASS")
 def send_email_with_pdf(recipients: list[str], subject: str, body: str, pdf_file: str):
     """
     Sends an email with a PDF attachment to the specified recipients.
-    Includes detailed debug logs for troubleshooting.
     """
-    print(f"📧 Preparing email to: {recipients}")
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["From"] = SMTP_USER
@@ -36,29 +33,29 @@ def send_email_with_pdf(recipients: list[str], subject: str, body: str, pdf_file
             filename=os.path.basename(pdf_file)
         )
 
-    try:
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as smtp:
-            smtp.set_debuglevel(1)  # ✅ Activa logs detallados
-            smtp.login(SMTP_USER, SMTP_PASS)
-            smtp.send_message(msg)
-            print(f"✅ Email sent successfully to: {recipients}")
-    except Exception as e:
-        print(f"❌ Email sending failed: {e}")
-        raise
+    with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as smtp:
+        smtp.login(SMTP_USER, SMTP_PASS)
+        smtp.send_message(msg)
 
 
 def get_admin_emails(db: Session, project_id: int) -> list[str]:
     """
     Retrieves emails of users with 'admin' or 'project' role for a given project.
-    If no admin/project users are found, returns a fallback email.
+    Always adds a fallback email (jrosselot@alancx.com).
     """
     admin_users = (
         db.query(User)
         .join(UserProject, User.id == UserProject.user_id)
         .filter(UserProject.project_id == project_id)
-        .filter(User.role.in_(["admin", "project"]))  # ✅ Corrected
+        .filter(User.role.in_(["admin", "project"]))
         .all()
     )
-    emails = [u.email for u in admin_users if u.email]
-    print(f"📧 Admin/project emails found: {emails}")
-    return emails or ["jrosselot@alancx.com"]  # Fallback
+
+    # ✅ Filter invalid emails
+    emails = [u.email for u in admin_users if u.email and "@" in u.email]
+
+    # ✅ Always add fallback email (avoiding duplicates)
+    if "jrosselot@alancx.com" not in emails:
+        emails.append("jrosselot@alancx.com")
+
+    return emails
