@@ -16,6 +16,7 @@ router = APIRouter(prefix="/test_done", tags=["Test Done"])
 
 @router.post("/send_pdf/{test_id}")
 async def send_pdf(test_id: int, db: Session = Depends(get_db)):
+    # ✅ 1. Verificar Test
     test_performed = db.query(TestPerformed).filter(TestPerformed.id == test_id).first()
     if not test_performed:
         raise HTTPException(status_code=404, detail="Test not found")
@@ -24,7 +25,7 @@ async def send_pdf(test_id: int, db: Session = Depends(get_db)):
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    # ✅ Obtener resultados desde la base
+    # ✅ 2. Determinar modelo según tipo de test
     test_type = test_performed.test.test_type
     MODEL_MAP = {
         "continuity": ResultContinuity,
@@ -37,15 +38,21 @@ async def send_pdf(test_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Invalid test type")
 
     results = db.query(ResultModel).filter(ResultModel.test_performed_id == test_id).all()
+    if not results:
+        raise HTTPException(status_code=400, detail="No results found for this test")
 
-    # ✅ Preparar data para el PDF
+    # ✅ 3. Preparar datos del PDF
     equipment = test_performed.equipment
     equipment_details = {
         "Project": project.name,
         "Main Location": f"{equipment.location_1} Nº{equipment.number_location_1}",
-        "Secondary Location": f"{equipment.location_2} Nº{equipment.number_location_2}" if equipment.location_2 else "-",
+        "Secondary Location": (
+            f"{equipment.location_2} Nº{equipment.number_location_2}" if equipment.location_2 else "-"
+        ),
         "Equipment Type": f"{equipment.equipment_type} Nº{equipment.number_equipment_type}",
-        "Sub Equipment": f"{equipment.sub_equipment} Nº{equipment.number_sub_equipment}" if equipment.sub_equipment else "-",
+        "Sub Equipment": (
+            f"{equipment.sub_equipment} Nº{equipment.number_sub_equipment}" if equipment.sub_equipment else "-"
+        ),
         "Power Type": equipment.power_type,
         "Terminal": equipment.terminal
     }
@@ -69,19 +76,25 @@ async def send_pdf(test_id: int, db: Session = Depends(get_db)):
         "test_type": test_type,
         "date": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
         "equipment_details": equipment_details,
-        "images": [{"cable_set": r.cable_set, "test_point": r.test_point, "path": r.image_url} for r in results if r.image_url],
+        "images": [
+            {"cable_set": r.cable_set, "test_point": r.test_point, "path": r.image_url}
+            for r in results if r.image_url
+        ],
         "user_name": test_performed.user.name,
         "client_logo": project.client_logo,
         "subcontractor_logo": project.subcontractor_logo
     }
 
-    # ✅ Generar PDF siempre antes de enviar
+    # ✅ 4. Generar PDF SIEMPRE antes de enviar
     pdf_path = f"output/{test_type}_{equipment.code}.pdf"
     os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
     generate_test_pdf(test_data, pdf_results, output_path=pdf_path)
 
-    # ✅ Enviar email
+    # ✅ 5. Enviar email
     recipients = get_admin_emails(db, test_performed.project_id)
+    if not recipients:
+        raise HTTPException(status_code=400, detail="No recipients found to send the PDF.")
+
     send_email_with_pdf(
         recipients=recipients,
         subject=f"{test_type.capitalize()} - {equipment.code}",
@@ -89,4 +102,6 @@ async def send_pdf(test_id: int, db: Session = Depends(get_db)):
         pdf_file=pdf_path
     )
 
-    return {"message": f"✅ PDF for test '{test_type}' sent successfully"}
+    return {
+        "message": f"✅ PDF regenerated and sent successfully for test '{test_type.upper()}' ({equipment.code})"
+    }
