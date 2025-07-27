@@ -41,7 +41,7 @@ async def save_form(
     terminal: Optional[str] = Form(None),
     unit: Optional[str] = Form(None),
     data: str = Form(...),
-    images: list[UploadFile] = File(...),
+    images: Optional[list[UploadFile]] = File(None),
     completed: bool = Form(False),  # ✅ nuevo: permite marcar finalizado
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -132,7 +132,7 @@ async def save_form(
 
     db.query(ResultModel).filter(ResultModel.test_performed_id == test_performed.id).delete()
 
-    img_iter = iter(images)
+    img_iter = iter(images or [])
     for r in data_parsed:
         image = next(img_iter, None)
         path = None
