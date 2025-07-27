@@ -2,6 +2,11 @@ from fpdf import FPDF
 import os
 from datetime import datetime
 
+# ✅ Ruta absoluta segura para evitar problemas en Render/cualquier hosting
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FONTS_DIR = os.path.join(BASE_DIR, "..", "static", "fonts")
+IMG_DIR = os.path.join(BASE_DIR, "..", "static", "img", "logos")
+
 class PDF(FPDF):
     def header(self):
         # ✅ Logos
@@ -23,13 +28,17 @@ def generate_test_pdf(test_data, pdf_results, output_path):
     pdf = PDF()
 
     # ✅ Fuente con soporte UTF-8 (Ω, °C, etc.)
-    pdf.add_font("DejaVu", "", "static/fonts/DejaVuSans.ttf", uni=True)
-    pdf.add_font("DejaVu", "B", "static/fonts/DejaVuSans-Bold.ttf", uni=True)
-    pdf.add_font("DejaVu", "I", "static/fonts/DejaVuSans-Oblique.ttf", uni=True)
+    pdf.add_font("DejaVu", "", os.path.join(FONTS_DIR, "DejaVuSans.ttf"), uni=True)
+    pdf.add_font("DejaVu", "B", os.path.join(FONTS_DIR, "DejaVuSans-Bold.ttf"), uni=True)
+    pdf.add_font("DejaVu", "I", os.path.join(FONTS_DIR, "DejaVuSans-Oblique.ttf"), uni=True)
     pdf.set_font("DejaVu", "B", 14)
 
-    pdf.client_logo = f"static/img/logos/{test_data.get('client_logo', '')}"
-    pdf.subcontractor_logo = f"static/img/logos/{test_data.get('subcontractor_logo', '')}"
+    # ✅ Logos con rutas absolutas
+    client_logo_name = test_data.get("client_logo", "")
+    subcontractor_logo_name = test_data.get("subcontractor_logo", "")
+    pdf.client_logo = os.path.join(IMG_DIR, client_logo_name) if client_logo_name else None
+    pdf.subcontractor_logo = os.path.join(IMG_DIR, subcontractor_logo_name) if subcontractor_logo_name else None
+
     pdf.add_page()
 
     # ✅ Title
@@ -68,7 +77,6 @@ def generate_test_pdf(test_data, pdf_results, output_path):
             r.get("observation", "")
         ]
         for i, value in enumerate(row):
-            # ✅ Truncar valores largos para evitar errores
             pdf.cell(col_widths[i], 8, str(value)[:40], border=1)
         pdf.ln()
 
@@ -80,7 +88,6 @@ def generate_test_pdf(test_data, pdf_results, output_path):
             ):
                 if os.path.exists(img["path"]):
                     try:
-                        # ✅ Ajuste dinámico para imágenes grandes
                         x_before, y_before = pdf.get_x(), pdf.get_y()
                         pdf.image(img["path"], x=x_before, y=y_before, w=50)
                         pdf.ln(30)
