@@ -8,55 +8,61 @@ class PDF(FPDF):
             self.image(self.client_logo, 10, 8, 33)
         if hasattr(self, 'subcontractor_logo') and self.subcontractor_logo and os.path.exists(self.subcontractor_logo):
             self.image(self.subcontractor_logo, 165, 8, 33)
-        self.set_font('Arial', 'B', 12)
-        self.cell(0, 10, 'Technical Test Report', ln=True, align='C')
+        self.set_font("DejaVu", "B", 12)
+        self.cell(0, 10, "Technical Test Report", ln=True, align="C")
         self.ln(10)
 
     def footer(self):
         self.set_y(-15)
-        self.set_font('Arial', 'I', 8)
-        self.cell(0, 10, f'Page {self.page_no()}', align='C')
+        self.set_font("DejaVu", "I", 8)
+        self.cell(0, 10, f"Page {self.page_no()}", align="C")
 
 
 def generate_test_pdf(test_data, pdf_results, output_path):
     pdf = PDF()
+
+    # ✅ Usamos DejaVuSans con soporte UTF-8
+    pdf.add_font("DejaVu", "", "static/fonts/DejaVuSans.ttf", uni=True)
+    pdf.add_font("DejaVu", "B", "static/fonts/DejaVuSans-Bold.ttf", uni=True)
+    pdf.add_font("DejaVu", "I", "static/fonts/DejaVuSans-Oblique.ttf", uni=True)
+    pdf.set_font("DejaVu", "B", 14)
+
     pdf.client_logo = f"static/img/logos/{test_data.get('client_logo', '')}"
     pdf.subcontractor_logo = f"static/img/logos/{test_data.get('subcontractor_logo', '')}"
     pdf.add_page()
 
     # ✅ Title
-    pdf.set_font('Arial', 'B', 14)
     pdf.cell(
         0,
         10,
         f"{test_data['equipment_details'].get('Equipment Type', '')} - {test_data.get('test_type', '').capitalize()}",
         ln=True,
-        align='C'
+        align="C"
     )
     pdf.ln(10)
 
     # ✅ Equipment details
-    pdf.set_font('Arial', 'B', 12)
-    pdf.cell(0, 10, 'Equipment Details:', ln=True)
-    pdf.set_font('Arial', '', 11)
+    pdf.set_font("DejaVu", "B", 12)
+    pdf.cell(0, 10, "Equipment Details:", ln=True)
+    pdf.set_font("DejaVu", "", 11)
     for key, value in test_data['equipment_details'].items():
         pdf.cell(60, 8, f"{key}", border=1)
         pdf.cell(0, 8, f"{value}", border=1, ln=True)
     pdf.ln(10)
 
     # ✅ Test results
-    pdf.set_font('Arial', 'B', 12)
-    pdf.cell(0, 10, 'Results:', ln=True)
-    pdf.set_font('Arial', 'B', 10)
+    pdf.set_font("DejaVu", "B", 12)
+    pdf.cell(0, 10, "Results:", ln=True)
+    pdf.set_font("DejaVu", "B", 10)
 
     headers = ['Cable Set', 'Test Point', 'Result', 'Unit', 'Observations']
     col_widths = [25, 40, 30, 25, 70]
 
     for i, header in enumerate(headers):
-        pdf.cell(col_widths[i], 8, header, border=1, align='C')
+        pdf.cell(col_widths[i], 8, header, border=1, align="C")
     pdf.ln()
 
-    pdf.set_font('Arial', '', 10)
+    pdf.set_font("DejaVu", "", 10)
     for r in pdf_results:
         row = [
             str(r.get('cable_set', '')),
@@ -81,11 +87,11 @@ def generate_test_pdf(test_data, pdf_results, output_path):
                         pdf.image(img["path"], x=pdf.get_x(), y=pdf.get_y(), w=50)
                         pdf.ln(30)
                     except Exception as e:
-                        pdf.set_font('Arial', 'I', 8)
+                        pdf.set_font("DejaVu", "I", 8)
                         pdf.cell(0, 10, f"[Error displaying image: {e}]", ln=True)
 
     pdf.ln(10)
-    pdf.set_font('Arial', 'I', 10)
+    pdf.set_font("DejaVu", "I", 10)
     pdf.cell(0, 10, f"Performed by: {test_data.get('user_name', 'Unknown')}", ln=True)
     pdf.cell(0, 10, f"Date: {test_data.get('date', datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))}", ln=True)
 
