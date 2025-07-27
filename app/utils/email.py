@@ -48,8 +48,8 @@ def get_admin_emails(db: Session, project_id: int) -> list[str]:
         db.query(User)
         .join(UserProject, User.id == UserProject.user_id)
         .filter(UserProject.project_id == project_id)
-        .filter(User.rol.in_(["admin", "project"]))
+        .filter(User.role.in_(["admin", "project"]))  # ✅ Corrected to "role"
         .all()
     )
-    email = [u.email for u in admin_users]
-    return email or ["jrosselot@alancx.com"]  # Fallback
+    emails = [u.email for u in admin_users if u.email]
+    return emails or ["jrosselot@alancx.com"]  # Fallback
