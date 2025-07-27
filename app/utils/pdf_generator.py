@@ -4,6 +4,7 @@ from datetime import datetime
 
 class PDF(FPDF):
     def header(self):
+        # ✅ Logos
         if hasattr(self, 'client_logo') and self.client_logo and os.path.exists(self.client_logo):
             self.image(self.client_logo, 10, 8, 33)
         if hasattr(self, 'subcontractor_logo') and self.subcontractor_logo and os.path.exists(self.subcontractor_logo):
@@ -21,7 +22,7 @@ class PDF(FPDF):
 def generate_test_pdf(test_data, pdf_results, output_path):
     pdf = PDF()
 
-    # ✅ Usamos DejaVuSans con soporte UTF-8
+    # ✅ Fuente con soporte UTF-8 (Ω, °C, etc.)
     pdf.add_font("DejaVu", "", "static/fonts/DejaVuSans.ttf", uni=True)
     pdf.add_font("DejaVu", "B", "static/fonts/DejaVuSans-Bold.ttf", uni=True)
     pdf.add_font("DejaVu", "I", "static/fonts/DejaVuSans-Oblique.ttf", uni=True)
@@ -32,30 +33,25 @@ def generate_test_pdf(test_data, pdf_results, output_path):
     pdf.add_page()
 
     # ✅ Title
-    pdf.cell(
-        0,
-        10,
-        f"{test_data['equipment_details'].get('Equipment Type', '')} - {test_data.get('test_type', '').capitalize()}",
-        ln=True,
-        align="C"
-    )
-    pdf.ln(10)
+    title = f"{test_data['equipment_details'].get('Equipment Type', '')} - {test_data.get('test_type', '').capitalize()}"
+    pdf.multi_cell(0, 10, title, align="C")
+    pdf.ln(5)
 
     # ✅ Equipment details
     pdf.set_font("DejaVu", "B", 12)
     pdf.cell(0, 10, "Equipment Details:", ln=True)
     pdf.set_font("DejaVu", "", 11)
     for key, value in test_data['equipment_details'].items():
-        pdf.cell(60, 8, f"{key}", border=1)
-        pdf.cell(0, 8, f"{value}", border=1, ln=True)
-    pdf.ln(10)
+        pdf.cell(60, 8, str(key), border=1)
+        pdf.cell(0, 8, str(value), border=1, ln=True)
+    pdf.ln(5)
 
     # ✅ Test results
     pdf.set_font("DejaVu", "B", 12)
     pdf.cell(0, 10, "Results:", ln=True)
     pdf.set_font("DejaVu", "B", 10)
 
-    headers = ['Cable Set', 'Test Point', 'Result', 'Unit', 'Observations']
+    headers = ["Cable Set", "Test Point", "Result", "Unit", "Observations"]
     col_widths = [25, 40, 30, 25, 70]
 
     for i, header in enumerate(headers):
@@ -65,32 +61,35 @@ def generate_test_pdf(test_data, pdf_results, output_path):
     pdf.set_font("DejaVu", "", 10)
     for r in pdf_results:
         row = [
-            str(r.get('cable_set', '')),
-            r.get('test_point', ''),
-            str(r.get('result_value', '')),
-            r.get('unit', ''),
-            r.get('observation', '')
+            str(r.get("cable_set", "")),
+            r.get("test_point", ""),
+            str(r.get("result_value", "")),
+            r.get("unit", ""),
+            r.get("observation", "")
         ]
         for i, value in enumerate(row):
-            pdf.cell(col_widths[i], 8, value, border=1)
+            # ✅ Truncar valores largos para evitar errores
+            pdf.cell(col_widths[i], 8, str(value)[:40], border=1)
         pdf.ln()
 
         # ✅ Associated images
-        images = test_data.get("images", [])
-        for img in images:
+        for img in test_data.get("images", []):
             if (
                 img.get("cable_set") == r.get("cable_set")
                 and img.get("test_point") == r.get("test_point")
             ):
                 if os.path.exists(img["path"]):
                     try:
-                        pdf.image(img["path"], x=pdf.get_x(), y=pdf.get_y(), w=50)
+                        # ✅ Ajuste dinámico para imágenes grandes
+                        x_before, y_before = pdf.get_x(), pdf.get_y()
+                        pdf.image(img["path"], x=x_before, y=y_before, w=50)
                         pdf.ln(30)
                     except Exception as e:
                         pdf.set_font("DejaVu", "I", 8)
                         pdf.cell(0, 10, f"[Error displaying image: {e}]", ln=True)
 
-    pdf.ln(10)
+    # ✅ Footer info
+    pdf.ln(5)
     pdf.set_font("DejaVu", "I", 10)
     pdf.cell(0, 10, f"Performed by: {test_data.get('user_name', 'Unknown')}", ln=True)
     pdf.cell(0, 10, f"Date: {test_data.get('date', datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))}", ln=True)
