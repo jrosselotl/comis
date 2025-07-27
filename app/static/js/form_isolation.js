@@ -3,7 +3,7 @@ function initFormIsolation(powerType) {
     const resultContainer = document.getElementById("result-container");
     const resultBlock = document.getElementById("result-block");
 
-    const point = powerType === "single_phase"
+    const points = powerType === "single_phase"
         ? ["L", "N", "PE"]
         : ["L1", "L2", "L3", "N", "PE"];
 
@@ -17,14 +17,14 @@ function initFormIsolation(powerType) {
         return combo;
     }
 
-    const combination = generateCombination(point);
+    const combination = generateCombination(points);
 
     function generateFields() {
         const quantity = parseInt(cableSetInput.value) || 0;
         resultContainer.innerHTML = "";
         resultBlock.style.display = quantity > 0 ? "block" : "none";
 
-        // ✅ Cargar unidades globales
+        // ✅ Cargar unidades en el select global
         if (window.UNIT_BY_TEST && window.UNIT_BY_TEST["isolation"]) {
             const unitSelect = document.getElementById("unit");
             const labelUnit = document.getElementById("label-unit");
@@ -83,19 +83,19 @@ function initFormIsolation(powerType) {
                 `;
                 table.appendChild(row);
 
+                // ✅ Botón N/A
                 const inputResult = row.querySelector(`#${idResult}`);
                 const buttonNA = row.querySelector(`#${idNA}`);
-
                 buttonNA.addEventListener("click", () => {
                     inputResult.disabled = !inputResult.disabled;
                     inputResult.value = inputResult.disabled ? "N/A" : "";
                     buttonNA.classList.toggle("active");
                 });
 
+                // ✅ Vista previa adjunto
                 const label = row.querySelector("label");
                 const inputFile = label.querySelector("input[type='file']");
                 const attachText = label.querySelector(".attach-text");
-
                 inputFile.addEventListener("change", () => {
                     attachText.textContent = inputFile.files.length ? "📎 File attached" : "";
                 });
@@ -107,6 +107,13 @@ function initFormIsolation(powerType) {
 
     cableSetInput.addEventListener("input", generateFields);
     generateFields();
+
+    // ✅ Cuando cambie la unidad global, actualizar todas las filas
+    document.getElementById("unit").addEventListener("change", () => {
+        document.querySelectorAll("input[name^='unit_']").forEach(input => {
+            input.value = document.getElementById("unit").value;
+        });
+    });
 
     document.getElementById("form-test").addEventListener("submit", async function (e) {
         const type = document.getElementById("test-type")?.value;
@@ -122,16 +129,16 @@ function initFormIsolation(powerType) {
         const results = [];
         const formData = new FormData();
 
-        // ✅ Campos generales que espera el backend
+        // ✅ Campos generales que espera form.py
         formData.append("project_id", document.getElementById("project_id").value);
         formData.append("location_1", document.getElementById("location_1").value);
         formData.append("number_location_1", document.getElementById("number_location_1")?.value || 0);
         formData.append("location_2", document.getElementById("location_2")?.value || "");
-        formData.append("number_location_2", document.getElementById("number_location_2")?.value || "");
+        formData.append("number_location_2", document.getElementById("number_location_2")?.value || 0);
         formData.append("equipment_type", document.getElementById("equipment_type").value);
-        formData.append("number_equipment_type", document.getElementById("number_equipment_type")?.value || "");
+        formData.append("number_equipment_type", document.getElementById("number_equipment_type")?.value || 0);
         formData.append("sub_equipment", document.getElementById("sub_equipment")?.value || "");
-        formData.append("number_sub_equipment", document.getElementById("number_sub_equipment")?.value || "");
+        formData.append("number_sub_equipment", document.getElementById("number_sub_equipment")?.value || 0);
         formData.append("terminal", document.getElementById("terminal")?.value || "");
         formData.append("power_type", document.getElementById("power_type").value);
         formData.append("cable_set", cableSets);
@@ -150,10 +157,10 @@ function initFormIsolation(powerType) {
                 results.push({
                     cable_set: i,
                     test_point: point,
-                    result_value: result === "N/A" ? "N/A" : result,
-                    time_applied: time_applied || null,
-                    unit: document.getElementById("unit")?.value || "",
-                    observation: observation,
+                    result_value: result === "N/A" ? "N/A" : parseFloat(result) || null,
+                    time_applied: time_applied ? parseFloat(time_applied) : null,
+                    unit: document.getElementById("unit").value || "",
+                    observation: observation
                 });
 
                 if (image) {
@@ -162,7 +169,6 @@ function initFormIsolation(powerType) {
             }
         }
 
-        // ✅ El backend espera un único campo `data` con todos los resultados
         formData.append("data", JSON.stringify(results));
 
         try {
