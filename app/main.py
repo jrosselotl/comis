@@ -25,7 +25,8 @@ from app.routes import (
     equipment_type,
     test_project,
     test,
-    form
+    form,
+    test_done
 )
 
 app = FastAPI()
@@ -92,6 +93,7 @@ app.include_router(equipment_type.router)
 app.include_router(test_project.router)
 app.include_router(test.router)
 app.include_router(form.router)
+app.include_router(test_done.router)
 
 # Ejecución
 if __name__ == "__main__":
