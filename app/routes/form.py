@@ -128,7 +128,7 @@ async def save_form(
     # --- GUARDAMOS RESULTADOS (eliminamos anteriores para evitar duplicados) ---
     MODEL_MAP = {
         "continuity": ResultContinuity,
-        "isolation": ResultIsolation,
+        "insulation": ResultInsulation,
         "contact_resistance": ResultContactResistance,
         "torque": ResultTorque
     }
@@ -163,7 +163,7 @@ async def save_form(
                 None if r.get("result_value") == "N/A" else r.get("result_value")
             )
     
-        if test_type == "insulation":
+        if test_type == "lation":
             result_data["result_value"] = (
                 None if r.get("result_value") == "N/A" else r.get("result_value")
             )
