@@ -35,7 +35,7 @@ UNIT_CONVERSION = {
 def get_unit_by_test(test_type: str):
     units = {
         "continuity": ["Ω", "mΩ"],
-        "isolation": ["kΩ", "MΩ", "GΩ"],
+        "insulation": ["kΩ", "MΩ", "GΩ"],
         "contact_resistance": ["Ω", "mΩ", "µΩ"],
         "torque": ["Nm", "kgf·cm", "lbf·in"]
     }
