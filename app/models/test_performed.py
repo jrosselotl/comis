@@ -26,8 +26,8 @@ class TestPerformed(Base):
         back_populates="test_performed",
         cascade="all, delete-orphan"
     )
-    result_isolation = relationship(
-        "ResultIsolation",
+    result_insulation = relationship(
+        "ResultInsulation",
         back_populates="test_performed",
         cascade="all, delete-orphan"
     )
