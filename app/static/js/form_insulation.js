@@ -1,4 +1,4 @@
-function initFormIsolation(powerType) {
+function initFormInsulation(powerType) {
     const cableSetInput = document.getElementById("cable_set");
     const resultContainer = document.getElementById("result-container");
     const resultBlock = document.getElementById("result-block");
@@ -25,13 +25,13 @@ function initFormIsolation(powerType) {
         resultBlock.style.display = quantity > 0 ? "block" : "none";
 
         // ✅ Cargar unidades en el select global
-        if (window.UNIT_BY_TEST && window.UNIT_BY_TEST["isolation"]) {
+        if (window.UNIT_BY_TEST && window.UNIT_BY_TEST["insulation"]) {
             const unitSelect = document.getElementById("unit");
             const labelUnit = document.getElementById("label-unit");
 
             if (unitSelect && labelUnit) {
                 unitSelect.innerHTML = '<option value="">Select unit...</option>';
-                window.UNIT_BY_TEST["isolation"].forEach((u) => {
+                window.UNIT_BY_TEST["insulation"].forEach((u) => {
                     const opt = document.createElement("option");
                     opt.value = u;
                     opt.textContent = u;
@@ -47,7 +47,7 @@ function initFormIsolation(powerType) {
             table.classList.add("test-table");
 
             table.innerHTML = `
-                <caption>Isolation - Cable Set ${i}</caption>
+                <caption>Insulation - Cable Set ${i}</caption>
                 <tr>
                     <th>Point</th>
                     <th>Result / N/A</th>
@@ -121,7 +121,7 @@ function initFormIsolation(powerType) {
 
     document.getElementById("form-test").addEventListener("submit", async function (e) {
         const type = document.getElementById("test-type")?.value;
-        if (type !== "isolation") return;
+        if (type !== "insulation") return;
 
         e.preventDefault();
         const cableSets = parseInt(cableSetInput.value);
@@ -189,9 +189,9 @@ function initFormIsolation(powerType) {
 
             const res = await response.json();
             if (response.ok) {
-                alert(res.message || "✅ Isolation test saved successfully");
+                alert(res.message || "✅ Insulation test saved successfully");
             } else {
-                alert(res.detail || "❌ Error saving isolation test");
+                alert(res.detail || "❌ Error saving insulation test");
             }
         } catch (err) {
             console.error(err);
@@ -200,7 +200,7 @@ function initFormIsolation(powerType) {
     });
 }
 
-window.initFormIsolation = initFormIsolation;
+window.initFormInsulation = initFormInsulation;
 
 // ✅ Cargar datos existentes al editar
 window.loadExistingTest = function (testData) {
@@ -210,7 +210,7 @@ window.loadExistingTest = function (testData) {
         ? Math.max(...testData.results.map(r => r.cable_set))
         : 0;
 
-    initFormIsolation(document.getElementById("power_type").value);
+    initFormInsulation(document.getElementById("power_type").value);
 
     testData.results.forEach(r => {
         const resultInput = document.querySelector(`[name="result_${r.cable_set}_${r.test_point}"]`);
