@@ -75,7 +75,7 @@ def generate_test_pdf(test_data, pdf_results, output_path):
     pdf.set_font("DejaVu", "B", 10)
 
     t_type = test_data.get("test_type", "")
-    if t_type == "isolation":
+    if t_type == "insulation":
         headers = ["Cable Set", "Test Point", "Result", "Unit", "Time (s)", "Observations"]
         col_widths = [20, 35, 25, 20, 20, 70]
     elif t_type == "torque":
@@ -95,7 +95,7 @@ def generate_test_pdf(test_data, pdf_results, output_path):
     pdf.set_text_color(0, 0, 0)
 
     for r in pdf_results:
-        if t_type == "isolation":
+        if t_type == "insulation":
             row = [
                 str(r.get("cable_set", "")),
                 r.get("test_point", ""),
