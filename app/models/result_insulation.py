@@ -2,8 +2,8 @@ from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from app.database import Base
 
-class ResultIsolation(Base):
-    __tablename__ = "result_isolation"
+class ResultInsulation(Base):
+    __tablename__ = "result_insulation"
 
     id = Column(Integer, primary_key=True, index=True)
     test_performed_id = Column(Integer, ForeignKey("test_performed.id"), nullable=False)
@@ -16,4 +16,4 @@ class ResultIsolation(Base):
     cable_set = Column(Integer, nullable=True)
 
     # ✅ Relación con test_performed
-    test_performed = relationship("TestPerformed", back_populates="result_isolation")
+    test_performed = relationship("TestPerformed", back_populates="result_insulation")
