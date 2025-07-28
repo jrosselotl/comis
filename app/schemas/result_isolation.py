@@ -1,7 +1,7 @@
 from pydantic import BaseModel, constr
 from typing import Optional
 
-class ResultIsolationBase(BaseModel):
+class ResultInsulationBase(BaseModel):
     test_performed_id: int
     test_point: constr(min_length=1, max_length=50)
     result_value: Optional[float]
@@ -10,10 +10,10 @@ class ResultIsolationBase(BaseModel):
     image_url: Optional[str]
     observation: Optional[str]
 
-class ResultIsolationCreate(ResultIsolationBase):
+class ResultInsulationCreate(ResultInsulationBase):
     pass
 
-class ResultIsolationResponse(ResultIsolationBase):
+class ResultInsulationResponse(ResultInsulationBase):
     id: int
 
     class Config:
