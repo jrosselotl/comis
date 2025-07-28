@@ -4,7 +4,7 @@ from app.database import get_db
 from app.models.test_performed import TestPerformed
 from app.models.project import Project
 from app.models.result_continuity import ResultContinuity
-from app.models.result_isolation import ResultIsolation
+from app.models.result_insulation import ResultInsulation
 from app.models.result_contact_resistance import ResultContactResistance
 from app.models.result_torque import ResultTorque
 from app.utils.pdf_generator import generate_test_pdf
@@ -30,7 +30,7 @@ async def send_pdf(test_id: int, db: Session = Depends(get_db)):
     test_type = test_performed.test.test_type
     MODEL_MAP = {
         "continuity": ResultContinuity,
-        "isolation": ResultIsolation,
+        "insulation": ResultInsulation,
         "contact_resistance": ResultContactResistance,
         "torque": ResultTorque
     }
