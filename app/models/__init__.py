@@ -6,6 +6,6 @@ from app.models.test_project import TestProject
 from app.models.equipment import Equipment
 from app.models.test_performed import TestPerformed
 from app.models.result_continuity import ResultContinuity
-from app.models.result_isolation import ResultInsulation
+from app.models.result_insulation import ResultInsulation
 from app.models.result_contact_resistance import ResultContactResistance
 from app.models.result_torque import ResultTorque
