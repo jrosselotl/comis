@@ -218,8 +218,8 @@ document.addEventListener("DOMContentLoaded", () => {
       initFormContinuity(powerTypeSelect.value);
       applyResponsiveLabels();
     }
-    if (type === "isolation") {
-      initFormIsolation(powerTypeSelect.value);
+    if (type === "insulation") {
+      initFormInsulation(powerTypeSelect.value);
       applyResponsiveLabels();
     }
     if (type === "contact_resistance") {
