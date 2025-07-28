@@ -84,8 +84,8 @@ async def create_test_performed(request: Request, db: Session = Depends(get_db))
                     result_value=r.get("result_value")
                 ))
 
-            elif test_type == "isolation":
-                db.add(ResultIsolation(
+            elif test_type == "insulation":
+                db.add(ResultInsulation(
                     **common_data,
                     result_value=r.get("result_value"),
                     time_applied=r.get("time_applied")
