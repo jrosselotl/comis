@@ -11,7 +11,7 @@ from app.models.test_project import TestProject
 
 # ✅ Result models
 from app.models.result_continuity import ResultContinuity
-from app.models.result_isolation import ResultIsolation
+from app.models.result_insulation import ResultInsulation
 from app.models.result_contact_resistance import ResultContactResistance
 from app.models.result_torque import ResultTorque
 
