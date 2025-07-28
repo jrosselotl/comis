@@ -7,7 +7,7 @@ from app.models.test import Test
 from app.models.equipment import Equipment
 from app.models.test_performed import TestPerformed
 from app.models.result_continuity import ResultContinuity
-from app.models.result_isolation import ResultIsolation
+from app.models.result_insulation import ResultInsulation
 from app.models.result_contact_resistance import ResultContactResistance
 from app.models.result_torque import ResultTorque
 from app.routes.auth import get_current_user
@@ -163,7 +163,7 @@ async def save_form(
                 None if r.get("result_value") == "N/A" else r.get("result_value")
             )
     
-        if test_type == "isolation":
+        if test_type == "insulation":
             result_data["result_value"] = (
                 None if r.get("result_value") == "N/A" else r.get("result_value")
             )
@@ -193,7 +193,7 @@ async def load_test(test_id: int, db: Session = Depends(get_db)):
     test_type = test_performed.test.test_type
     MODEL_MAP = {
         "continuity": ResultContinuity,
-        "isolation": ResultIsolation,
+        "insulation": ResultInsulation,
         "contact_resistance": ResultContactResistance,
         "torque": ResultTorque
     }
@@ -212,7 +212,7 @@ async def load_test(test_id: int, db: Session = Depends(get_db)):
             "observation": r.observation,
             "unit": r.unit
         }
-        if test_type == "isolation":
+        if test_type == "insulation":
             base["time_applied"] = getattr(r, "time_applied", None)
         if test_type == "torque":
             base["nominal_value"] = getattr(r, "nominal_value", None)
